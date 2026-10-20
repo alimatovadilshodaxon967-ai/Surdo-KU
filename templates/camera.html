@@ -19,6 +19,10 @@
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
 
+    <!-- Three.js & GLTF Loader (3D Photorealistic Surdo Avatar Engine) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+
     <style>
         :root {
             --primary: #00f2fe;
@@ -306,6 +310,44 @@
 
         .btn-ctrl.active i {
             color: var(--primary);
+        }
+
+        .btn-ctrl.listening {
+            background: rgba(255, 51, 102, 0.22) !important;
+            border-color: rgba(255, 51, 102, 0.65) !important;
+            color: #ffffff !important;
+            box-shadow: 0 0 18px rgba(255, 51, 102, 0.45);
+            animation: pulse-mic 1.4s infinite;
+        }
+
+        .btn-ctrl.listening i {
+            color: #ff3366 !important;
+        }
+
+        .action-btn.mic-btn {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: #e2e8f0;
+        }
+
+        .action-btn.mic-btn:hover {
+            background: rgba(255, 255, 255, 0.12);
+            color: #ffffff;
+            border-color: rgba(255, 255, 255, 0.25);
+        }
+
+        .action-btn.mic-btn.listening {
+            background: linear-gradient(135deg, #ff3366, #ff758c) !important;
+            border-color: #ff3366 !important;
+            color: #ffffff !important;
+            box-shadow: 0 0 16px rgba(255, 51, 102, 0.5);
+            animation: pulse-mic 1.4s infinite;
+        }
+
+        @keyframes pulse-mic {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 51, 102, 0.7); }
+            70% { transform: scale(1.02); box-shadow: 0 0 0 10px rgba(255, 51, 102, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 51, 102, 0); }
         }
 
         .btn-sos {
@@ -1258,6 +1300,260 @@
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
+        /* 4. AI Surdo Avatar Interpreter Pod (O'ng pastki burchak) */
+        .surdo-avatar-pod {
+            position: fixed;
+            right: 24px;
+            bottom: 24px;
+            width: 320px;
+            height: 440px;
+            background: linear-gradient(160deg, rgba(8, 16, 32, 0.95), rgba(12, 24, 48, 0.93));
+            backdrop-filter: blur(28px) saturate(180%);
+            -webkit-backdrop-filter: blur(28px) saturate(180%);
+            border: 1.5px solid rgba(0, 242, 254, 0.42);
+            border-radius: 22px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.75), 0 0 30px rgba(0, 242, 254, 0.25);
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            transition: width 0.35s cubic-bezier(0.16, 1, 0.3, 1), height 0.35s cubic-bezier(0.16, 1, 0.3, 1), transform 0.25s ease, box-shadow 0.25s ease;
+            user-select: none;
+        }
+
+        .surdo-avatar-pod:hover {
+            border-color: rgba(0, 242, 254, 0.7);
+            box-shadow: 0 24px 60px rgba(0, 0, 0, 0.85), 0 0 40px rgba(0, 242, 254, 0.4);
+        }
+
+        .surdo-avatar-pod.expanded {
+            width: 420px;
+            height: 560px;
+        }
+
+        .surdo-avatar-pod.minimized {
+            width: 58px;
+            height: 58px;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6), 0 0 20px rgba(0, 242, 254, 0.4);
+        }
+
+        .surdo-avatar-pod.minimized .avatar-viewport,
+        .surdo-avatar-pod.minimized .avatar-pod-footer,
+        .surdo-avatar-pod.minimized .avatar-title,
+        .surdo-avatar-pod.minimized #avatar-toggle-voice,
+        .surdo-avatar-pod.minimized #avatar-size-btn,
+        .surdo-avatar-pod.minimized #avatar-model-switch-btn {
+            display: none !important;
+        }
+
+        .surdo-avatar-pod.minimized .avatar-pod-header {
+            height: 100%;
+            padding: 0;
+            justify-content: center;
+            border-bottom: none;
+        }
+
+        .avatar-pod-header {
+            padding: 10px 14px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(255, 255, 255, 0.05);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .avatar-status-wrap {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .avatar-live-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #00f2fe;
+            box-shadow: 0 0 10px #00f2fe;
+            animation: pulse-dot 1.5s infinite;
+        }
+
+        @keyframes pulse-dot {
+            0% { transform: scale(0.9); opacity: 0.7; }
+            50% { transform: scale(1.2); opacity: 1; }
+            100% { transform: scale(0.9); opacity: 0.7; }
+        }
+
+        .avatar-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: #ffffff;
+            letter-spacing: 0.3px;
+        }
+
+        .avatar-controls {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .avatar-btn {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: rgba(255, 255, 255, 0.75);
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .avatar-btn:hover {
+            color: #ffffff;
+            background: rgba(0, 242, 254, 0.2);
+            border-color: rgba(0, 242, 254, 0.5);
+        }
+
+        .avatar-viewport {
+            flex: 1;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: radial-gradient(circle at center, rgba(0, 242, 254, 0.08) 0%, rgba(5, 12, 24, 0.6) 85%);
+            overflow: hidden;
+        }
+
+        #ai-avatar-video {
+            display: block;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            background: #000;
+        }
+
+        #avatar-canvas {
+            display: none;
+            width: 100% !important;
+            height: 100% !important;
+        }
+
+        .avatar-caption-badge {
+            position: absolute;
+            bottom: 10px;
+            left: 12px;
+            right: 12px;
+            background: rgba(4, 10, 22, 0.88);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(0, 242, 254, 0.35);
+            border-radius: 12px;
+            padding: 7px 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #ffffff;
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.5);
+            transition: all 0.25s ease;
+        }
+
+        .avatar-caption-badge.signing {
+            border-color: rgba(0, 242, 254, 0.8);
+            box-shadow: 0 0 15px rgba(0, 242, 254, 0.4);
+            color: var(--primary);
+        }
+
+        #avatar-caption-icon {
+            font-size: 13px;
+        }
+
+        #avatar-caption-text {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .avatar-pod-footer {
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, 0.04);
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .avatar-quick-gestures {
+            display: flex;
+            gap: 6px;
+            overflow-x: auto;
+            padding-bottom: 2px;
+            scrollbar-width: none;
+        }
+
+        .avatar-quick-gestures::-webkit-scrollbar {
+            display: none;
+        }
+
+        .quick-sign-btn {
+            background: rgba(0, 242, 254, 0.12);
+            border: 1px solid rgba(0, 242, 254, 0.3);
+            border-radius: 8px;
+            padding: 4px 8px;
+            font-size: 11px;
+            font-weight: 600;
+            color: #e2e8f0;
+            white-space: nowrap;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .quick-sign-btn:hover {
+            background: rgba(0, 242, 254, 0.32);
+            border-color: #00f2fe;
+            color: #ffffff;
+            transform: translateY(-1px);
+        }
+
+        .avatar-footer-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .avatar-role-label {
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .avatar-status-desc {
+            font-size: 10px;
+            color: rgba(255, 255, 255, 0.6);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        @media (max-width: 768px) {
+            .surdo-avatar-pod {
+                right: 12px;
+                bottom: 85px;
+                width: 170px;
+                height: 240px;
+            }
+            #avatar-canvas {
+                width: 150px;
+                height: 150px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -1331,14 +1627,19 @@
             <!-- Right Wing: Controls & Safety -->
             <div class="header-wing-right">
                 <!-- Controls & Safety -->
-                <button id="voice-select-btn" class="btn-ctrl active" title="VoiceLab milliy o'zbek ovozlarini tanlash (Madina, Amir, Javohir, Kamola, Abdulhay)">
+                <button id="voice-select-btn" class="btn-ctrl active" title="VoiceLab milliy o'zbek ovozlarini tanlash (Abdulhay, Madina, Amir, Javohir, Kamola...)">
                     <i class="fa-solid fa-wand-magic-sparkles" style="color: var(--accent);"></i>
-                    <span id="voice-name">Madina (VoiceLab)</span>
+                    <span id="voice-name">Abdulhay (VoiceLab Dublyaj)</span>
                 </button>
 
                 <button id="camera-toggle-btn" class="btn-ctrl active" title="Kamerani yoqish yoki o'chirish">
                     <i class="fa-solid fa-video"></i>
                     <span id="camera-status-text">Kamera</span>
+                </button>
+
+                <button id="mic-toggle-btn" class="btn-ctrl" title="Mikrofon (Speech-to-Speech / Nutqni matnga va ovozga o'girish)">
+                    <i class="fa-solid fa-microphone"></i>
+                    <span id="mic-status-text">Mikrofon</span>
                 </button>
 
                 <button id="voice-toggle" class="btn-ctrl active" title="Ovozli eshittirishni yoqish/o'chirish">
@@ -1418,6 +1719,12 @@
                     </div>
 
                     <div class="sentence-actions">
+                        <!-- Mikrofon Speech-to-Speech Button -->
+                        <button id="mic-action-btn" class="action-btn mic-btn" title="Mikrofonga gapirish (Speech-to-Speech)">
+                            <i class="fa-solid fa-microphone"></i>
+                            <span id="mic-action-text">Gapirish</span>
+                        </button>
+
                         <!-- AI Smart Grammar Button -->
                         <button id="ai-grammar-btn" class="action-btn ai-magic-btn" title="AI yordamida chiroyli adabiy gap tuzish">
                             <i class="fa-solid fa-wand-magic-sparkles"></i>
@@ -1438,6 +1745,49 @@
                         </button>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. AI Surdo Avatar Pod (O'ng pastki burchak - Eshitmaydigan insonlar uchun Imo-ishora Avatari) -->
+    <div id="surdo-avatar-pod" class="surdo-avatar-pod" title="AI Surdotarjimon (Imo-ishora orqali tushuntiradi)">
+        <div class="avatar-pod-header">
+            <div class="avatar-status-wrap">
+                <span class="avatar-live-dot"></span>
+                <span class="avatar-title">AI Surdotarjimon</span>
+            </div>
+            <div class="avatar-controls">
+                <button id="avatar-size-btn" class="avatar-btn" title="O'lchamni almashtirish (Katta / Standart)">
+                    <i class="fa-solid fa-up-right-and-down-left-from-center"></i>
+                </button>
+                <button id="avatar-model-switch-btn" class="avatar-btn" title="Rejimni almashtirish (Haqiqiy Inson AI Video / 3D Model)">
+                    <i class="fa-solid fa-user-tie"></i>
+                </button>
+                <button id="avatar-min-btn" class="avatar-btn" title="Yashirish / Ko'rsatish">
+                    <i class="fa-solid fa-compress"></i>
+                </button>
+            </div>
+        </div>
+        <div class="avatar-viewport">
+            <video id="ai-avatar-video" playsinline autoplay muted loop src="/static/avatars/real_human_presenter.mp4" style="width:100%; height:100%; object-fit:cover; border-radius:18px; display:block;"></video>
+            <canvas id="avatar-canvas" style="display:none;"></canvas>
+            <div id="avatar-caption-badge" class="avatar-caption-badge">
+                <span id="avatar-caption-icon">✋</span>
+                <span id="avatar-caption-text">Imo-ishora kutilmoqda...</span>
+            </div>
+        </div>
+        <div class="avatar-pod-footer">
+            <div class="avatar-quick-gestures">
+                <button class="quick-sign-btn" data-sign="salom">👋 Salom</button>
+                <button class="quick-sign-btn" data-sign="rahmat">🙏 Rahmat</button>
+                <button class="quick-sign-btn" data-sign="zor">👍 Zo'r</button>
+                <button class="quick-sign-btn" data-sign="kuting">⏳ Kuting</button>
+                <button class="quick-sign-btn" data-sign="sevaman">❤️ Sevaman</button>
+                <button class="quick-sign-btn" data-sign="yoq">🙅‍♂️ Yo'q</button>
+            </div>
+            <div class="avatar-footer-meta">
+                <span id="avatar-model-label" class="avatar-role-label">Jonli AI Surdotarjimon (HeyGen / D-ID Video)</span>
+                <span id="avatar-status-desc" class="avatar-status-desc">Haqiqiy Inson AI Avatari (Faol)</span>
             </div>
         </div>
     </div>
@@ -1685,18 +2035,23 @@
             };
         }
 
-        // Voice Selection & State (VoiceLab.uz Milliy O'zbek Shirali Ovozlar)
+        // Voice Selection & State (VoiceLab.uz Milliy O'zbek Shirali Ovozlar - voicelab.uz)
         const voiceSelectBtn = document.getElementById('voice-select-btn');
         const voiceNameSpan = document.getElementById('voice-name');
         const UZ_VOICES = [
+            { id: 'abdulhay', name: "Abdulhay (VoiceLab Dublyaj)", intro: "Assalomu alaykum! VoiceLab Abdulhay Otaxo'jayev ovozi tanlandi." },
             { id: 'madina', name: "Madina (VoiceLab Shirali)", intro: "Assalomu alaykum! VoiceLab Madina shirali ovozi tanlandi." },
-            { id: 'amir', name: "Amir (VoiceLab Bosiq)", intro: "Assalomu alaykum! VoiceLab Amir bosiq erkak ovozi tanlandi." },
+            { id: 'amir', name: "Amir (VoiceLab Hikoyachi)", intro: "Assalomu alaykum! VoiceLab Amir bosiq erkak ovozi tanlandi." },
             { id: 'javohir', name: "Javohir (VoiceLab Ta'limiy)", intro: "Assalomu alaykum! VoiceLab Javohir ta'limiy diktor ovozi tanlandi." },
             { id: 'kamola', name: "Kamola (VoiceLab Mayin)", intro: "Assalomu alaykum! VoiceLab Kamola mayin ovozi tanlandi." },
-            { id: 'abdulhay', name: "Abdulhay (VoiceLab Dublyaj)", intro: "Assalomu alaykum! VoiceLab Abdulhay Otaxo'jayev ovozi tanlandi." }
+            { id: 'dilnoza', name: "Dilnoza (VoiceLab Baxmal)", intro: "Assalomu alaykum! VoiceLab Dilnoza ovozi tanlandi." },
+            { id: 'jasur', name: "Jasur (VoiceLab Noir)", intro: "Assalomu alaykum! VoiceLab Jasur ovozi tanlandi." },
+            { id: 'safiya', name: "Safiya (VoiceLab Suhbatdosh)", intro: "Assalomu alaykum! VoiceLab Safiya ovozi tanlandi." },
+            { id: 'shohruxmirzo', name: "Shohruxmirzo (VoiceLab)", intro: "Assalomu alaykum! VoiceLab Shohruxmirzo ovozi tanlandi." },
+            { id: 'nozima', name: "Nozima (VoiceLab Mayin)", intro: "Assalomu alaykum! VoiceLab Nozima ovozi tanlandi." }
         ];
         let currentVoiceIndex = 0;
-        let currentVoice = UZ_VOICES[0].id; // 'madina'
+        let currentVoice = UZ_VOICES[0].id; // 'abdulhay'
 
         if (voiceSelectBtn) {
             voiceSelectBtn.addEventListener('click', () => {
@@ -1949,6 +2304,1230 @@
             // Yangi so'z qo'shilganda avtomatik oxiriga surish
             container.scrollTo({ left: container.scrollWidth, behavior: 'smooth' });
         }
+
+        // ==========================================
+        // 🎙️ TWO-WAY SPEECH-TO-SPEECH (VoiceLab STT/TTS ENGINE)
+        // ==========================================
+        const micToggleBtn = document.getElementById('mic-toggle-btn');
+        const micStatusText = document.getElementById('mic-status-text');
+        const micActionBtn = document.getElementById('mic-action-btn');
+        const micActionText = document.getElementById('mic-action-text');
+
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        let speechRecognition = null;
+        let isMicListening = false;
+        let micRestartTimer = null;
+
+        if (SpeechRecognition) {
+            speechRecognition = new SpeechRecognition();
+            speechRecognition.continuous = true;
+            speechRecognition.interimResults = true;
+            speechRecognition.lang = 'uz-UZ';
+
+            speechRecognition.onstart = () => {
+                isMicListening = true;
+                if (micToggleBtn) micToggleBtn.classList.add('listening');
+                if (micActionBtn) micActionBtn.classList.add('listening');
+                if (micStatusText) micStatusText.textContent = "Eshitmoqda...";
+                if (micActionText) micActionText.textContent = "To'xtatish";
+                if (signIconElem) signIconElem.textContent = "🎙️";
+                if (signCategoryElem) signCategoryElem.textContent = "Nutq AI";
+                if (signTextElem) signTextElem.textContent = "Gapiring, eshitmoqdaman...";
+                setSpeakingState(true);
+            };
+
+            speechRecognition.onresult = (event) => {
+                let interimTranscript = '';
+                let finalTranscript = '';
+
+                for (let i = event.resultIndex; i < event.results.length; ++i) {
+                    if (event.results[i].isFinal) {
+                        finalTranscript += event.results[i][0].transcript;
+                    } else {
+                        interimTranscript += event.results[i][0].transcript;
+                    }
+                }
+
+                if (interimTranscript && signTextElem) {
+                    signTextElem.textContent = interimTranscript;
+                }
+
+                if (finalTranscript && finalTranscript.trim()) {
+                    const cleanText = finalTranscript.trim();
+                    if (signTextElem) signTextElem.textContent = cleanText;
+
+                    // Matn chiplariga qo'shish
+                    const words = cleanText.split(/\s+/).filter(w => w.trim());
+                    words.forEach(w => sentenceWords.push(w));
+                    updateSentenceDisplay(sentenceWords.length - 1);
+
+                    // SPEECH-TO-SPEECH: VoiceLab orqali ovozlashtirish
+                    if (isVoiceEnabled) {
+                        speakNeural(cleanText, "", "uz");
+                    }
+                    if (typeof triggerAvatarGesture === 'function') {
+                        triggerAvatarGesture(cleanText, "🎙️", cleanText);
+                    }
+                }
+            };
+
+            speechRecognition.onerror = (event) => {
+                console.warn("Nutqni tanish xatosi:", event.error);
+                if (event.error === 'not-allowed') {
+                    alert("Mikrofon ruxsati berilmadi. Iltimos, brauzer sozlamalarida mikrofonni yoqing.");
+                    stopMicrophone();
+                }
+            };
+
+            speechRecognition.onend = () => {
+                if (isMicListening) {
+                    // Agar faol bo'lsa, uzluksiz davom etish
+                    micRestartTimer = setTimeout(() => {
+                        try {
+                            if (isMicListening && speechRecognition) speechRecognition.start();
+                        } catch(e) {}
+                    }, 250);
+                } else {
+                    stopMicrophoneState();
+                }
+            };
+        }
+
+        function startMicrophone() {
+            if (!SpeechRecognition) {
+                alert("Brauzeringizda mikrofon orqali nutqni tanish qo'llab-quvvatlanmaydi. Google Chrome yoki Microsoft Edge brauzeridan foydalaning.");
+                return;
+            }
+            try {
+                isMicListening = true;
+                speechRecognition.start();
+            } catch(e) {
+                console.warn("Mikrofonni boshlashda xato:", e);
+            }
+        }
+
+        function stopMicrophone() {
+            isMicListening = false;
+            clearTimeout(micRestartTimer);
+            if (speechRecognition) {
+                try {
+                    speechRecognition.stop();
+                } catch(e) {}
+            }
+            stopMicrophoneState();
+        }
+
+        function stopMicrophoneState() {
+            if (micToggleBtn) micToggleBtn.classList.remove('listening');
+            if (micActionBtn) micActionBtn.classList.remove('listening');
+            if (micStatusText) micStatusText.textContent = "Mikrofon";
+            if (micActionText) micActionText.textContent = "Gapirish";
+            if (signIconElem) signIconElem.textContent = "✋";
+            if (signCategoryElem) signCategoryElem.textContent = "UzSL AI";
+            if (signTextElem) signTextElem.textContent = "Imo-ishora qiling...";
+            setSpeakingState(false);
+        }
+
+        function toggleMicrophone() {
+            if (isMicListening) {
+                stopMicrophone();
+            } else {
+                startMicrophone();
+            }
+        }
+
+        if (micToggleBtn) {
+            micToggleBtn.addEventListener('click', toggleMicrophone);
+        }
+        if (micActionBtn) {
+            micActionBtn.addEventListener('click', toggleMicrophone);
+        }
+
+        // ==========================================
+        // 🤖 3D & AI VIDEO SURDOTARJIMON AVATAR ENGINE
+        // ==========================================
+        const avatarPod = document.getElementById('surdo-avatar-pod');
+        const avatarMinBtn = document.getElementById('avatar-min-btn');
+        const avatarSizeBtn = document.getElementById('avatar-size-btn');
+        const avatarModelSwitchBtn = document.getElementById('avatar-model-switch-btn');
+        const aiAvatarVideo = document.getElementById('ai-avatar-video');
+        const avatarCanvas = document.getElementById('avatar-canvas');
+        const avatarCaptionIcon = document.getElementById('avatar-caption-icon');
+        const avatarCaptionText = document.getElementById('avatar-caption-text');
+        const avatarModelLabel = document.getElementById('avatar-model-label');
+        const avatarStatusDesc = document.getElementById('avatar-status-desc');
+
+        let isRealHumanMode = true; // Birlamchi rejim: Haqiqiy jonli inson AI video avatari
+        let avatarSigningTimer = null;
+
+        // Three.js Core Components
+        let avatarScene = null;
+        let avatarCamera = null;
+        let avatarRenderer = null;
+        let avatarModel = null;
+        let avatarBones = {};
+        let avatarMorphMeshes = [];
+        let is3DModelLoaded = false;
+
+        // Model Tanlash Tizimi (GitHub & RPM Modellar)
+        const AVATAR_MODELS = [
+            { id: 'madina', name: 'Madina (Ready Player Me)', url: '/static/models/brunette.glb', role: 'Madina • UZSL Fotorealistik Tarjimon' },
+            { id: 'aziz', name: 'Aziz (Avaturn Suit)', url: '/static/models/real_avatar.glb', role: 'Aziz • UZSL Biznes Tarjimon' },
+            { id: 'nilufar', name: 'Nilufar (Avatar SDK Scan)', url: '/static/models/avatarsdk.glb', role: 'Nilufar • UZSL 3D Tarjimon' }
+        ];
+        let currentModelIdx = 0;
+
+        // Avatar Holatlari & Animatsiya vaqtlari
+        let avatarState = {
+            gesture: 'idle',
+            text: "Tayyor...",
+            icon: "✋",
+            timer: 0
+        };
+        let nextBlinkTime = performance.now() + 2500;
+        let blinkPhase = 0;
+
+        // Kichraytirish / Yashirish tugmasi
+        if (avatarMinBtn && avatarPod) {
+            avatarMinBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                avatarPod.classList.toggle('minimized');
+                const isMin = avatarPod.classList.contains('minimized');
+                avatarMinBtn.innerHTML = isMin ? '<i class="fa-solid fa-expand"></i>' : '<i class="fa-solid fa-compress"></i>';
+                if (!isMin && avatarRenderer && avatarCamera) {
+                    setTimeout(onAvatarResize, 350);
+                }
+            });
+        }
+
+        // O'lchamni almashtirish tugmasi (Standart 320px <-> Katta 420px)
+        if (avatarSizeBtn && avatarPod) {
+            avatarSizeBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                avatarPod.classList.toggle('expanded');
+                const isExp = avatarPod.classList.contains('expanded');
+                avatarSizeBtn.innerHTML = isExp 
+                    ? '<i class="fa-solid fa-down-left-and-up-right-to-center"></i>' 
+                    : '<i class="fa-solid fa-up-right-and-down-left-from-center"></i>';
+                avatarSizeBtn.title = isExp ? "Standart o'lchamga qaytarish" : "Kattalashtirish (HD Ko'rinish)";
+                setTimeout(onAvatarResize, 360);
+            });
+        }
+
+        // Modelni almashtirish tugmasi (Haqiqiy inson AI Video va 3D modellar orasida o'tish)
+        if (avatarModelSwitchBtn) {
+            avatarModelSwitchBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (isRealHumanMode) {
+                    isRealHumanMode = false;
+                    if (aiAvatarVideo) aiAvatarVideo.style.display = 'none';
+                    if (avatarCanvas) avatarCanvas.style.display = 'block';
+                    loadCurrentAvatarModel();
+                    if (avatarModelLabel) avatarModelLabel.textContent = AVATAR_MODELS[currentModelIdx].role;
+                    if (avatarStatusDesc) avatarStatusDesc.textContent = "3D Fotorealistik Surdotarjimon (Faol)";
+                    avatarModelSwitchBtn.innerHTML = '<i class="fa-solid fa-video"></i>';
+                    avatarModelSwitchBtn.title = "Haqiqiy Inson AI Video rejimiga o'tish";
+                    onAvatarResize();
+                } else {
+                    currentModelIdx++;
+                    if (currentModelIdx >= AVATAR_MODELS.length) {
+                        currentModelIdx = 0;
+                        isRealHumanMode = true;
+                        if (aiAvatarVideo) {
+                            aiAvatarVideo.style.display = 'block';
+                            aiAvatarVideo.play().catch(() => {});
+                        }
+                        if (avatarCanvas) avatarCanvas.style.display = 'none';
+                        if (avatarModelLabel) avatarModelLabel.textContent = "Jonli AI Surdotarjimon (HeyGen / D-ID Video)";
+                        if (avatarStatusDesc) avatarStatusDesc.textContent = "Haqiqiy Inson AI Avatari (Faol)";
+                        avatarModelSwitchBtn.innerHTML = '<i class="fa-solid fa-user-tie"></i>';
+                        avatarModelSwitchBtn.title = "3D Avatar rejimiga o'tish";
+                    } else {
+                        loadCurrentAvatarModel();
+                        if (avatarModelLabel) avatarModelLabel.textContent = AVATAR_MODELS[currentModelIdx].role;
+                    }
+                }
+            });
+        }
+
+        // Avatar ustiga bosilganda salomlashish
+        if (avatarPod) {
+            avatarPod.addEventListener('click', (e) => {
+                if (e.target.closest('#avatar-min-btn') || e.target.closest('#avatar-size-btn') || e.target.closest('#avatar-model-switch-btn')) return;
+                if (avatarPod.classList.contains('minimized')) {
+                    avatarPod.classList.remove('minimized');
+                    if (avatarMinBtn) avatarMinBtn.innerHTML = '<i class="fa-solid fa-compress"></i>';
+                    setTimeout(onAvatarResize, 350);
+                }
+                triggerAvatarGesture("salom", "👋", "Assalomu alaykum!");
+            });
+        }
+
+        function onAvatarResize() {
+            if (!avatarCanvas || !avatarRenderer || !avatarCamera) return;
+            const width = avatarCanvas.clientWidth || 320;
+            const height = avatarCanvas.clientHeight || 340;
+            avatarCamera.aspect = width / height;
+            avatarCamera.updateProjectionMatrix();
+            avatarRenderer.setSize(width, height, false);
+            if (avatarModel) fitAvatarCamera(avatarModel);
+        }
+
+        // Kamerani har qanday avatar modeliga avtomatik to'g'ri fokuslash (bosh va qo'llar to'liq ko'rinishi)
+        function fitAvatarCamera(model) {
+            if (!avatarCamera || !model) return;
+            const box = new THREE.Box3().setFromObject(model);
+            const maxY = box.max.y;
+            const minY = box.min.y;
+
+            // Insonning yuqori gavdasi (bosh tepasi, yuz, ko'zlar, bo'yin, ko'krak va imo-ishora qiluvchi qo'llar)
+            const targetY = maxY - 0.28;
+            const camY = maxY - 0.23;
+
+            avatarCamera.fov = 42;
+            avatarCamera.position.set(0, camY, 1.16);
+            avatarCamera.lookAt(0, targetY, 0);
+            avatarCamera.updateProjectionMatrix();
+        }
+
+        // Yuz ifodalarini (Blendshapes / Morph Targets) barcha meshlar bo'ylab yangilash
+        function setMorphWeight(targetName, value) {
+            for (let i = 0; i < avatarMorphMeshes.length; i++) {
+                const mesh = avatarMorphMeshes[i];
+                if (mesh.morphTargetDictionary && mesh.morphTargetInfluences) {
+                    const idx = mesh.morphTargetDictionary[targetName];
+                    if (idx !== undefined) {
+                        mesh.morphTargetInfluences[idx] = value;
+                    }
+                }
+            }
+        }
+
+        // Tanlangan 3D modelni yuklash
+        function loadCurrentAvatarModel() {
+            const m = AVATAR_MODELS[currentModelIdx];
+            if (avatarModelLabel) avatarModelLabel.textContent = m.role;
+            if (avatarStatusDesc) avatarStatusDesc.textContent = `${m.name} yuklanmoqda...`;
+
+            if (!window.THREE || !window.THREE.GLTFLoader) {
+                createProceduralHumanoid();
+                return;
+            }
+
+            // Eskisini o'chirish
+            if (avatarModel && avatarScene) {
+                avatarScene.remove(avatarModel);
+                avatarModel = null;
+            }
+            avatarBones = {};
+            avatarMorphMeshes = [];
+            is3DModelLoaded = false;
+
+            const loader = new THREE.GLTFLoader();
+            loader.load(
+                m.url,
+                (gltf) => {
+                    avatarModel = gltf.scene;
+                    avatarModel.position.set(0, 0, 0);
+                    avatarModel.scale.set(1, 1, 1);
+
+                    avatarBones = {};
+                    avatarMorphMeshes = [];
+
+                    avatarModel.traverse((child) => {
+                        if (child.isBone) {
+                            avatarBones[child.name] = child;
+                            const clean = child.name.replace('mixamorig:', '').replace('mixamorig', '');
+                            avatarBones[clean] = child;
+                        }
+                        if (child.isMesh) {
+                            child.castShadow = true;
+                            child.receiveShadow = true;
+                            if (child.material) {
+                                child.material.roughness = 0.55;
+                                child.material.metalness = 0.08;
+                            }
+                            if (child.morphTargetDictionary && child.morphTargetInfluences) {
+                                avatarMorphMeshes.push(child);
+                            }
+                        }
+                    });
+
+                    avatarScene.add(avatarModel);
+                    fitAvatarCamera(avatarModel);
+                    is3DModelLoaded = true;
+
+                    if (avatarStatusDesc) avatarStatusDesc.textContent = `${m.name} (Faol)`;
+                },
+                (xhr) => {
+                    if (xhr.lengthComputable && avatarStatusDesc) {
+                        const percent = Math.round((xhr.loaded / xhr.total) * 100);
+                        avatarStatusDesc.textContent = `${m.name}: ${percent}%`;
+                    }
+                },
+                (err) => {
+                    console.warn("GLB yuklanmadi, zaxira model:", err);
+                    createProceduralHumanoid();
+                }
+            );
+        }
+
+        // 3D Sahna va Yoritish tizimini o'rnatish
+        function initThreeAvatar() {
+            if (!window.THREE || !avatarCanvas) {
+                console.warn("Three.js yuklanmadi.");
+                return;
+            }
+
+            const width = avatarCanvas.clientWidth || 320;
+            const height = avatarCanvas.clientHeight || 340;
+
+            // 1. Sahna
+            avatarScene = new THREE.Scene();
+
+            // 2. Kamera
+            avatarCamera = new THREE.PerspectiveCamera(42, width / height, 0.1, 50);
+            avatarCamera.position.set(0, 1.52, 1.16);
+            avatarCamera.lookAt(0, 1.46, 0);
+
+            // 3. WebGL Renderer
+            avatarRenderer = new THREE.WebGLRenderer({
+                canvas: avatarCanvas,
+                alpha: true,
+                antialias: true,
+                powerPreference: 'high-performance'
+            });
+            avatarRenderer.setSize(width, height, false);
+            avatarRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            avatarRenderer.outputEncoding = THREE.sRGBEncoding;
+
+            // 4. Studiya Yoritgichlari (Professional TV Yoritgichi)
+            const ambientLight = new THREE.AmbientLight(0xffffff, 1.15);
+            avatarScene.add(ambientLight);
+
+            // Oldingi asosiy nur (Key Light)
+            const mainLight = new THREE.DirectionalLight(0xffffff, 1.4);
+            mainLight.position.set(0.6, 2.4, 2.0);
+            avatarScene.add(mainLight);
+
+            // Feruza Neon Qirra nuri (Rim Light)
+            const rimLight = new THREE.PointLight(0x00f2fe, 3.2, 5);
+            rimLight.position.set(0, 2.0, -0.7);
+            avatarScene.add(rimLight);
+
+            // Moviy to'ldiruvchi nur (Fill Light)
+            const fillLight = new THREE.DirectionalLight(0x38bdf8, 0.85);
+            fillLight.position.set(-1.4, 1.8, 1.2);
+            avatarScene.add(fillLight);
+
+            // 5. Birinchi fotorealistik modelni yuklash
+            loadCurrentAvatarModel();
+
+            // Animatsiya siklini boshlash
+            animateThreeAvatar();
+        }
+
+        // 3D Fotorealistik Surdotarjimon Inson Modeli (Three.js WebGL Rigged Engine)
+        let procBones = {};
+        function createProceduralHumanoid() {
+            const group = new THREE.Group();
+
+            // PBR Materiallar
+            const suitMat = new THREE.MeshStandardMaterial({ 
+                color: 0x0c2144, 
+                roughness: 0.45, 
+                metalness: 0.15 
+            });
+            const shirtMat = new THREE.MeshStandardMaterial({ 
+                color: 0xf8fafc, 
+                roughness: 0.3 
+            });
+            const skinMat = new THREE.MeshStandardMaterial({ 
+                color: 0xfcd5b5, 
+                roughness: 0.55, 
+                metalness: 0.05 
+            });
+            const tieMat = new THREE.MeshStandardMaterial({ 
+                color: 0x00f2fe, 
+                roughness: 0.25, 
+                metalness: 0.35 
+            });
+            const hairMat = new THREE.MeshStandardMaterial({ 
+                color: 0x1e293b, 
+                roughness: 0.85 
+            });
+            const eyeWhiteMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+            const irisMat = new THREE.MeshBasicMaterial({ color: 0x0284c7 });
+            const pupilMat = new THREE.MeshBasicMaterial({ color: 0x000000 });
+            const lipMat = new THREE.MeshStandardMaterial({ color: 0xe11d48, roughness: 0.4 });
+
+            // 1. Gavda va Yelkalar (Rasmiy Surdo-kostyum)
+            const torso = new THREE.Mesh(new THREE.CylinderGeometry(0.24, 0.29, 0.68, 20), suitMat);
+            torso.position.y = 0.68;
+            group.add(torso);
+
+            // Oq ko'ylak ko'krak qismi
+            const shirtChest = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.35, 0.05), shirtMat);
+            shirtChest.position.set(0, 0.85, 0.18);
+            shirtChest.rotation.x = -0.12;
+            group.add(shirtChest);
+
+            // Feruza yaltiroq galstuk
+            const tie = new THREE.Mesh(new THREE.BoxGeometry(0.065, 0.36, 0.03), tieMat);
+            tie.position.set(0, 0.82, 0.21);
+            tie.rotation.x = -0.12;
+            group.add(tie);
+
+            // 2. Bo'yin va Bosh
+            const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.095, 0.16, 18), skinMat);
+            neck.position.y = 1.08;
+            group.add(neck);
+
+            // Bosh guruhi (Nafas olish va bosh chayqash uchun)
+            const headGroup = new THREE.Group();
+            headGroup.position.set(0, 1.25, 0);
+
+            // Yuz (Head Mesh)
+            const head = new THREE.Mesh(new THREE.SphereGeometry(0.165, 28, 28), skinMat);
+            head.scale.set(0.96, 1.14, 1.0);
+            headGroup.add(head);
+
+            // Sochlar
+            const hair = new THREE.Mesh(new THREE.SphereGeometry(0.172, 24, 24, 0, Math.PI * 2, 0, Math.PI * 0.58), hairMat);
+            hair.position.set(0, 0.04, 0.01);
+            headGroup.add(hair);
+
+            // Soch turmagi (Oldingi qismi)
+            const hairFront = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.06, 0.1), hairMat);
+            hairFront.position.set(0, 0.13, 0.13);
+            hairFront.rotation.x = 0.2;
+            headGroup.add(hairFront);
+
+            // Ko'zlar (Left & Right)
+            function makeEye(x) {
+                const eyeGroup = new THREE.Group();
+                eyeGroup.position.set(x, 0.02, 0.155);
+
+                const eyeball = new THREE.Mesh(new THREE.SphereGeometry(0.026, 14, 14), eyeWhiteMat);
+                eyeGroup.add(eyeball);
+
+                const iris = new THREE.Mesh(new THREE.SphereGeometry(0.014, 12, 12), irisMat);
+                iris.position.z = 0.02;
+                eyeGroup.add(iris);
+
+                const pupil = new THREE.Mesh(new THREE.SphereGeometry(0.007, 10, 10), pupilMat);
+                pupil.position.z = 0.025;
+                eyeGroup.add(pupil);
+
+                // Qosh
+                const brow = new THREE.Mesh(new THREE.BoxGeometry(0.055, 0.012, 0.01), hairMat);
+                brow.position.set(0, 0.04, 0.015);
+                brow.rotation.z = (x > 0 ? -0.08 : 0.08);
+                eyeGroup.add(brow);
+
+                return eyeGroup;
+            }
+
+            const leftEye = makeEye(-0.062);
+            const rightEye = makeEye(0.062);
+            headGroup.add(leftEye);
+            headGroup.add(rightEye);
+
+            // Burun
+            const nose = new THREE.Mesh(new THREE.ConeGeometry(0.02, 0.055, 8), skinMat);
+            nose.position.set(0, -0.015, 0.18);
+            nose.rotation.x = -0.3;
+            headGroup.add(nose);
+
+            // Og'iz / Lablar
+            const mouth = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 0.014, 12), lipMat);
+            mouth.position.set(0, -0.075, 0.16);
+            mouth.rotation.x = Math.PI * 0.5;
+            headGroup.add(mouth);
+
+            group.add(headGroup);
+
+            // 3. Suyakli Qo'llar (Shoulder -> Elbow -> Wrist -> Fingers)
+            function makeSkeletalArm(side) {
+                const isRight = side === 'right';
+                const sign = isRight ? 1 : -1;
+
+                // Yelka bo'g'ini
+                const shoulderGroup = new THREE.Group();
+                shoulderGroup.position.set(sign * 0.28, 0.98, 0);
+
+                const upperArm = new THREE.Mesh(new THREE.CylinderGeometry(0.062, 0.054, 0.28, 16), suitMat);
+                upperArm.position.y = -0.14;
+                shoulderGroup.add(upperArm);
+
+                // Tirsak bo'g'ini
+                const elbowGroup = new THREE.Group();
+                elbowGroup.position.set(0, -0.28, 0);
+
+                const foreArm = new THREE.Mesh(new THREE.CylinderGeometry(0.054, 0.048, 0.26, 16), suitMat);
+                foreArm.position.y = -0.13;
+                elbowGroup.add(foreArm);
+
+                // Bilak va Kaft
+                const handGroup = new THREE.Group();
+                handGroup.position.set(0, -0.26, 0);
+
+                // Kaft
+                const palm = new THREE.Mesh(new THREE.BoxGeometry(0.085, 0.095, 0.032), skinMat);
+                palm.position.y = -0.045;
+                handGroup.add(palm);
+
+                // Barmoqlar (Thumb, Index, Middle, Ring, Pinky)
+                const fingers = {};
+                const fingerNames = ['thumb', 'index', 'middle', 'ring', 'pinky'];
+                const xOffsets = [-0.035, -0.02, 0.0, 0.02, 0.035];
+
+                fingerNames.forEach((fn, idx) => {
+                    const fGroup = new THREE.Group();
+                    const fx = isRight ? xOffsets[idx] : -xOffsets[idx];
+                    const fy = (fn === 'thumb') ? -0.03 : -0.095;
+                    const fz = (fn === 'thumb') ? 0.02 : 0;
+                    fGroup.position.set(fx, fy, fz);
+
+                    const fLength = (fn === 'middle') ? 0.075 : ((fn === 'pinky') ? 0.055 : 0.068);
+                    const fingerMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.011, 0.009, fLength, 10), skinMat);
+                    fingerMesh.position.y = -fLength / 2;
+                    fGroup.add(fingerMesh);
+
+                    handGroup.add(fGroup);
+                    fingers[fn] = fGroup;
+                });
+
+                elbowGroup.add(handGroup);
+                shoulderGroup.add(elbowGroup);
+                group.add(shoulderGroup);
+
+                return {
+                    shoulder: shoulderGroup,
+                    elbow: elbowGroup,
+                    hand: handGroup,
+                    fingers: fingers
+                };
+            }
+
+            procBones.right = makeSkeletalArm('right');
+            procBones.left = makeSkeletalArm('left');
+            procBones.head = headGroup;
+            procBones.mouth = mouth;
+
+            avatarScene.add(group);
+            avatarModel = group;
+            is3DModelLoaded = true;
+            if (avatarStatusDesc) avatarStatusDesc.textContent = "3D Fotorealistik Surdotarjimon (Faol)";
+        }
+
+        // ==========================================
+        // 🎬 REAL HUMAN AI SIGNING DICTIONARY & QUEUE ENGINE
+        // (115+ So'z, A-Z Daktil, 0-9 Raqamlar va Jonli Taqdimotchi)
+        // ==========================================
+        const SIGN_DICTIONARY = {
+            // Salomlashish & Xayrlashish
+            "salom": { video: "/static/signs/words/Hello.mp4", icon: "👋", label: "Salom" },
+            "assalomu": { video: "/static/signs/words/Hello.mp4", icon: "👋", label: "Assalomu alaykum" },
+            "alaykum": { video: "/static/signs/words/Hello.mp4", icon: "👋", label: "Assalomu alaykum" },
+            "hello": { video: "/static/signs/words/Hello.mp4", icon: "👋", label: "Hello" },
+            "hi": { video: "/static/signs/words/Hello.mp4", icon: "👋", label: "Hi" },
+            "privet": { video: "/static/signs/words/Hello.mp4", icon: "👋", label: "Привет" },
+            "xush": { video: "/static/signs/words/Welcome.mp4", icon: "🤝", label: "Xush kelibsiz" },
+            "kelibsiz": { video: "/static/signs/words/Welcome.mp4", icon: "🤝", label: "Xush kelibsiz" },
+            "welcome": { video: "/static/signs/words/Welcome.mp4", icon: "🤝", label: "Welcome" },
+            "xayr": { video: "/static/signs/words/Bye.mp4", icon: "👋", label: "Xayr" },
+            "bye": { video: "/static/signs/words/Bye.mp4", icon: "👋", label: "Bye" },
+            "poka": { video: "/static/signs/words/Bye.mp4", icon: "👋", label: "Пока" },
+
+            // Minnatdorchilik & Odob
+            "rahmat": { video: "/static/signs/words/Thank.mp4", icon: "🙏", label: "Rahmat" },
+            "tashakkur": { video: "/static/signs/words/Thank.mp4", icon: "🙏", label: "Tashakkur" },
+            "thanks": { video: "/static/signs/words/Thank.mp4", icon: "🙏", label: "Thanks" },
+            "spasibo": { video: "/static/signs/words/Thank.mp4", icon: "🙏", label: "Спасибо" },
+            "iltimos": { video: "/static/signs/words/Please.mp4", icon: "🤲", label: "Iltimos" },
+            "please": { video: "/static/signs/words/Please.mp4", icon: "🤲", label: "Please" },
+            "pojaluysta": { video: "/static/signs/words/Please.mp4", icon: "🤲", label: "Пожалуйста" },
+            "kechirasiz": { video: "/static/signs/words/Sorry.mp4", icon: "🙇‍♂️", label: "Kechirasiz" },
+            "uzr": { video: "/static/signs/words/Sorry.mp4", icon: "🙇‍♂️", label: "Uzr" },
+            "sorry": { video: "/static/signs/words/Sorry.mp4", icon: "🙇‍♂️", label: "Sorry" },
+
+            // Yordam & Xavfsizlik
+            "yordam": { video: "/static/signs/words/Help.mp4", icon: "🆘", label: "Yordam" },
+            "help": { video: "/static/signs/words/Help.mp4", icon: "🆘", label: "Help" },
+            "pomosh": { video: "/static/signs/words/Help.mp4", icon: "🆘", label: "Помощь" },
+            "xavfsiz": { video: "/static/signs/words/Safe.mp4", icon: "🛡️", label: "Xavfsiz" },
+            "safe": { video: "/static/signs/words/Safe.mp4", icon: "🛡️", label: "Safe" },
+
+            // Baholash, Hissiyot & Holatlar
+            "yaxshi": { video: "/static/signs/words/Good.mp4", icon: "👍", label: "Yaxshi" },
+            "good": { video: "/static/signs/words/Good.mp4", icon: "👍", label: "Good" },
+            "zor": { video: "/static/signs/words/Great.mp4", icon: "✨", label: "Zo'r" },
+            "ajoyib": { video: "/static/signs/words/Great.mp4", icon: "✨", label: "Ajoyib" },
+            "great": { video: "/static/signs/words/Great.mp4", icon: "✨", label: "Great" },
+            "eng": { video: "/static/signs/words/Best.mp4", icon: "🏆", label: "Eng yaxshi" },
+            "best": { video: "/static/signs/words/Best.mp4", icon: "🏆", label: "Best" },
+            "xursand": { video: "/static/signs/words/Happy.mp4", icon: "😊", label: "Xursand" },
+            "happy": { video: "/static/signs/words/Happy.mp4", icon: "😊", label: "Happy" },
+            "xafa": { video: "/static/signs/words/Sad.mp4", icon: "😢", label: "Xafa" },
+            "sad": { video: "/static/signs/words/Sad.mp4", icon: "😢", label: "Sad" },
+            "togri": { video: "/static/signs/words/Right.mp4", icon: "✅", label: "To'g'ri" },
+            "right": { video: "/static/signs/words/Right.mp4", icon: "✅", label: "Right" },
+            "notogri": { video: "/static/signs/words/Wrong.mp4", icon: "❌", label: "Noto'g'ri" },
+            "xato": { video: "/static/signs/words/Wrong.mp4", icon: "❌", label: "Xato" },
+            "wrong": { video: "/static/signs/words/Wrong.mp4", icon: "❌", label: "Wrong" },
+            "chiroyli": { video: "/static/signs/words/Beautiful.mp4", icon: "🌸", label: "Chiroyli" },
+            "gozal": { video: "/static/signs/words/Beautiful.mp4", icon: "🌸", label: "Go'zal" },
+            "beautiful": { video: "/static/signs/words/Beautiful.mp4", icon: "🌸", label: "Beautiful" },
+            "band": { video: "/static/signs/words/Busy.mp4", icon: "⏳", label: "Band" },
+            "busy": { video: "/static/signs/words/Busy.mp4", icon: "⏳", label: "Busy" },
+
+            // Ehtiyoj & Harakatlar
+            "yemoq": { video: "/static/signs/words/Eat.mp4", icon: "🍽️", label: "Yemoq" },
+            "ovqat": { video: "/static/signs/words/Eat.mp4", icon: "🍽️", label: "Ovqat" },
+            "eat": { video: "/static/signs/words/Eat.mp4", icon: "🍽️", label: "Eat" },
+            "suv": { video: "/static/signs/words/Wash.mp4", icon: "💧", label: "Suv" },
+            "ichish": { video: "/static/signs/words/Wash.mp4", icon: "🥤", label: "Ichish" },
+            "yuvish": { video: "/static/signs/words/Wash.mp4", icon: "🧼", label: "Yuvish" },
+            "wash": { video: "/static/signs/words/Wash.mp4", icon: "🧼", label: "Wash" },
+            "yurish": { video: "/static/signs/words/Walk.mp4", icon: "🚶", label: "Yurish" },
+            "borish": { video: "/static/signs/words/Go.mp4", icon: "🏃", label: "Borish" },
+            "ketdik": { video: "/static/signs/words/Go.mp4", icon: "🏃", label: "Ketdik" },
+            "go": { video: "/static/signs/words/Go.mp4", icon: "🏃", label: "Go" },
+            "kelish": { video: "/static/signs/words/Come.mp4", icon: "👋", label: "Kelish" },
+            "keling": { video: "/static/signs/words/Come.mp4", icon: "👋", label: "Keling" },
+            "come": { video: "/static/signs/words/Come.mp4", icon: "👋", label: "Come" },
+            "qolish": { video: "/static/signs/words/Stay.mp4", icon: "🛑", label: "Qolish" },
+            "stay": { video: "/static/signs/words/Stay.mp4", icon: "🛑", label: "Stay" },
+            "kutish": { video: "/static/signs/words/Stay.mp4", icon: "⏳", label: "Kutish" },
+            "kuting": { video: "/static/signs/words/Stay.mp4", icon: "⏳", label: "Kuting" },
+            "ish": { video: "/static/signs/words/Work.mp4", icon: "💼", label: "Ish" },
+            "ishlamoq": { video: "/static/signs/words/Work.mp4", icon: "💼", label: "Ishlamoq" },
+            "work": { video: "/static/signs/words/Work.mp4", icon: "💼", label: "Work" },
+            "oqish": { video: "/static/signs/words/Study.mp4", icon: "📚", label: "O'qish" },
+            "organish": { video: "/static/signs/words/Learn.mp4", icon: "🧠", label: "O'rganish" },
+            "study": { video: "/static/signs/words/Study.mp4", icon: "📚", label: "Study" },
+            "learn": { video: "/static/signs/words/Learn.mp4", icon: "🧠", label: "Learn" },
+            "gapirish": { video: "/static/signs/words/Talk.mp4", icon: "🗣️", label: "Gapirish" },
+            "gapirmoq": { video: "/static/signs/words/Talk.mp4", icon: "🗣️", label: "Gapirmoq" },
+            "talk": { video: "/static/signs/words/Talk.mp4", icon: "🗣️", label: "Talk" },
+            "soramoq": { video: "/static/signs/words/Ask.mp4", icon: "❓", label: "So'ramoq" },
+            "ask": { video: "/static/signs/words/Ask.mp4", icon: "❓", label: "Ask" },
+            "kulish": { video: "/static/signs/words/Laugh.mp4", icon: "😄", label: "Kulish" },
+            "laugh": { video: "/static/signs/words/Laugh.mp4", icon: "😄", label: "Laugh" },
+            "tugatish": { video: "/static/signs/words/Finish.mp4", icon: "🏁", label: "Tugatish" },
+            "tamom": { video: "/static/signs/words/Finish.mp4", icon: "🏁", label: "Tamom" },
+            "finish": { video: "/static/signs/words/Finish.mp4", icon: "🏁", label: "Finish" },
+            "ozgartirish": { video: "/static/signs/words/Change.mp4", icon: "🔄", label: "O'zgartirish" },
+            "change": { video: "/static/signs/words/Change.mp4", icon: "🔄", label: "Change" },
+            "kormoq": { video: "/static/signs/words/See.mp4", icon: "👀", label: "Ko'rmoq" },
+            "see": { video: "/static/signs/words/See.mp4", icon: "👀", label: "See" },
+
+            // Olmoshlar (Pronouns)
+            "men": { video: "/static/signs/words/Me.mp4", icon: "🙋‍♂️", label: "Men" },
+            "menga": { video: "/static/signs/words/Me.mp4", icon: "🙋‍♂️", label: "Menga" },
+            "mening": { video: "/static/signs/words/My.mp4", icon: "🙋‍♂️", label: "Mening" },
+            "me": { video: "/static/signs/words/Me.mp4", icon: "🙋‍♂️", label: "Me" },
+            "my": { video: "/static/signs/words/My.mp4", icon: "🙋‍♂️", label: "My" },
+            "siz": { video: "/static/signs/words/You.mp4", icon: "👉", label: "Siz" },
+            "sen": { video: "/static/signs/words/You.mp4", icon: "👉", label: "Sen" },
+            "sizga": { video: "/static/signs/words/You.mp4", icon: "👉", label: "Sizga" },
+            "sizning": { video: "/static/signs/words/Your.mp4", icon: "👉", label: "Sizning" },
+            "you": { video: "/static/signs/words/You.mp4", icon: "👉", label: "You" },
+            "your": { video: "/static/signs/words/Your.mp4", icon: "👉", label: "Your" },
+            "biz": { video: "/static/signs/words/We.mp4", icon: "👥", label: "Biz" },
+            "bizning": { video: "/static/signs/words/Our.mp4", icon: "👥", label: "Bizning" },
+            "we": { video: "/static/signs/words/We.mp4", icon: "👥", label: "We" },
+            "our": { video: "/static/signs/words/Our.mp4", icon: "👥", label: "Our" },
+            "ular": { video: "/static/signs/words/They.mp4", icon: "👥", label: "Ular" },
+            "they": { video: "/static/signs/words/They.mp4", icon: "👥", label: "They" },
+            "bu": { video: "/static/signs/words/This.mp4", icon: "👇", label: "Bu" },
+            "this": { video: "/static/signs/words/This.mp4", icon: "👇", label: "This" },
+            "u": { video: "/static/signs/words/That.mp4", icon: "👉", label: "U" },
+            "that": { video: "/static/signs/words/That.mp4", icon: "👉", label: "That" },
+
+            // Savol so'zlari
+            "nima": { video: "/static/signs/words/What.mp4", icon: "❓", label: "Nima" },
+            "what": { video: "/static/signs/words/What.mp4", icon: "❓", label: "What" },
+            "qachon": { video: "/static/signs/words/When.mp4", icon: "🕒", label: "Qachon" },
+            "when": { video: "/static/signs/words/When.mp4", icon: "🕒", label: "When" },
+            "qayerda": { video: "/static/signs/words/Where.mp4", icon: "📍", label: "Qayerda" },
+            "qayer": { video: "/static/signs/words/Where.mp4", icon: "📍", label: "Qayerda" },
+            "where": { video: "/static/signs/words/Where.mp4", icon: "📍", label: "Where" },
+            "kim": { video: "/static/signs/words/Who.mp4", icon: "👤", label: "Kim" },
+            "who": { video: "/static/signs/words/Who.mp4", icon: "👤", label: "Who" },
+            "nega": { video: "/static/signs/words/Why.mp4", icon: "❓", label: "Nega" },
+            "sabab": { video: "/static/signs/words/Why.mp4", icon: "❓", label: "Nega" },
+            "why": { video: "/static/signs/words/Why.mp4", icon: "❓", label: "Why" },
+            "qanday": { video: "/static/signs/words/How.mp4", icon: "❔", label: "Qanday" },
+            "how": { video: "/static/signs/words/How.mp4", icon: "❔", label: "How" },
+
+            // Tasdiq va Inkor
+            "ha": { video: "/static/signs/words/Good.mp4", icon: "👍", label: "Ha" },
+            "yes": { video: "/static/signs/words/Good.mp4", icon: "👍", label: "Yes" },
+            "yoq": { video: "/static/signs/words/Not.mp4", icon: "🙅‍♂️", label: "Yo'q" },
+            "no": { video: "/static/signs/words/Not.mp4", icon: "🙅‍♂️", label: "No" },
+            "emas": { video: "/static/signs/words/Not.mp4", icon: "🙅‍♂️", label: "Emas" },
+            "not": { video: "/static/signs/words/Not.mp4", icon: "🙅‍♂️", label: "Not" },
+
+            // Vaqt & Joy
+            "vaqt": { video: "/static/signs/words/Time.mp4", icon: "⏰", label: "Vaqt" },
+            "soat": { video: "/static/signs/words/Time.mp4", icon: "⏰", label: "Soat" },
+            "time": { video: "/static/signs/words/Time.mp4", icon: "⏰", label: "Time" },
+            "hozir": { video: "/static/signs/words/Now.mp4", icon: "⚡", label: "Hozir" },
+            "now": { video: "/static/signs/words/Now.mp4", icon: "⚡", label: "Now" },
+            "bugun": { video: "/static/signs/words/Day.mp4", icon: "📅", label: "Bugun" },
+            "kun": { video: "/static/signs/words/Day.mp4", icon: "📅", label: "Kun" },
+            "day": { video: "/static/signs/words/Day.mp4", icon: "📅", label: "Day" },
+            "uy": { video: "/static/signs/words/Home.mp4", icon: "🏠", label: "Uy" },
+            "uyga": { video: "/static/signs/words/Home.mp4", icon: "🏠", label: "Uy" },
+            "home": { video: "/static/signs/words/Home.mp4", icon: "🏠", label: "Home" },
+            "dunyo": { video: "/static/signs/words/World.mp4", icon: "🌍", label: "Dunyo" },
+            "world": { video: "/static/signs/words/World.mp4", icon: "🌍", label: "World" },
+            "kompyuter": { video: "/static/signs/words/Computer.mp4", icon: "💻", label: "Kompyuter" },
+            "computer": { video: "/static/signs/words/Computer.mp4", icon: "💻", label: "Computer" },
+            "til": { video: "/static/signs/words/Language.mp4", icon: "🗣️", label: "Til" },
+            "language": { video: "/static/signs/words/Language.mp4", icon: "🗣️", label: "Language" },
+            "surdo": { video: "/static/signs/words/Sign.mp4", icon: "🤟", label: "Surdo" },
+            "ishora": { video: "/static/signs/words/Sign.mp4", icon: "🤟", label: "Imo-ishora" },
+            "sign": { video: "/static/signs/words/Sign.mp4", icon: "🤟", label: "Sign" },
+            "qol": { video: "/static/signs/words/Hand.mp4", icon: "✋", label: "Qo'l" },
+            "hand": { video: "/static/signs/words/Hand.mp4", icon: "✋", label: "Hand" }
+        };
+
+        let signVideoQueue = [];
+        let isPlayingSignQueue = false;
+        let queueSafetyTimer = null;
+
+        function playSignQueue(queue, originalText) {
+            if (!queue || queue.length === 0) return;
+            signVideoQueue = [...queue];
+            isPlayingSignQueue = true;
+            playNextSignVideo(originalText);
+        }
+
+        function playNextSignVideo(originalText) {
+            clearTimeout(queueSafetyTimer);
+            if (!isRealHumanMode || !aiAvatarVideo) return;
+
+            if (signVideoQueue.length === 0) {
+                // Barcha imo-ishoralar ko'rsatib bo'lingach, tinch holatdagi real taqdimotchi loopsiga qaytadi
+                isPlayingSignQueue = false;
+                aiAvatarVideo.src = '/static/avatars/real_human_presenter.mp4';
+                aiAvatarVideo.loop = true;
+                aiAvatarVideo.play().catch(() => {});
+                if (avatarCaptionIcon) avatarCaptionIcon.textContent = "✋";
+                if (avatarCaptionText) avatarCaptionText.textContent = "Imo-ishora kutilmoqda...";
+                if (avatarStatusDesc) avatarStatusDesc.textContent = "Haqiqiy Inson AI Avatari (Faol)";
+                return;
+            }
+
+            const item = signVideoQueue.shift();
+            if (avatarCaptionIcon) avatarCaptionIcon.textContent = item.icon || "🤟";
+            if (avatarCaptionText) avatarCaptionText.textContent = item.label || item.word || originalText;
+            if (avatarStatusDesc) avatarStatusDesc.textContent = `Jonli Surdo: "${originalText || item.label}"`;
+
+            const badge = document.getElementById('avatar-caption-badge');
+            if (badge) {
+                badge.classList.add('signing');
+                setTimeout(() => badge.classList.remove('signing'), 1200);
+            }
+
+            aiAvatarVideo.src = item.video;
+            aiAvatarVideo.loop = false;
+            aiAvatarVideo.currentTime = 0;
+            aiAvatarVideo.play().catch(() => {});
+
+            aiAvatarVideo.onended = () => {
+                playNextSignVideo(originalText);
+            };
+
+            // Video oxiriga yetmay qolsa avtomatik navbatdagi kadrga o'tish (zaxira)
+            queueSafetyTimer = setTimeout(() => {
+                if (isPlayingSignQueue) {
+                    playNextSignVideo(originalText);
+                }
+            }, 3800);
+        }
+
+        function triggerAvatarGesture(rawText, icon = "✋", spokenLabel = "") {
+            if (!rawText) return;
+            const t = rawText.toLowerCase().trim();
+            const label = spokenLabel || rawText;
+
+            // 1. Agar 3D rejimida bo'lsa (Three.js kinematik suyaklar)
+            if (!isRealHumanMode) {
+                let targetGesture = 'signing';
+                let targetIcon = icon || "✋";
+                if (t.includes('salom') || t.includes('hello')) targetGesture = 'salom';
+                else if (t.includes('rahmat') || t.includes('thanks')) targetGesture = 'rahmat';
+                else if (t.includes('kut') || t.includes('stay')) targetGesture = 'kuting';
+                else if (t.includes('zor') || t.includes('yaxshi')) targetGesture = 'zor';
+                else if (t.includes('sev') || t.includes('love')) targetGesture = 'sevaman';
+                else if (t.includes('yoq') || t.includes('not')) targetGesture = 'yoq';
+
+                avatarState.gesture = targetGesture;
+                avatarState.text = label;
+                avatarState.icon = targetIcon;
+                avatarState.timer = performance.now() + 3800;
+
+                if (avatarCaptionIcon) avatarCaptionIcon.textContent = targetIcon;
+                if (avatarCaptionText) avatarCaptionText.textContent = label;
+                if (avatarStatusDesc) avatarStatusDesc.textContent = `3D Imo-ishora: "${label}"`;
+                return;
+            }
+
+            // 2. Haqiqiy Inson AI Video Avatari (HeyGen / GAN / SoundSigns HD Dataset)
+            // Matnni so'zlarga ajratib, mos keluvchi sign videolarini ketma-ketlikda yig'ish
+            const tokens = t.replace(/[.,?!:;]/g, ' ').split(/\s+/).filter(w => w.trim());
+            const videoQueue = [];
+
+            tokens.forEach(tok => {
+                if (SIGN_DICTIONARY[tok]) {
+                    videoQueue.push(SIGN_DICTIONARY[tok]);
+                } else if (/^[a-z]$/i.test(tok)) {
+                    // Daktil alifbosi (A-Z)
+                    videoQueue.push({
+                        video: `/static/signs/letters/${tok.toUpperCase()}.mp4`,
+                        icon: "🔤",
+                        label: `Harf "${tok.toUpperCase()}"`
+                    });
+                } else if (/^\d$/.test(tok)) {
+                    // Raqamlar (0-9)
+                    videoQueue.push({
+                        video: `/static/signs/numbers/${tok}.mp4`,
+                        icon: "🔢",
+                        label: `Raqam ${tok}`
+                    });
+                }
+            });
+
+            // Agar aniq so'zlar topilsa, ularni ketma-ket ijro etish
+            if (videoQueue.length > 0) {
+                playSignQueue(videoQueue, label);
+            } else {
+                // Agar lug'atda bo'lmagan erkin gap bo'lsa, real inson jonli tarjimon videoga o'tadi
+                playSignQueue([
+                    { video: "/static/avatars/real_human_signing.mp4", icon: icon || "🤟", label: label }
+                ], label);
+            }
+        }
+
+        // Three.js Render Loop (60 FPS Kinematik Imo-ishoralar)
+        function animateThreeAvatar() {
+            requestAnimationFrame(animateThreeAvatar);
+            if (!avatarRenderer || !avatarScene || !avatarCamera) return;
+
+            const now = performance.now();
+            const time = now * 0.003;
+
+            // Timer tugashi -> Idle
+            if (now > avatarState.timer && avatarState.gesture !== 'idle') {
+                avatarState.gesture = 'idle';
+                avatarState.text = "Imo-ishora kutilmoqda...";
+                avatarState.icon = "✋";
+                if (avatarCaptionIcon) avatarCaptionIcon.textContent = "✋";
+                if (avatarCaptionText) avatarCaptionText.textContent = "Imo-ishora kutilmoqda...";
+                if (avatarStatusDesc) avatarStatusDesc.textContent = "3D Fotorealistik Surdotarjimon (Faol)";
+            }
+
+            const breath = Math.sin(time * 2.2) * 0.02;
+
+            // 1. Agar Fotorealistik 3D Inson Modeli (Avaturn GLB) yuklangan bo'lsa:
+            if (is3DModelLoaded && (avatarBones['RightArm'] || avatarBones['mixamorigRightArm'])) {
+                const b = avatarBones;
+                const rArm = b['RightArm'] || b['mixamorigRightArm'];
+                const rForeArm = b['RightForeArm'] || b['mixamorigRightForeArm'];
+                const rHand = b['RightHand'] || b['mixamorigRightHand'];
+                const lArm = b['LeftArm'] || b['mixamorigLeftArm'];
+                const lForeArm = b['LeftForeArm'] || b['mixamorigLeftForeArm'];
+                const lHand = b['LeftHand'] || b['mixamorigLeftHand'];
+                const head = b['Head'] || b['mixamorigHead'];
+                const neck = b['Neck'] || b['mixamorigNeck'];
+
+                if (neck) neck.rotation.x = breath * 1.5;
+
+                // Yuz animatsiyasi (Ko'z pirpiratish, tabassum, so'zlash)
+                if (avatarMorphMeshes.length > 0) {
+                    if (now > nextBlinkTime) {
+                        blinkPhase += 0.12;
+                        if (blinkPhase >= 1.0) {
+                            blinkPhase = 0;
+                            nextBlinkTime = now + 2800 + Math.random() * 2600;
+                            setMorphWeight('eyeBlinkLeft', 0);
+                            setMorphWeight('eyeBlinkRight', 0);
+                        } else {
+                            const blinkVal = Math.sin(blinkPhase * Math.PI);
+                            setMorphWeight('eyeBlinkLeft', blinkVal);
+                            setMorphWeight('eyeBlinkRight', blinkVal);
+                        }
+                    }
+
+                    setMorphWeight('mouthSmile', 0.2);
+
+                    if (avatarState.gesture !== 'idle') {
+                        const mouthSpeed = (avatarState.gesture === 'signing') ? 12 : 9;
+                        const mouthVal = Math.abs(Math.sin(time * mouthSpeed)) * 0.45;
+                        setMorphWeight('viseme_aa', mouthVal);
+                        setMorphWeight('mouthOpen', mouthVal * 0.55);
+                    } else {
+                        setMorphWeight('viseme_aa', 0);
+                        setMorphWeight('mouthOpen', 0);
+                    }
+                }
+
+                switch (avatarState.gesture) {
+                    case 'salom':
+                        lerpRotation(rArm, 0.15, 0.35, -0.95);
+                        lerpRotation(rForeArm, -0.65, 0.25, -1.65 + Math.sin(time * 10) * 0.25);
+                        lerpRotation(rHand, -0.2, Math.sin(time * 10) * 0.45, 0);
+                        lerpRotation(lArm, 0.85, 0.08, 0.25);
+                        lerpRotation(lForeArm, 0.15, -0.05, 0.45);
+                        if (head) lerpRotation(head, 0, -0.08, -0.05);
+                        setFingerPose(b, 'right', 'open');
+                        break;
+                    case 'rahmat':
+                        lerpRotation(rArm, 0.86, -0.29, -0.93);
+                        lerpRotation(rForeArm, 0.08, 0.06, -1.79);
+                        lerpRotation(rHand, -0.5, 0, -0.15);
+                        lerpRotation(lArm, 0.68, 0.33, 0.98);
+                        lerpRotation(lForeArm, 0.08, -0.06, 1.84);
+                        lerpRotation(lHand, -0.5, 0, 0.15);
+                        if (head) lerpRotation(head, 0.25 + Math.sin(time * 2.5) * 0.05, 0, 0);
+                        setFingerPose(b, 'right', 'flat');
+                        setFingerPose(b, 'left', 'flat');
+                        break;
+                    case 'kuting':
+                        lerpRotation(rArm, 0.35, 0.1, -0.75);
+                        lerpRotation(rForeArm, -0.65, -0.2, -1.45);
+                        lerpRotation(rHand, -0.5, 0, 0);
+                        lerpRotation(lArm, 0.85, 0.08, 0.25);
+                        lerpRotation(lForeArm, 0.15, -0.05, 0.45);
+                        if (head) lerpRotation(head, 0, 0, 0);
+                        setFingerPose(b, 'right', 'open');
+                        break;
+                    case 'zor':
+                        lerpRotation(rArm, 0.45, 0.2, -0.85);
+                        lerpRotation(rForeArm, -0.42, -0.15, -1.55);
+                        lerpRotation(rHand, -0.25, -0.4, -0.2);
+                        lerpRotation(lArm, 0.85, 0.08, 0.25);
+                        lerpRotation(lForeArm, 0.15, -0.05, 0.45);
+                        if (head) lerpRotation(head, Math.sin(time * 6) * 0.08, 0, 0);
+                        setFingerPose(b, 'right', 'thumbsUp');
+                        break;
+                    case 'sevaman':
+                        lerpRotation(rArm, 0.3, 0.2, -0.85);
+                        lerpRotation(rForeArm, -0.65, 0, -1.5);
+                        lerpRotation(lArm, 0.3, -0.2, 0.85);
+                        lerpRotation(lForeArm, -0.65, 0, 1.5);
+                        if (head) lerpRotation(head, 0, 0, 0);
+                        setFingerPose(b, 'right', 'ily');
+                        setFingerPose(b, 'left', 'ily');
+                        break;
+                    case 'yoq':
+                        lerpRotation(rArm, 0.35, 0.1, -0.75);
+                        lerpRotation(rForeArm, -0.65, Math.sin(time * 8) * 0.3, -1.45);
+                        lerpRotation(rHand, 0, Math.sin(time * 8) * 0.35, 0);
+                        lerpRotation(lArm, 0.85, 0.08, 0.25);
+                        lerpRotation(lForeArm, 0.15, -0.05, 0.45);
+                        if (head) lerpRotation(head, 0, Math.sin(time * 8) * 0.25, 0);
+                        setFingerPose(b, 'right', 'open');
+                        break;
+                    case 'signing':
+                        lerpRotation(rArm, 0.35 + Math.sin(time * 4) * 0.15, 0.1, -0.85 + Math.cos(time * 4) * 0.15);
+                        lerpRotation(rForeArm, -0.65 + Math.cos(time * 5) * 0.2, 0, -1.45);
+                        lerpRotation(lArm, 0.35 + Math.cos(time * 4.5) * 0.15, -0.1, 0.85 - Math.sin(time * 4.5) * 0.15);
+                        lerpRotation(lForeArm, -0.65 + Math.sin(time * 5.5) * 0.2, 0, 1.45);
+                        if (head) lerpRotation(head, Math.sin(time * 3) * 0.07, Math.cos(time * 2.5) * 0.05, 0);
+                        setFingerPose(b, 'right', 'open');
+                        setFingerPose(b, 'left', 'open');
+                        break;
+                    default:
+                        // Tabiiy tinch holat (Qo'llar pastda bo'shashgan, nafas harakati)
+                        lerpRotation(rArm, 0.85, -0.08, -0.25);
+                        lerpRotation(rForeArm, 0.15, 0.05, -0.45 + breath * 1.5);
+                        lerpRotation(rHand, 0, 0, 0);
+                        lerpRotation(lArm, 0.85, 0.08, 0.25);
+                        lerpRotation(lForeArm, 0.15, -0.05, 0.45 + breath * 1.5);
+                        lerpRotation(lHand, 0, 0, 0);
+                        if (head) lerpRotation(head, breath * 1.2, Math.sin(time * 0.8) * 0.03, 0);
+                        setFingerPose(b, 'right', 'relaxed');
+                        setFingerPose(b, 'left', 'relaxed');
+                        break;
+                }
+            } 
+            // 2. Procedural model zaxira bo'lsa:
+            else if (procBones.right && procBones.left && procBones.head) {
+                const pr = procBones.right;
+                const pl = procBones.left;
+                const ph = procBones.head;
+                const pm = procBones.mouth;
+
+                // Og'iz animatsiyasi (gapirganda/ishorada)
+                if (pm) {
+                    const isMouthActive = (avatarState.gesture !== 'idle');
+                    const mScale = isMouthActive ? (1 + Math.abs(Math.sin(time * 12)) * 1.5) : 1;
+                    pm.scale.set(mScale, mScale, 1);
+                }
+
+                // Gestures bo'yicha 3D Harakatlar
+                switch (avatarState.gesture) {
+                    case 'salom': // Salomlashish (O'ng qo'l yuqorida silkitiladi)
+                        lerpRotation(pr.shoulder, -0.2, 0, -1.35);
+                        lerpRotation(pr.elbow, -1.2 + Math.sin(time * 12) * 0.35, 0, 0);
+                        lerpRotation(pr.hand, 0, 0, Math.sin(time * 12) * 0.45);
+                        lerpRotation(pl.shoulder, 0.2, 0, 0.25);
+                        lerpRotation(pl.elbow, -1.1, 0, 0);
+                        lerpRotation(ph, 0, -0.06, -0.06);
+                        setProceduralFingers(pr.fingers, 'open');
+                        break;
+
+                    case 'rahmat': // Yurak/ko'krak ustiga qo'l qo'yish va muloyim ta'zim
+                        lerpRotation(pr.shoulder, -0.4, -0.3, -0.75);
+                        lerpRotation(pr.elbow, -1.5, 0.5, 0);
+                        lerpRotation(pr.hand, 0.2, 0, 0);
+                        lerpRotation(pl.shoulder, 0.2, 0, 0.25);
+                        lerpRotation(pl.elbow, -1.1, 0, 0);
+                        lerpRotation(ph, 0.28 + Math.sin(time * 3) * 0.05, 0, 0); // Ta'zim
+                        setProceduralFingers(pr.fingers, 'flat');
+                        break;
+
+                    case 'kuting': // Oldinga ochilgan kaft (Wait / Stop)
+                        lerpRotation(pr.shoulder, -0.6, 0, -0.4);
+                        lerpRotation(pr.elbow, -1.2, 0, 0);
+                        lerpRotation(pr.hand, -0.5, 0, 0);
+                        lerpRotation(pl.shoulder, 0.2, 0, 0.25);
+                        lerpRotation(pl.elbow, -1.1, 0, 0);
+                        lerpRotation(ph, 0, 0, 0);
+                        setProceduralFingers(pr.fingers, 'open');
+                        break;
+
+                    case 'zor': // Thumbs Up (Zo'r)
+                        lerpRotation(pr.shoulder, -0.4, 0, -0.6);
+                        lerpRotation(pr.elbow, -1.4, 0, 0);
+                        lerpRotation(pr.hand, 0, 0, -0.3);
+                        lerpRotation(pl.shoulder, 0.2, 0, 0.25);
+                        lerpRotation(pl.elbow, -1.1, 0, 0);
+                        lerpRotation(ph, Math.sin(time * 6) * 0.06, 0, 0); // Bosh irg'ash
+                        setProceduralFingers(pr.fingers, 'thumbsUp');
+                        break;
+
+                    case 'sevaman': // I Love You / Mehr
+                        lerpRotation(pr.shoulder, -0.5, 0, -0.7);
+                        lerpRotation(pr.elbow, -1.35, 0, 0);
+                        lerpRotation(pr.hand, 0, 0, 0);
+                        lerpRotation(pl.shoulder, -0.5, 0, 0.7);
+                        lerpRotation(pl.elbow, -1.35, 0, 0);
+                        lerpRotation(pl.hand, 0, 0, 0);
+                        lerpRotation(ph, 0, 0, 0);
+                        setProceduralFingers(pr.fingers, 'ily');
+                        setProceduralFingers(pl.fingers, 'ily');
+                        break;
+
+                    case 'yoq': // Yo'q (Bosh chayqash va qo'l silkitish)
+                        lerpRotation(pr.shoulder, -0.3, 0, -0.45);
+                        lerpRotation(pr.elbow, -1.1, Math.sin(time * 9) * 0.45, 0);
+                        lerpRotation(pr.hand, 0, Math.sin(time * 9) * 0.35, 0);
+                        lerpRotation(pl.shoulder, 0.2, 0, 0.25);
+                        lerpRotation(pl.elbow, -1.1, 0, 0);
+                        lerpRotation(ph, 0, Math.sin(time * 9) * 0.24, 0);
+                        setProceduralFingers(pr.fingers, 'open');
+                        break;
+
+                    case 'signing': // Faol surdo tarjimasi fazasi
+                        lerpRotation(pr.shoulder, -0.35 + Math.sin(time * 5) * 0.25, 0, -0.55 + Math.cos(time * 5) * 0.2);
+                        lerpRotation(pr.elbow, -1.3 + Math.cos(time * 6) * 0.25, 0, 0);
+                        lerpRotation(pl.shoulder, -0.35 + Math.cos(time * 5.5) * 0.25, 0, 0.55 - Math.sin(time * 5.5) * 0.2);
+                        lerpRotation(pl.elbow, -1.3 + Math.sin(time * 6.5) * 0.25, 0, 0);
+                        lerpRotation(ph, Math.sin(time * 3) * 0.08, Math.cos(time * 2.5) * 0.06, 0);
+                        break;
+
+                    default: // Idle (Tinch tayyor turish holati)
+                        lerpRotation(pr.shoulder, 0.25, -0.1, -0.25);
+                        lerpRotation(pr.elbow, -1.25 + breath * 2.5, 0.2, 0);
+                        lerpRotation(pr.hand, 0, 0, 0);
+                        lerpRotation(pl.shoulder, 0.25, 0.1, 0.25);
+                        lerpRotation(pl.elbow, -1.25 + breath * 2.5, -0.2, 0);
+                        lerpRotation(pl.hand, 0, 0, 0);
+                        lerpRotation(ph, breath * 1.5, 0, 0);
+                        setProceduralFingers(pr.fingers, 'relaxed');
+                        setProceduralFingers(pl.fingers, 'relaxed');
+                        break;
+                }
+            }
+
+            avatarRenderer.render(avatarScene, avatarCamera);
+        }
+
+        // Suyak aylanishini silliq interpolyatsiya qilish (LERP)
+        function lerpRotation(bone, targetX, targetY, targetZ, speed = 0.14) {
+            if (!bone) return;
+            bone.rotation.x += (targetX - bone.rotation.x) * speed;
+            bone.rotation.y += (targetY - bone.rotation.y) * speed;
+            bone.rotation.z += (targetZ - bone.rotation.z) * speed;
+        }
+
+        // Procedural barmoqlarni burish
+        function setProceduralFingers(fingers, pose) {
+            if (!fingers) return;
+            const fingerList = ['thumb', 'index', 'middle', 'ring', 'pinky'];
+
+            fingerList.forEach((fn) => {
+                const fg = fingers[fn];
+                if (!fg) return;
+
+                let curl = 0;
+                if (pose === 'open') curl = 0.05;
+                else if (pose === 'flat') curl = 0.12;
+                else if (pose === 'relaxed') curl = 0.35;
+                else if (pose === 'thumbsUp') {
+                    curl = (fn === 'thumb') ? -0.25 : 1.35;
+                } else if (pose === 'ily') {
+                    curl = (fn === 'thumb' || fn === 'index' || fn === 'pinky') ? 0.05 : 1.35;
+                }
+
+                lerpRotation(fg, curl, 0, 0, 0.22);
+            });
+        }
+
+        // Rigged GLTF barmoq suyaklarini burish
+        function setFingerPose(bones, side, pose) {
+            const prefix = side === 'right' ? 'RightHand' : 'LeftHand';
+            const fingers = ['Thumb', 'Index', 'Middle', 'Ring', 'Pinky'];
+
+            fingers.forEach((f) => {
+                const b1 = bones[`${prefix}${f}1`] || bones[`mixamorig:${prefix}${f}1`];
+                const b2 = bones[`${prefix}${f}2`] || bones[`mixamorig:${prefix}${f}2`];
+                if (!b1) return;
+
+                let curl = 0;
+                if (pose === 'open') curl = 0.05;
+                else if (pose === 'flat') curl = 0.15;
+                else if (pose === 'relaxed') curl = 0.35;
+                else if (pose === 'thumbsUp') {
+                    curl = (f === 'Thumb') ? -0.25 : 1.35;
+                } else if (pose === 'ily') {
+                    curl = (f === 'Thumb' || f === 'Index' || f === 'Pinky') ? 0.05 : 1.35;
+                }
+
+                lerpRotation(b1, curl, 0, 0, 0.2);
+                if (b2) lerpRotation(b2, curl * 0.8, 0, 0, 0.2);
+            });
+        }
+
+        // Three.js 3D Surdo Avatarni ishga tushirish
+        initThreeAvatar();
+        window.addEventListener('resize', onAvatarResize);
+
+        // Tezkor Imo-ishoralar tugmalari (Quick Sign Buttons)
+        document.querySelectorAll('.quick-sign-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const sign = btn.dataset.sign;
+                const text = btn.textContent.trim();
+                triggerAvatarGesture(sign, text.split(' ')[0], text);
+            });
+        });
 
         // 3. AI Smart Sentence Auto-Grammar Engine
         const aiGrammarBtn = document.getElementById('ai-grammar-btn');
@@ -2828,6 +4407,9 @@
                 signText.textContent = activeText;
                 signText.classList.add('glow-text');
             }
+            if (typeof triggerAvatarGesture === 'function') {
+                triggerAvatarGesture(activeText, icon || '✋');
+            }
             if (signIcon) signIcon.textContent = icon || '✋';
             if (signCategory && category) {
                 signCategory.textContent = category;
@@ -3029,14 +4611,19 @@
             cameraToggleBtn.addEventListener('click', toggleCamera);
         }
 
-        // Sahifa to'liq yuklanganda darhol kamerani ishga tushirish
+        // Sahifa to'liq yuklanganda darhol kamera va AI Avatar videosini ishga tushirish
         if (document.readyState === 'complete' || document.readyState === 'interactive') {
             startWebcam();
+            if (aiAvatarVideo) aiAvatarVideo.play().catch(() => {});
         } else {
-            window.addEventListener('DOMContentLoaded', startWebcam);
+            window.addEventListener('DOMContentLoaded', () => {
+                startWebcam();
+                if (aiAvatarVideo) aiAvatarVideo.play().catch(() => {});
+            });
         }
         window.addEventListener('click', () => {
             if (!webcamStarted) startWebcam();
+            if (aiAvatarVideo && aiAvatarVideo.paused) aiAvatarVideo.play().catch(() => {});
         }, { once: true });
     </script>
 </body>

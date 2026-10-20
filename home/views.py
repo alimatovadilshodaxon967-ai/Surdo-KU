@@ -191,20 +191,46 @@ class VoicePageView(View):
 
 VOICE_AUDIO_CACHE = {}
 
-VOICELAB_API_KEY = "vlk_3ZT5rV4nRPDlS-Tj4Gajmv9J-y0y04qlWc0-dSXPFio"
+VOICELAB_API_KEYS = [
+    "vlk_x7y5QaqzTurjgFKNHJ5nFAK9D8One9XaJJV7x9FGdu4",   # 1-Asosiy kalit
+    "vlk_qQ4O4WlnQ-cPw23_PiBkZ8NK1Tj8Ywmu-GeltcH6VqQ",   # 2-Zaxira kalit
+    "vlk_WkCzoxnsKdJ3ffT3Gt-abjO9YNeyLtGY1TZlCS1VhYg",   # 3-Zaxira kalit
+    "vlk_sS-lIYDMWPqIaO8_iegg9D1n9SePqvNy0q6vthHk4YM",   # 4-Zaxira kalit
+    "vlk_Syrv5hJm2hEgsUxLNQ3cKhhmxClgFMICUduHf0EZgcc",   # 5-Zaxira kalit
+    "vlk_-Xishu-yP9pksI8QS_EXV8G6vJNu7VTI3Jr9NGy1s6k",   # 6-Zaxira kalit
+]
+CURRENT_KEY_INDEX = 0
+
+def get_current_voicelab_key():
+    global CURRENT_KEY_INDEX
+    return VOICELAB_API_KEYS[CURRENT_KEY_INDEX]
+
+def switch_to_next_voicelab_key():
+    global CURRENT_KEY_INDEX
+    prev_index = CURRENT_KEY_INDEX
+    CURRENT_KEY_INDEX = (CURRENT_KEY_INDEX + 1) % len(VOICELAB_API_KEYS)
+    print(f"[VoiceLab Failover] #{prev_index + 1}-kalit tugadi/xato berdi. Keyingi #{CURRENT_KEY_INDEX + 1}-zaxira kalitga uzilishsiz o'tildi!")
+    return VOICELAB_API_KEYS[CURRENT_KEY_INDEX]
+
 VOICELAB_VOICES = {
+    "abdulhay": "voice_M-p5iz9z_kPWNm_C0cFqbC6X",             # Abdulhay Otaxo'jayev (Dublyaj)
     "madina": "voice_4ef06e6b-2229-4023-ad66-c2a7a2b736ff",   # Madina — Honey (Shirali ayol)
     "amir": "voice_8bae02c6-d078-4757-9d62-0fce6da23cf7",     # Amir — Storyteller (Shirali erkak)
-    "sardor": "voice_8bae02c6-d078-4757-9d62-0fce6da23cf7",   # Amir
     "javohir": "voice_fa56cecf-9b0b-45ba-9ec3-494efb5b301f",  # Javohir — Presenter (Ta'limiy diktor)
     "kamola": "voice_47260d60-5635-4fb0-904d-0f3c19c04ce6",   # Kamola — Silk (Mayin qiz)
-    "mohira": "voice_47260d60-5635-4fb0-904d-0f3c19c04ce6",   # Kamola
-    "abdulhay": "voice_M-p5iz9z_kPWNm_C0cFqbC6X",             # Abdulhay Otaxo'jayev (Dublyaj)
+    "dilnoza": "voice_f7179d1c-07ab-4b3d-b5be-84dcf2935388",  # Dilnoza — Velvet (Baxmal)
+    "jasur": "voice_ba303813-3023-48aa-a454-4b5705669d35",    # Jasur — Noir (Sokin erkak)
+    "safiya": "voice_2785aabd-21b5-4cc7-9845-2230186ef7d9",   # Safiya — Reassuring guide
+    "shohruxmirzo": "voice_jABVrmH-0x6pbYefNCuYfH6H",         # Shohruxmirzo (Ta'limiy)
+    "nozima": "voice_3602ec76-5393-43b6-9e0d-784328cb77ba",   # Nozima — Soft (Mayin)
+    "sardor": "voice_xdQMoRJkjHbPIB-jounXzKq8",               # Sardor
+    "botir": "voice_5e592ada-eca8-42e3-98fa-469c1c8fc999",    # Botir — Strimer
+    "gulya": "voice_7b350d91-4e56-4bc3-869c-8cd6ba646c3c",    # Gulya — Strimer
+    "rustam": "voice_be56058a-8f15-48bb-904b-4fe92531d5b1",   # Rustam — Anime
 }
 
 class TTSView(View):
     async def get(self, request):
-        import edge_tts
         import hashlib
         import os
         import json
@@ -213,40 +239,26 @@ class TTSView(View):
         from django.conf import settings
 
         text = request.GET.get('text', '').strip()
-        voice = request.GET.get('voice', 'madina').lower()
-        lang = request.GET.get('lang', 'uz').lower()
+        voice = request.GET.get('voice', 'abdulhay').lower()
         if not text:
             return HttpResponse(status=400)
 
-        # O'zbekistonga xos, milliy, ta'limiy va shirali ovozlar:
-        if 'amir' in voice or 'sardor' in voice or 'george' in voice or 'erkak' in voice:
-            neural_voice = "uz-UZ-SardorNeural"
-            rate = "+0%"
-            pitch = "+0Hz"
-            voicelab_id = VOICELAB_VOICES["amir"]
-        elif 'javohir' in voice or 'jasur' in voice:
-            neural_voice = "uz-UZ-SardorNeural"
-            rate = "+2%"
-            pitch = "+0Hz"
-            voicelab_id = VOICELAB_VOICES["javohir"]
-        elif 'kamola' in voice or 'mohira' in voice or 'mayin' in voice:
-            neural_voice = "uz-UZ-MadinaNeural"
-            rate = "-3%"
-            pitch = "+2Hz"
-            voicelab_id = VOICELAB_VOICES["kamola"]
-        elif 'abdulhay' in voice:
-            neural_voice = "uz-UZ-SardorNeural"
-            rate = "+0%"
-            pitch = "+0Hz"
-            voicelab_id = VOICELAB_VOICES["abdulhay"]
-        else: # Madina (standart)
-            neural_voice = "uz-UZ-MadinaNeural"
-            rate = "+0%"
-            pitch = "+0Hz"
-            voicelab_id = VOICELAB_VOICES["madina"]
+        # VoiceLab.uz dagi ovoz ID sini aniqlash
+        if voice.startswith("voice_"):
+            voicelab_id = voice
+        elif voice in VOICELAB_VOICES:
+            voicelab_id = VOICELAB_VOICES[voice]
+        else:
+            # Agar mos kelmasa, moslikni qidiramiz yoki standart Abdulhay qilib olamiz
+            matched = None
+            for key, vid in VOICELAB_VOICES.items():
+                if key in voice:
+                    matched = vid
+                    break
+            voicelab_id = matched or VOICELAB_VOICES["abdulhay"]
 
-        # Kesh tekshirish (Disk va Xotira - 0ms javob)
-        cache_key = hashlib.md5(f"{text}_{voice}_{voicelab_id}".encode('utf-8')).hexdigest()
+        # Kesh tekshirish (Disk va Xotira)
+        cache_key = hashlib.md5(f"voicelab_{text}_{voicelab_id}".encode('utf-8')).hexdigest()
         cache_dir = os.path.join(settings.BASE_DIR, 'static', 'audio_cache')
         os.makedirs(cache_dir, exist_ok=True)
         disk_file = os.path.join(cache_dir, f"{cache_key}.wav")
@@ -263,7 +275,7 @@ class TTSView(View):
             except Exception:
                 pass
 
-        # 1-bosqich: VoiceLab.uz API orqali sof milliy o'zbek neyron ovoz sintezi
+        # Faqat VoiceLab.uz API orqali ovoz sintezi (Azure/boshqa ovozlar chiqarib tashlandi)
         loop = asyncio.get_event_loop()
         def try_voicelab():
             url = "https://api.voicelab.uz/v1/tts"
@@ -272,16 +284,38 @@ class TTSView(View):
                 "voice_id": voicelab_id,
                 "language": "uz"
             }).encode("utf-8")
-            req = urllib.request.Request(
-                url,
-                data=payload,
-                headers={
-                    "Authorization": f"Bearer {VOICELAB_API_KEY}",
-                    "Content-Type": "application/json"
-                }
-            )
-            with urllib.request.urlopen(req, timeout=10) as resp:
-                return resp.read()
+
+            total_keys = len(VOICELAB_API_KEYS)
+            last_err = None
+
+            # Barcha 6 ta zaxira API kalitlarini uzilishsiz avtomatik tekshirish
+            for attempt in range(total_keys):
+                api_key = get_current_voicelab_key()
+                req = urllib.request.Request(
+                    url,
+                    data=payload,
+                    headers={
+                        "Authorization": f"Bearer {api_key}",
+                        "Content-Type": "application/json"
+                    }
+                )
+                try:
+                    with urllib.request.urlopen(req, timeout=12) as resp:
+                        return resp.read()
+                except urllib.error.HTTPError as http_err:
+                    last_err = http_err
+                    print(f"[VoiceLab API] HTTP {http_err.code} xatosi (Key #{CURRENT_KEY_INDEX + 1}). Zaxira kalitga o'tilmoqda...")
+                    switch_to_next_voicelab_key()
+                    continue
+                except Exception as e:
+                    last_err = e
+                    print(f"[VoiceLab API] Aloqa xatosi: {e} (Key #{CURRENT_KEY_INDEX + 1}). Zaxira kalitga o'tilmoqda...")
+                    switch_to_next_voicelab_key()
+                    continue
+
+            if last_err:
+                raise last_err
+            return None
 
         try:
             audio_stream = await loop.run_in_executor(None, try_voicelab)
@@ -293,30 +327,11 @@ class TTSView(View):
                 except Exception:
                     pass
                 return HttpResponse(audio_stream, content_type="audio/wav")
-        except Exception as vl_err:
-            print("VoiceLab API call error, falling back to neural TTS:", vl_err)
-
-        # 2-bosqich: O'zbek milliy ta'limiy neyron TTS (Madina & Sardor)
-        try:
-            comm = edge_tts.Communicate(text, neural_voice, rate=rate, pitch=pitch)
-            audio_stream = b""
-            async for chunk in comm.stream():
-                if chunk["type"] == "audio":
-                    audio_stream += chunk["data"]
-
-            if audio_stream:
-                VOICE_AUDIO_CACHE[cache_key] = audio_stream
-                try:
-                    with open(disk_file, 'wb') as df:
-                        df.write(audio_stream)
-                except Exception as ef:
-                    print("Cache write error:", ef)
-                return HttpResponse(audio_stream, content_type="audio/mpeg")
             else:
-                return HttpResponse(status=500)
-        except Exception as e:
-            print("Neyron TTS sintez xatosi:", e)
-            return HttpResponse(f"Ovoz sintezi xatosi: {e}", status=503)
+                return HttpResponse("VoiceLab audio bo'sh qaytdi", status=502)
+        except Exception as vl_err:
+            print("VoiceLab API xatoligi:", vl_err)
+            return HttpResponse(f"VoiceLab TTS xatosi: {vl_err}", status=502)
 
 
 class GestureListView(View):
