@@ -3472,7 +3472,7 @@
             // Avatarning header sarlavhasini tarjima holatiga o'tkazish
             const titleElem = document.querySelector('.avatar-title');
             if (titleElem) {
-                titleElem.textContent = "AI Surdotarjimon (Tarjima qilmoqda...)";
+                titleElem.textContent = "AI Surdotarjimon (Jonli Tarjima...)";
                 titleElem.classList.add('translating');
             }
             const liveDot = document.querySelector('.avatar-live-dot');
@@ -3480,51 +3480,47 @@
 
             const queue = [];
 
-            // Gapdagi kalit so'zlarni ketma-ket aniqlash
-            if (t.includes('salom') || t.includes('assalom') || t.includes('alaykum') || t.includes('hello')) {
-                queue.push({ gesture: 'salom', icon: '👋', label: 'Assalomu alaykum' });
-            }
-            if (t.includes('xush') || t.includes('hush') || t.includes('marhamat') || t.includes('kelibsiz') || t.includes('welcome')) {
-                queue.push({ gesture: 'xush_kelibsiz', icon: '🤲', label: 'Xush kelibsiz' });
-            }
-            if (t.includes('siz') || t.includes('sizga') || t.includes('sen')) {
-                queue.push({ gesture: 'siz', icon: '👉', label: 'Sizga' });
-            }
-            if (t.includes('yordam') || t.includes('yordamchi') || t.includes('help')) {
-                queue.push({ gesture: 'yordam', icon: '🤝', label: 'Yordam' });
-            }
-            if (t.includes('qanday') || t.includes('nima') || t.includes('qanaqa') || t.includes('savol') || t.includes('?')) {
-                queue.push({ gesture: 'savol', icon: '❓', label: 'Qanday yordam' });
-            }
-            if (t.includes('rahmat') || t.includes('tashakkur') || t.includes('thanks')) {
-                queue.push({ gesture: 'rahmat', icon: '🙏', label: 'Rahmat' });
-            }
-            if (t.includes('zor') || t.includes('zo\'r') || t.includes('ajoyib') || t.includes('yaxshi') || t.includes('alo')) {
-                queue.push({ gesture: 'zor', icon: '👍', label: 'Ajoyib' });
-            }
-            if (t.includes('ha') || t.includes('albatta') || t.includes('roziman') || t.includes('togri')) {
-                queue.push({ gesture: 'ha', icon: '👌', label: 'Albatta' });
-            }
-            if (t.includes('yoq') || t.includes('emas') || t.includes('mumkin emas')) {
-                queue.push({ gesture: 'yoq', icon: '🙅‍♂️', label: 'Yo\'q' });
-            }
-            if (t.includes('kut') || t.includes('kuting') || t.includes('daqiqa')) {
-                queue.push({ gesture: 'kuting', icon: '✋', label: 'Kuting' });
-            }
+            // 1. Matnni so'zlarga ajratib, 212 ta UzSL lug'atidan mos imo-ishoralarni topish
+            const words = t.replace(/[.,?!:;()"']/g, ' ').split(/\s+/).filter(w => w.length > 1);
+            
+            words.forEach(word => {
+                if (typeof ALL_UZ_GESTURES !== 'undefined') {
+                    const match = ALL_UZ_GESTURES.find(g => 
+                        g.slug === word || 
+                        g.name.toLowerCase() === word ||
+                        word.startsWith(g.slug) ||
+                        g.name.toLowerCase().startsWith(word) ||
+                        g.slug.startsWith(word)
+                    );
+                    if (match && !queue.some(q => q.gesture === match.pose)) {
+                        queue.push({ gesture: match.pose, icon: match.icon, label: match.name });
+                    }
+                }
+            });
 
-            // Har doim imo-ishora ketma-ketligi mavjud bo'lishi va gap davomida surdo interpretatsiya qilish uchun
-            if (queue.length === 0) {
-                queue.push({ gesture: 'signing', icon: '🤟', label: 'Imo-ishora tarjimasi' });
+            // 2. Nutq davomida imo-ishoralarni jonli va to'xtovsiz almashtirib turish uchun dinamik ketma-ketlik
+            const dynamicPool = [
+                { gesture: 'signing', icon: '🤟', label: 'Nutq tarjimasi' },
+                { gesture: 'open_hands', icon: '🤲', label: 'Tushuntirish' },
+                { gesture: 'point', icon: '👉', label: 'E'tibor' },
+                { gesture: 'heart', icon: '🙏', label: 'Munosabat' },
+                { gesture: 'thumbs_up', icon: '👍', label: 'Tasdiq' }
+            ];
+
+            const targetQueueLen = Math.max(6, Math.min(18, Math.floor(words.length * 0.8) + 3));
+            while (queue.length < targetQueueLen) {
+                const nextItem = dynamicPool[queue.length % dynamicPool.length];
+                queue.push(nextItem);
             }
 
             avatarState.geminiGestureQueue = queue;
             avatarState.geminiGestureIdx = 0;
-            avatarState.geminiNextGestureTime = performance.now() + 1800;
+            avatarState.geminiNextGestureTime = performance.now() + 1300;
 
             const first = queue[0];
             avatarState.gesture = first.gesture;
             avatarState.icon = first.icon;
-            avatarState.timer = performance.now() + 35000; // Gemini gapirib bo'lguncha faol
+            avatarState.timer = performance.now() + 60000; // Gemini gapirib bo'lguncha faol
         }
 
         function stopGeminiVoiceSignTranslation() {
@@ -4344,21 +4340,30 @@
             const time = now * 0.003;
 
             // Timer tugashi -> Idle
-            if (avatarState.isGeminiTranslating && avatarState.geminiGestureQueue && avatarState.geminiGestureQueue.length > 0) {
-                // Gemini gapirayotganda navbatdagi imo-ishora kadrini yangilab turish
+            if (avatarState.isGeminiTranslating) {
+                // Gemini gapirayotganda imo-ishoralarni to'xtovsiz jonli almashtirib turish
                 if (now > avatarState.geminiNextGestureTime) {
                     avatarState.geminiGestureIdx++;
-                    if (avatarState.geminiGestureIdx < avatarState.geminiGestureQueue.length) {
+                    if (avatarState.geminiGestureQueue && avatarState.geminiGestureIdx < avatarState.geminiGestureQueue.length) {
                         const nextG = avatarState.geminiGestureQueue[avatarState.geminiGestureIdx];
                         avatarState.gesture = nextG.gesture;
                         avatarState.icon = nextG.icon;
                         avatarState.text = nextG.label;
-                        avatarState.geminiNextGestureTime = now + 1900;
                     } else {
-                        avatarState.gesture = 'signing';
-                        avatarState.icon = '🤟';
-                        avatarState.geminiNextGestureTime = now + 2500;
+                        const altGestures = [
+                            { gesture: 'signing', icon: '🤟', label: 'Nutq tarjimasi' },
+                            { gesture: 'open_hands', icon: '🤲', label: 'Tushuntirish' },
+                            { gesture: 'point', icon: '👉', label: 'E'tibor' },
+                            { gesture: 'heart', icon: '🙏', label: 'Ta'kid' }
+                        ];
+                        const alt = altGestures[Math.floor((now / 1400) % altGestures.length)];
+                        avatarState.gesture = alt.gesture;
+                        avatarState.icon = alt.icon;
+                        avatarState.text = alt.label;
                     }
+                    avatarState.geminiNextGestureTime = now + 1400;
+                    if (avatarCaptionIcon) avatarCaptionIcon.textContent = avatarState.icon;
+                    if (avatarCaptionText) avatarCaptionText.textContent = avatarState.text;
                 }
             } else if (now > avatarState.timer && avatarState.gesture !== 'idle') {
                 avatarState.gesture = 'idle';
@@ -4652,27 +4657,37 @@
 
                     case 'open_hands':
                     case 'xush_kelibsiz':
-                        lerpRotation(rArm, 0.22, 0.08, 0.45);
-                        lerpRotation(rForeArm, -0.65 + Math.sin(time * 3) * 0.08, 0.15, 0.35);
-                        lerpRotation(rHand, -0.20, -0.30, 0.10);
-                        lerpRotation(lArm, 0.22, -0.08, -0.45);
-                        lerpRotation(lForeArm, -0.65 + Math.sin(time * 3) * 0.08, -0.15, -0.35);
-                        lerpRotation(lHand, -0.20, 0.30, -0.10);
-                        if (head) lerpRotation(head, 0.12, 0.0, 0.0);
-                        setFingerPose(b, 'right', 'open');
-                        setFingerPose(b, 'left', 'open');
+                        {
+                            const oOsc1 = Math.sin(time * 4.5) * 0.08;
+                            const oOsc2 = Math.cos(time * 4.0) * 0.08;
+                            lerpRotation(rArm, 0.68 + oOsc1, -0.20, -0.70 + oOsc2 * 0.3);
+                            lerpRotation(rForeArm, 0.12 + oOsc2, 0.05, -1.45 + oOsc1 * 0.3);
+                            lerpRotation(rHand, -0.30, -0.20, 0.10);
+                            lerpRotation(lArm, 0.68 + oOsc2, 0.20, 0.70 - oOsc1 * 0.3);
+                            lerpRotation(lForeArm, 0.12 + oOsc1, -0.05, 1.45 - oOsc2 * 0.3);
+                            lerpRotation(lHand, -0.30, 0.20, -0.10);
+                            if (head) lerpRotation(head, 0.12 + Math.sin(time * 3) * 0.04, 0.0, 0.0);
+                            setFingerPose(b, 'right', 'open');
+                            setFingerPose(b, 'left', 'open');
+                        }
                         break;
 
                     case 'signing':
-                        lerpRotation(rArm, 0.25 + Math.sin(time * 4) * 0.08, 0.05, 0.42);
-                        lerpRotation(rForeArm, -0.65 + Math.cos(time * 4.5) * 0.15, 0.12, 0.40);
-                        lerpRotation(rHand, -0.15 + Math.sin(time * 6) * 0.2, Math.cos(time * 5) * 0.25, 0);
-                        lerpRotation(lArm, 0.25 + Math.cos(time * 4) * 0.08, -0.05, -0.42);
-                        lerpRotation(lForeArm, -0.65 + Math.sin(time * 4.5) * 0.15, -0.12, -0.40);
-                        lerpRotation(lHand, -0.15 + Math.cos(time * 5.8) * 0.2, -Math.sin(time * 5) * 0.25, 0);
-                        if (head) lerpRotation(head, 0.08 + Math.sin(time * 3) * 0.05, Math.sin(time * 2) * 0.06, 0);
-                        setFingerPose(b, 'right', 'open');
-                        setFingerPose(b, 'left', 'flat');
+                        {
+                            const sOsc1 = Math.sin(time * 5.8) * 0.12;
+                            const sOsc2 = Math.cos(time * 5.0) * 0.14;
+                            // Qo'llar to'liq ko'krak oldida imo-ishora qiladi
+                            lerpRotation(rArm, 0.72 + sOsc1 * 0.5, -0.22, -0.75 + sOsc2 * 0.3);
+                            lerpRotation(rForeArm, 0.15 + sOsc2 * 0.5, 0.05, -1.55 + sOsc1 * 0.4);
+                            lerpRotation(rHand, -0.25 + sOsc1 * 0.4, sOsc2 * 0.3, 0);
+                            lerpRotation(lArm, 0.72 + sOsc2 * 0.5, 0.22, 0.75 - sOsc1 * 0.3);
+                            lerpRotation(lForeArm, 0.15 + sOsc1 * 0.5, -0.05, 1.55 - sOsc2 * 0.4);
+                            lerpRotation(lHand, -0.25 + sOsc2 * 0.4, -sOsc1 * 0.3, 0);
+                            if (head) lerpRotation(head, 0.10 + Math.sin(time * 3.5) * 0.06, Math.sin(time * 2.2) * 0.07, 0);
+                            const fP = (Math.sin(time * 4) > 0) ? 'open' : 'flat';
+                            setFingerPose(b, 'right', fP);
+                            setFingerPose(b, 'left', fP);
+                        }
                         break;
 
                     default:
