@@ -1640,18 +1640,27 @@
         }
 
         #ai-avatar-video {
-            display: none !important;
-            width: 100% !important;
-            height: 100% !important;
-            object-fit: cover !important;
+            display: none;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
             border-radius: 18px;
+            background: #050c18;
         }
 
         #avatar-canvas {
-            display: block !important;
-            width: 100% !important;
-            height: 100% !important;
+            display: block;
+            width: 100%;
+            height: 100%;
             border-radius: 18px;
+        }
+
+        .surdo-avatar-pod.video-mode #ai-avatar-video {
+            display: block !important;
+        }
+
+        .surdo-avatar-pod.video-mode #avatar-canvas {
+            display: none !important;
         }
 
         .avatar-caption-badge {
@@ -2184,15 +2193,28 @@
                 display: none;
             }
 
-            #ai-avatar-national-img,
-            #ai-avatar-video {
+            #ai-avatar-national-img {
                 display: none !important;
             }
-            #avatar-canvas {
-                display: block !important;
-                width: 100% !important;
-                height: 100% !important;
+            #ai-avatar-video {
+                display: none;
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
                 border-radius: 14px;
+                background: #050c18;
+            }
+            #avatar-canvas {
+                display: block;
+                width: 100%;
+                height: 100%;
+                border-radius: 14px;
+            }
+            .surdo-avatar-pod.video-mode #ai-avatar-video {
+                display: block !important;
+            }
+            .surdo-avatar-pod.video-mode #avatar-canvas {
+                display: none !important;
             }
         }
 
@@ -2430,13 +2452,16 @@
     </div>
 
     <!-- 4. AI Surdo Avatar Pod (O'ng pastki burchak - Eshitmaydigan insonlar uchun Imo-ishora Avatari) -->
-    <div id="surdo-avatar-pod" class="surdo-avatar-pod" title="AI Surdotarjimon (Imo-ishora orqali tushuntiradi)">
+    <div id="surdo-avatar-pod" class="surdo-avatar-pod video-mode" title="AI Surdotarjimon (Imo-ishora orqali tushuntiradi)">
         <div class="avatar-pod-header">
             <div class="avatar-status-wrap">
                 <span class="avatar-live-dot"></span>
-                <span class="avatar-title">AI Surdotarjimon (Sardor)</span>
+                <span class="avatar-title" id="avatar-pod-title">AI Surdotarjimon (Madina)</span>
             </div>
             <div class="avatar-controls">
+                <button id="avatar-mode-btn" class="avatar-btn" title="Rejimni almashtirish (AI Video / 3D Sardor)">
+                    <i class="fa-solid fa-arrows-rotate"></i>
+                </button>
                 <button id="avatar-size-btn" class="avatar-btn" title="O'lchamni almashtirish (Katta / Standart)">
                     <i class="fa-solid fa-up-right-and-down-left-from-center"></i>
                 </button>
@@ -2446,8 +2471,12 @@
             </div>
         </div>
         <div class="avatar-viewport">
-            <canvas id="avatar-canvas"></canvas>
-            <video id="ai-avatar-video" playsinline muted loop style="display:none;"></video>
+            <canvas id="avatar-canvas" style="display:none;"></canvas>
+            <video id="ai-avatar-video" playsinline muted loop autoplay poster="/static/avatars/uzbek_national_avatar.jpg" src="/static/avatars/uzbek_avatar_idle.mp4"></video>
+            <div id="avatar-caption-badge" class="avatar-caption-badge">
+                <span id="avatar-caption-icon">✨</span>
+                <span id="avatar-caption-text">AI Surdotarjimon (Madina)</span>
+            </div>
         </div>
     </div>
 
@@ -3418,15 +3447,59 @@
         const avatarPod = document.getElementById('surdo-avatar-pod');
         const avatarMinBtn = document.getElementById('avatar-min-btn');
         const avatarSizeBtn = document.getElementById('avatar-size-btn');
+        const avatarModeBtn = document.getElementById('avatar-mode-btn');
+        const avatarPodTitle = document.getElementById('avatar-pod-title') || document.querySelector('.avatar-title');
         const aiAvatarNationalImg = document.getElementById('ai-avatar-national-img');
         const aiAvatarVideo = document.getElementById('ai-avatar-video');
         const avatarCanvas = document.getElementById('avatar-canvas');
+        const avatarCaptionBadge = document.getElementById('avatar-caption-badge');
         const avatarCaptionIcon = document.getElementById('avatar-caption-icon');
         const avatarCaptionText = document.getElementById('avatar-caption-text');
         const avatarModelLabel = document.getElementById('avatar-model-label');
         const avatarStatusDesc = document.getElementById('avatar-status-desc');
 
-        let isRealHumanMode = false; // 3D Fotorealistik Avatar doimiy faol
+        let isRealHumanMode = true; // Vaqtinchalik AI Video Avatari (Madina) birlamchi faol
+
+        function setAvatarMode(isVideo) {
+            isRealHumanMode = isVideo;
+            if (isRealHumanMode) {
+                if (avatarPod) avatarPod.classList.add('video-mode');
+                if (avatarPodTitle) avatarPodTitle.textContent = "AI Surdotarjimon (Madina)";
+                if (avatarCaptionText) avatarCaptionText.textContent = "AI Surdotarjimon (Madina)";
+                if (avatarCaptionIcon) avatarCaptionIcon.textContent = "✨";
+                if (avatarModeBtn) {
+                    avatarModeBtn.title = "3D Sardor rejimiga o'tish";
+                    avatarModeBtn.innerHTML = '<i class="fa-solid fa-cube"></i>';
+                }
+                if (aiAvatarVideo) {
+                    if (!aiAvatarVideo.src || !aiAvatarVideo.src.includes('uzbek_avatar_idle')) {
+                        aiAvatarVideo.src = '/static/avatars/uzbek_avatar_idle.mp4';
+                    }
+                    aiAvatarVideo.loop = true;
+                    aiAvatarVideo.play().catch(() => {});
+                }
+            } else {
+                if (avatarPod) avatarPod.classList.remove('video-mode');
+                if (avatarPodTitle) avatarPodTitle.textContent = "AI Surdotarjimon (Sardor)";
+                if (avatarCaptionText) avatarCaptionText.textContent = "3D Sardor Avatari";
+                if (avatarCaptionIcon) avatarCaptionIcon.textContent = "🤖";
+                if (avatarModeBtn) {
+                    avatarModeBtn.title = "AI Video Avatar (Madina) rejimiga o'tish";
+                    avatarModeBtn.innerHTML = '<i class="fa-solid fa-video"></i>';
+                }
+                if (aiAvatarVideo) {
+                    aiAvatarVideo.pause();
+                }
+                setTimeout(onAvatarResize, 50);
+            }
+        }
+
+        if (avatarModeBtn) {
+            avatarModeBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                setAvatarMode(!isRealHumanMode);
+            });
+        }
         let avatarSigningTimer = null;
 
         // Three.js Core Components
@@ -3468,13 +3541,17 @@
             avatarState.text = replyText;
 
             // Avatarning header sarlavhasini tarjima holatiga o'tkazish
-            const titleElem = document.querySelector('.avatar-title');
+            const titleElem = avatarPodTitle || document.querySelector('.avatar-title');
             if (titleElem) {
                 titleElem.textContent = "AI Surdotarjimon (Jonli Tarjima...)";
                 titleElem.classList.add('translating');
             }
             const liveDot = document.querySelector('.avatar-live-dot');
             if (liveDot) liveDot.classList.add('translating');
+
+            if (isRealHumanMode) {
+                triggerAvatarGesture(speechText, "🤟", speechText);
+            }
 
             const queue = [];
 
@@ -3527,13 +3604,25 @@
             avatarState.geminiGestureQueue = [];
             avatarState.timer = 0;
 
-            const titleElem = document.querySelector('.avatar-title');
+            const titleElem = avatarPodTitle || document.querySelector('.avatar-title');
             if (titleElem) {
-                titleElem.textContent = "AI Surdotarjimon (Sardor)";
+                titleElem.textContent = isRealHumanMode ? "AI Surdotarjimon (Madina)" : "AI Surdotarjimon (Sardor)";
                 titleElem.classList.remove('translating');
             }
             const liveDot = document.querySelector('.avatar-live-dot');
             if (liveDot) liveDot.classList.remove('translating');
+
+            if (isRealHumanMode) {
+                isPlayingSignQueue = false;
+                if (aiAvatarVideo) {
+                    aiAvatarVideo.src = '/static/avatars/uzbek_avatar_idle.mp4';
+                    aiAvatarVideo.loop = true;
+                    aiAvatarVideo.currentTime = 0;
+                    aiAvatarVideo.play().catch(() => {});
+                }
+                if (avatarCaptionText) avatarCaptionText.textContent = "AI Surdotarjimon (Madina)";
+                if (avatarCaptionIcon) avatarCaptionIcon.textContent = "✨";
+            }
         }
 
         // Kichraytirish / Yashirish tugmasi
@@ -3565,7 +3654,7 @@
 
         if (avatarPod) {
             avatarPod.addEventListener('click', (e) => {
-                if (e.target.closest('#avatar-min-btn') || e.target.closest('#avatar-size-btn')) return;
+                if (e.target.closest('#avatar-min-btn') || e.target.closest('#avatar-size-btn') || e.target.closest('#avatar-mode-btn')) return;
                 if (avatarPod.classList.contains('minimized')) {
                     avatarPod.classList.remove('minimized');
                     if (avatarMinBtn) avatarMinBtn.innerHTML = '<i class="fa-solid fa-compress"></i>';
@@ -4195,14 +4284,16 @@
             if (!isRealHumanMode || !aiAvatarVideo) return;
 
             if (signVideoQueue.length === 0) {
-                // Barcha imo-ishoralar ko'rsatib bo'lingach, kutish holatiga (Stay.mp4) qaytadi
+                // Barcha imo-ishoralar ko'rsatib bo'lingach, kutish holatiga (uzbek_avatar_idle.mp4) qaytadi
                 isPlayingSignQueue = false;
                 if (aiAvatarVideo) {
-                    aiAvatarVideo.src = '/static/signs/words/Stay.mp4';
+                    aiAvatarVideo.src = '/static/avatars/uzbek_avatar_idle.mp4';
                     aiAvatarVideo.loop = true;
                     aiAvatarVideo.currentTime = 0;
                     aiAvatarVideo.play().catch(() => {});
                 }
+                if (avatarCaptionText) avatarCaptionText.textContent = "AI Surdotarjimon (Madina)";
+                if (avatarCaptionIcon) avatarCaptionIcon.textContent = "✨";
                 return;
             }
 
