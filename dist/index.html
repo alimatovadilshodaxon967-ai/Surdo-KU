@@ -3701,7 +3701,7 @@
                         avatarMorphMeshes = [];
 
                         avatarModel.traverse((child) => {
-                            if (child.isBone) {
+                            if (child.name) {
                                 avatarBones[child.name] = child;
                                 const clean = child.name.replace('mixamorig:', '').replace('mixamorig', '');
                                 avatarBones[clean] = child;
@@ -3720,6 +3720,16 @@
                                 }
                             }
                         });
+
+                        // T-pose dan tabiiy turish holatiga darhol o'tkazish
+                        const initRArm = avatarBones['RightArm'] || avatarBones['mixamorigRightArm'];
+                        const initLArm = avatarBones['LeftArm'] || avatarBones['mixamorigLeftArm'];
+                        const initRForeArm = avatarBones['RightForeArm'] || avatarBones['mixamorigRightForeArm'];
+                        const initLForeArm = avatarBones['LeftForeArm'] || avatarBones['mixamorigLeftForeArm'];
+                        if (initRArm) initRArm.rotation.set(1.25, 0.05, 0.10);
+                        if (initLArm) initLArm.rotation.set(1.25, -0.05, -0.10);
+                        if (initRForeArm) initRForeArm.rotation.set(0.25, 0.0, -0.05);
+                        if (initLForeArm) initLForeArm.rotation.set(0.25, 0.0, 0.05);
 
                         avatarScene.add(avatarModel);
                         is3DModelLoaded = true;
@@ -4526,12 +4536,12 @@
                         setFingerPose(b, 'left', fPose);
                         break;
                     default:
-                        // Tabiiy tinch holat (Qo'llar pastda bo'shashgan, nafas harakati)
-                        lerpRotation(rArm, 0.08, 0.0, 0.12);
-                        lerpRotation(rForeArm, 0.18, 0.0, -0.08 + breath * 1.2);
+                        // Tabiiy tinch holat (Qo'llar pastda gavda yonida erkin tushgan, nafas harakati)
+                        lerpRotation(rArm, 1.25, 0.05, 0.10);
+                        lerpRotation(rForeArm, 0.25, 0.0, -0.05 + breath * 1.2);
                         lerpRotation(rHand, 0, 0, 0);
-                        lerpRotation(lArm, 0.08, 0.0, -0.12);
-                        lerpRotation(lForeArm, 0.18, 0.0, 0.08 + breath * 1.2);
+                        lerpRotation(lArm, 1.25, -0.05, -0.10);
+                        lerpRotation(lForeArm, 0.25, 0.0, 0.05 + breath * 1.2);
                         lerpRotation(lHand, 0, 0, 0);
                         if (head) lerpRotation(head, breath * 1.2, Math.sin(time * 0.8) * 0.03, 0);
                         setFingerPose(b, 'right', 'relaxed');
