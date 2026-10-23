@@ -3565,15 +3565,8 @@
             });
         }
 
-        // Avatar ustiga bosilganda imo-ishoralarni ketma-ket namoyish etish
-        const DEMO_TAP_GESTURES = [
-            { gesture: "salom", icon: "👋", text: "Assalomu alaykum!" },
-            { gesture: "rahmat", icon: "🙏", text: "Rahmat! / Tashakkur!" },
-            { gesture: "zor", icon: "👍", text: "Zo'r! / Ajoyib!" },
-            { gesture: "sevaman", icon: "🤟", text: "Sizni yaxshi ko'raman!" },
-            { gesture: "vatan", icon: "🇺🇿", text: "O'zbekiston!" },
-            { gesture: "kuting", icon: "✋", text: "Iltimos, kuting!" }
-        ];
+        // 212 ta O'zbek Imo-ishoralar Lug'ati (UzSL 3D Kinematics Database)
+        const ALL_UZ_GESTURES = [{"slug": "kuting", "name": "Kuting", "icon": "🫳", "text": "Iltimos, bir oz kuting!", "pose": "stop"}, {"slug": "diqqat", "name": "Diqqat", "icon": "☝️", "text": "Iltimos, diqqat qiling!", "pose": "point"}, {"slug": "boshlaymiz", "name": "Boshlaymiz", "icon": "🖐️", "text": "Boshlaymiz, tayyormisiz?", "pose": "wave"}, {"slug": "toxtang", "name": "To'xtang", "icon": "✋", "text": "To'xtang, sabr qiling!", "pose": "stop"}, {"slug": "qarang", "name": "Qarang", "icon": "✌️", "text": "Qarang, e'tibor bering!", "pose": "open_hands"}, {"slug": "yozing", "name": "Yozing", "icon": "✍️", "text": "Iltimos, yozib bering!", "pose": "book"}, {"slug": "oqing", "name": "O'qing", "icon": "🤲", "text": "Matnni o'qing!", "pose": "book"}, {"slug": "keling", "name": "Keling", "icon": "🫴", "text": "Bu yerga keling!", "pose": "wave"}, {"slug": "keting", "name": "Keting", "icon": "👉", "text": "U yerga boring / keting", "pose": "wave"}, {"slug": "yordam", "name": "Yordam bering", "icon": "🫲✊", "text": "Menga yordam bering!", "pose": "help"}, {"slug": "dak_a", "name": "A", "icon": "✊", "text": "A harfi", "pose": "daktil"}, {"slug": "dak_b", "name": "B", "icon": "🖐️", "text": "B harfi", "pose": "daktil"}, {"slug": "dak_d", "name": "D", "icon": "☝️", "text": "D harfi", "pose": "daktil"}, {"slug": "dak_e", "name": "E", "icon": "🤏", "text": "E harfi", "pose": "daktil"}, {"slug": "dak_f", "name": "F", "icon": "👌", "text": "F harfi", "pose": "daktil"}, {"slug": "dak_g", "name": "G", "icon": "👉", "text": "G harfi", "pose": "daktil"}, {"slug": "dak_h", "name": "H", "icon": "✌️", "text": "H harfi", "pose": "daktil"}, {"slug": "dak_i", "name": "I", "icon": "🤙", "text": "I harfi", "pose": "daktil"}, {"slug": "dak_j", "name": "J", "icon": "🤙", "text": "J harfi", "pose": "daktil"}, {"slug": "dak_k", "name": "K", "icon": "✌️", "text": "K harfi", "pose": "daktil"}, {"slug": "dak_l", "name": "L", "icon": "👆", "text": "L harfi", "pose": "daktil"}, {"slug": "dak_m", "name": "M", "icon": "👇", "text": "M harfi", "pose": "daktil"}, {"slug": "dak_n", "name": "N", "icon": "👇", "text": "N harfi", "pose": "daktil"}, {"slug": "dak_o", "name": "O", "icon": "🤏", "text": "O harfi", "pose": "daktil"}, {"slug": "dak_p", "name": "P", "icon": "👇", "text": "P harfi", "pose": "daktil"}, {"slug": "dak_q", "name": "Q", "icon": "👇", "text": "Q harfi", "pose": "daktil"}, {"slug": "dak_r", "name": "R", "icon": "🤞", "text": "R harfi", "pose": "daktil"}, {"slug": "dak_s", "name": "S", "icon": "✊", "text": "S harfi", "pose": "daktil"}, {"slug": "dak_t", "name": "T", "icon": "🤛", "text": "T harfi", "pose": "daktil"}, {"slug": "dak_u", "name": "U", "icon": "✌️", "text": "U harfi", "pose": "daktil"}, {"slug": "dak_v", "name": "V", "icon": "✌️", "text": "V harfi", "pose": "daktil"}, {"slug": "dak_x", "name": "X", "icon": "☝️", "text": "X harfi", "pose": "daktil"}, {"slug": "dak_y", "name": "Y", "icon": "🤙", "text": "Y harfi", "pose": "daktil"}, {"slug": "dak_z", "name": "Z", "icon": "☝️", "text": "Z harfi", "pose": "daktil"}, {"slug": "dak_o_tal", "name": "O'", "icon": "🤏", "text": "O' harfi", "pose": "daktil"}, {"slug": "dak_g_tal", "name": "G'", "icon": "👉", "text": "G' harfi", "pose": "daktil"}, {"slug": "dak_sh", "name": "Sh", "icon": "🖐️", "text": "Sh harfi", "pose": "daktil"}, {"slug": "dak_ch", "name": "Ch", "icon": "🤏", "text": "Ch harfi", "pose": "daktil"}, {"slug": "dak_ng", "name": "Ng", "icon": "👇", "text": "Ng harfi", "pose": "daktil"}, {"slug": "sos_103", "name": "Tez Yordam (103)", "icon": "🤞", "text": "Tez tibbiy yordam 103 ni chaqiring!", "pose": "help"}, {"slug": "sos_102", "name": "Militsiya (102)", "icon": "🫲", "text": "Militsiya 102 ni chaqiring!", "pose": "help"}, {"slug": "sos_101", "name": "O't o'chiruvchi (101)", "icon": "👐", "text": "Yong'in, 101 xizmatini chaqiring!", "pose": "help"}, {"slug": "xavf", "name": "Xavf", "icon": "🙅", "text": "Diqqat, bu yerda xavf bor!", "pose": "stop"}, {"slug": "qutqaring", "name": "Qutqaring", "icon": "🙌", "text": "Qutqaring, hayotiy xavf!", "pose": "help"}, {"slug": "adashdim", "name": "Adashib qoldim", "icon": "🫲🫱", "text": "Adashib qoldim, yo'l topolmayapman", "pose": "help"}, {"slug": "love", "name": "Yaxshi ko'raman", "icon": "🤟", "text": "Men sizni yaxshi ko'raman!", "pose": "ily"}, {"slug": "xursand", "name": "Xursandman", "icon": "👐", "text": "Juda xursandman!", "pose": "open_hands"}, {"slug": "xafa", "name": "Xafaman", "icon": "🫳", "text": "Xafaman, ko'nglim to'lmadi", "pose": "open_hands"}, {"slug": "charchadim", "name": "Charchadim", "icon": "🫳", "text": "Juda charchadim!", "pose": "open_hands"}, {"slug": "och_qoldim", "name": "Och qoldim", "icon": "🫲", "text": "Qornim ochdi, ovqat yeymiz!", "pose": "eat"}, {"slug": "chanqadim", "name": "Chanqadim", "icon": "☝️", "text": "Chanqadim, suv kerak!", "pose": "drink"}, {"slug": "kasalman", "name": "Kasalman", "icon": "🫲", "text": "O'zimni yomon his qilyapman, kasalman", "pose": "heart"}, {"slug": "soglomman", "name": "Sog'lomman", "icon": "✊", "text": "Sog'lom va baquvvatman!", "pose": "heart"}, {"slug": "qiziq", "name": "Qiziq", "icon": "🤏", "text": "Bu juda qiziq!", "pose": "ily"}, {"slug": "qorqdim", "name": "Qo'rqyapman", "icon": "👐", "text": "Qo'rqyapman, yordam bering!", "pose": "open_hands"}, {"slug": "ishonaman", "name": "Ishonaman", "icon": "✊", "text": "Sizga ishonaman!", "pose": "heart"}, {"slug": "shoshilyapman", "name": "Shoshilmoqdaman", "icon": "🫱🫲", "text": "Tezroq, shoshilmoqdaman!", "pose": "open_hands"}, {"slug": "ozbekiston", "name": "O'zbekiston", "icon": "🇺🇿", "text": "O'zbekiston", "pose": "heart"}, {"slug": "toshkent", "name": "Toshkent", "icon": "🏙️", "text": "Toshkent", "pose": "open_hands"}, {"slug": "shahar", "name": "Shahar", "icon": "🏢", "text": "Shahar", "pose": "house"}, {"slug": "qishloq", "name": "Qishloq", "icon": "🏡", "text": "Qishloq", "pose": "house"}, {"slug": "kocha", "name": "Ko'cha / Yo'l", "icon": "🛣️", "text": "Ko'cha", "pose": "open_hands"}, {"slug": "kasalxona", "name": "Kasalxona", "icon": "🏥", "text": "Kasalxona", "pose": "help"}, {"slug": "dorixona", "name": "Dorixona", "icon": "💊", "text": "Dorixona", "pose": "help"}, {"slug": "dokon", "name": "Do'kon / Bozor", "icon": "🛒", "text": "Do'kon", "pose": "money"}, {"slug": "bank", "name": "Bank", "icon": "🏦", "text": "Bank", "pose": "money"}, {"slug": "aeroport", "name": "Aeroport", "icon": "🛫", "text": "Aeroport", "pose": "drive"}, {"slug": "vokzal", "name": "Vokzal / Bekat", "icon": "🚉", "text": "Vokzal", "pose": "drive"}, {"slug": "mashina", "name": "Mashina (Avtomobil)", "icon": "🚗", "text": "Mashina", "pose": "drive"}, {"slug": "avtobus", "name": "Avtobus", "icon": "🚌", "text": "Avtobus", "pose": "drive"}, {"slug": "metro", "name": "Metro", "icon": "🚇", "text": "Metro", "pose": "drive"}, {"slug": "samolyot", "name": "Samolyot", "icon": "✈️", "text": "Samolyot", "pose": "drive"}, {"slug": "poyezd", "name": "Poyezd", "icon": "🚆", "text": "Poyezd", "pose": "drive"}, {"slug": "tushundim", "name": "Tushundim", "icon": "💡", "text": "Tushundim", "pose": "open_hands"}, {"slug": "tushunmadim", "name": "Tushunmadim", "icon": "❓", "text": "Tushunmadim", "pose": "open_hands"}, {"slug": "qaytaring", "name": "Qaytaring (Takrorlang)", "icon": "🔁", "text": "Iltimos, qaytaring", "pose": "open_hands"}, {"slug": "sekinroq", "name": "Sekinroq", "icon": "🐢", "text": "Sekinroq gapiring", "pose": "open_hands"}, {"slug": "tezroq", "name": "Tezroq", "icon": "⚡", "text": "Tezroq", "pose": "open_hands"}, {"slug": "yaxshi", "name": "Yaxshi", "icon": "👍", "text": "Yaxshi", "pose": "thumbs_up"}, {"slug": "yomon", "name": "Yomon", "icon": "👎", "text": "Yomon", "pose": "shake_no"}, {"slug": "togri", "name": "To'g'ri", "icon": "✔️", "text": "To'g'ri", "pose": "thumbs_up"}, {"slug": "notogri", "name": "Noto'g'ri", "icon": "❌", "text": "Noto'g'ri", "pose": "shake_no"}, {"slug": "bilaman", "name": "Bilaman", "icon": "🧠", "text": "Bilaman", "pose": "open_hands"}, {"slug": "bilmayman", "name": "Bilmayman", "icon": "🤷", "text": "Bilmayman", "pose": "open_hands"}, {"slug": "unutdim", "name": "Unutdim", "icon": "🤦", "text": "Yodimdan ko'tarildi", "pose": "open_hands"}, {"slug": "ruxsat_bering", "name": "Ruxsat bering", "icon": "✋", "text": "Ruxsat bering", "pose": "stop"}, {"slug": "ish", "name": "Ish (Mehnat)", "icon": "💼", "text": "Ish", "pose": "open_hands"}, {"slug": "dam_olish", "name": "Dam olish", "icon": "🏖️", "text": "Dam olish", "pose": "open_hands"}, {"slug": "oyin", "name": "O'yin", "icon": "🎮", "text": "O'yin", "pose": "open_hands"}, {"slug": "sport", "name": "Sport", "icon": "⚽", "text": "Sport", "pose": "open_hands"}, {"slug": "musiqa", "name": "Musiqa", "icon": "🎵", "text": "Musiqa", "pose": "open_hands"}, {"slug": "kitob", "name": "Kitob", "icon": "📖", "text": "Kitob", "pose": "book"}, {"slug": "telefon", "name": "Telefon", "icon": "📱", "text": "Telefon", "pose": "phone"}, {"slug": "kompyuter", "name": "Kompyuter", "icon": "💻", "text": "Kompyuter", "pose": "phone"}, {"slug": "internet", "name": "Internet", "icon": "🌐", "text": "Internet", "pose": "phone"}, {"slug": "ota", "name": "Ota (Dada)", "icon": "👨", "text": "Ota", "pose": "family"}, {"slug": "ona", "name": "Ona (Oyi)", "icon": "👩", "text": "Ona", "pose": "family"}, {"slug": "aka", "name": "Aka", "icon": "👦", "text": "Aka", "pose": "family"}, {"slug": "uka", "name": "Uka", "icon": "🧒", "text": "Uka", "pose": "family"}, {"slug": "opa", "name": "Opa", "icon": "👧", "text": "Opa", "pose": "family"}, {"slug": "singil", "name": "Singil", "icon": "👶", "text": "Singil", "pose": "family"}, {"slug": "bola", "name": "Bola / Farzand", "icon": "👶", "text": "Bola", "pose": "family"}, {"slug": "dost", "name": "Do'st", "icon": "🤝", "text": "Do'st", "pose": "family"}, {"slug": "oila", "name": "Oila", "icon": "👨‍👩‍👧‍👦", "text": "Oila", "pose": "house"}, {"slug": "ustoz", "name": "Ustoz / O'qituvchi", "icon": "👨‍🏫", "text": "Ustoz", "pose": "book"}, {"slug": "shifokor", "name": "Shifokor / Vrach", "icon": "👨‍⚕️", "text": "Shifokor", "pose": "help"}, {"slug": "talaba", "name": "Talaba / O'quvchi", "icon": "🧑‍🎓", "text": "Talaba", "pose": "book"}, {"slug": "odam", "name": "Odam / Inson", "icon": "👤", "text": "Odam", "pose": "family"}, {"slug": "qiz", "name": "Qiz bola", "icon": "👧", "text": "Qiz bola", "pose": "family"}, {"slug": "ogil", "name": "O'g'il bola", "icon": "👦", "text": "O'g'il bola", "pose": "family"}, {"slug": "num_0", "name": "0 (Nol)", "icon": "🤏", "text": "Nol", "pose": "number"}, {"slug": "num_1", "name": "1 (Bir)", "icon": "☝️", "text": "Bir", "pose": "number"}, {"slug": "num_2", "name": "2 (Ikki)", "icon": "✌️", "text": "Ikki", "pose": "number"}, {"slug": "num_3", "name": "3 (Uch)", "icon": "🤟", "text": "Uch", "pose": "number"}, {"slug": "num_4", "name": "4 (To'rt)", "icon": "🖐️", "text": "To'rt", "pose": "number"}, {"slug": "num_5", "name": "5 (Besh)", "icon": "✋", "text": "Besh", "pose": "number"}, {"slug": "num_6", "name": "6 (Olti)", "icon": "🤙", "text": "Olti", "pose": "number"}, {"slug": "num_7", "name": "7 (Yetti)", "icon": "👆", "text": "Yetti", "pose": "number"}, {"slug": "num_8", "name": "8 (Sakkiz)", "icon": "🤌", "text": "Sakkiz", "pose": "number"}, {"slug": "num_9", "name": "9 (To'qqiz)", "icon": "👌", "text": "To'qqiz", "pose": "number"}, {"slug": "num_10", "name": "10 (O'n)", "icon": "👍", "text": "O'n", "pose": "number"}, {"slug": "salom", "name": "Salom", "icon": "✋", "text": "Assalomu alaykum!", "pose": "wave"}, {"slug": "xayr", "name": "Xayr", "icon": "👋", "text": "Xayr, salomat bo'ling!", "pose": "wave"}, {"slug": "ertagacha", "name": "Ertagacha", "icon": "🫱", "text": "Ertagacha xayr!", "pose": "wave"}, {"slug": "xush_kelibsiz", "name": "Xush kelibsiz", "icon": "🤲", "text": "Xush kelibsiz!", "pose": "open_hands"}, {"slug": "xayrli_tong", "name": "Xayrli tong", "icon": "🫴", "text": "Xayrli tong!", "pose": "open_hands"}, {"slug": "xayrli_kun", "name": "Xayrli kun", "icon": "🫲", "text": "Xayrli kun!", "pose": "open_hands"}, {"slug": "xayrli_kech", "name": "Xayrli kech", "icon": "🫳", "text": "Xayrli kech!", "pose": "open_hands"}, {"slug": "xayrli_tun", "name": "Xayrli tun", "icon": "🫲", "text": "Xayrli tun!", "pose": "open_hands"}, {"slug": "rahmat", "name": "Rahmat", "icon": "🫲", "text": "Katta rahmat!", "pose": "heart"}, {"slug": "iltimos", "name": "Iltimos", "icon": "🤲", "text": "Iltimos!", "pose": "heart"}, {"slug": "kechirasiz", "name": "Kechirasiz", "icon": "🫲", "text": "Kechirasiz, uzr!", "pose": "heart"}, {"slug": "arzimaydi", "name": "Arzimaydi", "icon": "🫴", "text": "Arzimaydi, marhamat!", "pose": "heart"}, {"slug": "savol_kim", "name": "Kim?", "icon": "☝️", "text": "Kim u?", "pose": "point"}, {"slug": "savol_nima", "name": "Nima?", "icon": "🫴", "text": "Nima bo'ldi?", "pose": "question"}, {"slug": "savol_qayerda", "name": "Qayerda?", "icon": "🫴", "text": "Qayerda joylashgan?", "pose": "question"}, {"slug": "savol_qachon", "name": "Qachon?", "icon": "☝️", "text": "Qachon keladi?", "pose": "question"}, {"slug": "savol_nega", "name": "Nega?", "icon": "🫳", "text": "Nega, nima sababdan?", "pose": "question"}, {"slug": "savol_qanday", "name": "Qanday?", "icon": "🫱🫲", "text": "Qanday qilib?", "pose": "question"}, {"slug": "savol_qancha", "name": "Qancha?", "icon": "🫰", "text": "Qancha bo'ladi?", "pose": "money"}, {"slug": "savol_qaysi", "name": "Qaysi?", "icon": "👆", "text": "Qaysi biri?", "pose": "question"}, {"slug": "katta", "name": "Katta (Ulkan)", "icon": "🐘", "text": "Katta", "pose": "open_hands"}, {"slug": "kichik", "name": "Kichik (Mayda)", "icon": "🐜", "text": "Kichik", "pose": "open_hands"}, {"slug": "yangi", "name": "Yangi", "icon": "✨", "text": "Yangi", "pose": "open_hands"}, {"slug": "eski", "name": "Eski", "icon": "📜", "text": "Eski", "pose": "open_hands"}, {"slug": "chiroyli", "name": "Chiroyli / Go'zal", "icon": "😍", "text": "Juda chiroyli", "pose": "open_hands"}, {"slug": "qimmat", "name": "Qimmat", "icon": "💎", "text": "Qimmat", "pose": "money"}, {"slug": "arzon", "name": "Arzon", "icon": "🏷️", "text": "Arzon", "pose": "money"}, {"slug": "oson", "name": "Oson", "icon": "👌", "text": "Oson", "pose": "thumbs_up"}, {"slug": "qiyin", "name": "Qiyin (Murakkab)", "icon": "🧗", "text": "Qiyin", "pose": "shake_no"}, {"slug": "toza", "name": "Toza (Ozoda)", "icon": "🧼", "text": "Toza", "pose": "thumbs_up"}, {"slug": "ochiq", "name": "Ochiq", "icon": "🔓", "text": "Ochiq", "pose": "open_hands"}, {"slug": "yopiq", "name": "Yopiq", "icon": "🔒", "text": "Yopiq", "pose": "open_hands"}, {"slug": "quyosh", "name": "Quyosh", "icon": "☀️", "text": "Quyosh", "pose": "nature"}, {"slug": "yomgir", "name": "Yomg'ir", "icon": "🌧️", "text": "Yomg'ir yog'yapti", "pose": "nature"}, {"slug": "qor", "name": "Qor", "icon": "❄️", "text": "Qor yog'moqda", "pose": "nature"}, {"slug": "shamol", "name": "Shamol", "icon": "💨", "text": "Shamol esmoqda", "pose": "nature"}, {"slug": "issiq", "name": "Issiq", "icon": "🥵", "text": "Juda issiq", "pose": "nature"}, {"slug": "sovuq", "name": "Sovuq", "icon": "🥶", "text": "Sovuq qotdim", "pose": "nature"}, {"slug": "osmon", "name": "Osmon", "icon": "🌌", "text": "Musaffo osmon", "pose": "nature"}, {"slug": "yer", "name": "Yer (Zamin)", "icon": "🌍", "text": "Yer", "pose": "nature"}, {"slug": "gul", "name": "Gul", "icon": "🌸", "text": "Gul", "pose": "nature"}, {"slug": "daraxt", "name": "Daraxt", "icon": "🌳", "text": "Daraxt", "pose": "nature"}, {"slug": "palov", "name": "Osh / Palov", "icon": "🍲", "text": "Palov", "pose": "eat"}, {"slug": "gosht", "name": "Go'sht", "icon": "🥩", "text": "Go'sht", "pose": "eat"}, {"slug": "shirinlik", "name": "Shirinlik / Qand", "icon": "🍬", "text": "Shirinlik", "pose": "eat"}, {"slug": "sut", "name": "Sut", "icon": "🥛", "text": "Sut", "pose": "drink"}, {"slug": "meva", "name": "Meva", "icon": "🍎", "text": "Meva", "pose": "eat"}, {"slug": "olma", "name": "Olma", "icon": "🍏", "text": "Olma", "pose": "eat"}, {"slug": "uzum", "name": "Uzum", "icon": "🍇", "text": "Uzum", "pose": "eat"}, {"slug": "qovun", "name": "Qovun", "icon": "🍈", "text": "Qovun", "pose": "eat"}, {"slug": "tarvuz", "name": "Tarvuz", "icon": "🍉", "text": "Tarvuz", "pose": "eat"}, {"slug": "sabzavot", "name": "Sabzavot", "icon": "🥕", "text": "Sabzavot", "pose": "eat"}, {"slug": "piyola", "name": "Piyola / Choynak", "icon": "🍵", "text": "Piyolada choy", "pose": "drink"}, {"slug": "ha", "name": "Ha", "icon": "✊", "text": "Ha, to'g'ri!", "pose": "thumbs_up"}, {"slug": "yoq", "name": "Yo'q", "icon": "🤌", "text": "Yo'q, noto'g'ri!", "pose": "shake_no"}, {"slug": "roziman", "name": "Roziman", "icon": "🤝", "text": "Roziman, ma'qul!", "pose": "thumbs_up"}, {"slug": "rozimasman", "name": "Rozimasman", "icon": "🙅", "text": "Rozimasman, e'tiroz!", "pose": "shake_no"}, {"slug": "mumkin", "name": "Mumkin", "icon": "🫳", "text": "Mumkin!", "pose": "thumbs_up"}, {"slug": "mumkin_emas", "name": "Mumkin emas", "icon": "☝️", "text": "Mumkin emas, taqiqlangan!", "pose": "shake_no"}, {"slug": "boldi", "name": "Bo'ldi", "icon": "🫲🫱", "text": "Bo'ldi, yetarli!", "pose": "shake_no"}, {"slug": "ajoyib", "name": "Ajoyib", "icon": "👍", "text": "Ajoyib, juda yaxshi!", "pose": "thumbs_up"}, {"slug": "ok", "name": "Tushundim (OK)", "icon": "👌", "text": "Tushundim, ma'qul!", "pose": "thumbs_up"}, {"slug": "tinchlik", "name": "Tinchlik", "icon": "✌️", "text": "Tinchlik va birdamlik!", "pose": "open_hands"}, {"slug": "bugun", "name": "Bugun", "icon": "📅", "text": "Bugun", "pose": "time"}, {"slug": "ertaga", "name": "Ertaga", "icon": "🌅", "text": "Ertaga", "pose": "time"}, {"slug": "kecha", "name": "Kecha (Oldingi kun)", "icon": "🌇", "text": "Kecha", "pose": "time"}, {"slug": "hozir", "name": "Hozir", "icon": "⏱️", "text": "Hozir", "pose": "time"}, {"slug": "keyin", "name": "Keyinroq", "icon": "⏳", "text": "Keyinroq", "pose": "time"}, {"slug": "ertalab", "name": "Ertalab", "icon": "🌄", "text": "Ertalab", "pose": "time"}, {"slug": "kechqurun", "name": "Kechqurun", "icon": "🌃", "text": "Kechqurun", "pose": "time"}, {"slug": "hafta", "name": "Hafta", "icon": "🗓️", "text": "Hafta", "pose": "time"}, {"slug": "oy_vaqt", "name": "Oy (Vaqt o'lchovi)", "icon": "🌙", "text": "Oy", "pose": "time"}, {"slug": "yil", "name": "Yil", "icon": "🪐", "text": "Yil", "pose": "time"}, {"slug": "soat", "name": "Soat (Vaqt)", "icon": "⌚", "text": "Soat necha bo'ldi?", "pose": "time"}, {"slug": "dushanba", "name": "Dushanba", "icon": "1️⃣", "text": "Dushanba", "pose": "time"}, {"slug": "seshanba", "name": "Seshanba", "icon": "2️⃣", "text": "Seshanba", "pose": "time"}, {"slug": "chorshanba", "name": "Chorshanba", "icon": "3️⃣", "text": "Chorshanba", "pose": "time"}, {"slug": "payshanba", "name": "Payshanba", "icon": "4️⃣", "text": "Payshanba", "pose": "time"}, {"slug": "juma", "name": "Juma", "icon": "🕌", "text": "Juma muborak", "pose": "time"}, {"slug": "shanba", "name": "Shanba", "icon": "6️⃣", "text": "Shanba", "pose": "time"}, {"slug": "yakshanba", "name": "Yakshanba", "icon": "☀️", "text": "Yakshanba", "pose": "time"}, {"slug": "suv", "name": "Suv", "icon": "🤟", "text": "Iltimos, suv bering!", "pose": "drink"}, {"slug": "non", "name": "Non", "icon": "🫲🫱", "text": "Non kerak!", "pose": "eat"}, {"slug": "choy", "name": "Choy", "icon": "🤏", "text": "Issiq choy ichamiz!", "pose": "drink"}, {"slug": "ovqat", "name": "Ovqat", "icon": "🤌", "text": "Taom, ovqatlanish vaqti", "pose": "eat"}, {"slug": "dori", "name": "Dori", "icon": "🫳", "text": "Dori ichishim kerak!", "pose": "help"}, {"slug": "qongiroq", "name": "Qo'ng'iroq", "icon": "🤙", "text": "Menga qo'ng'iroq qiling!", "pose": "phone"}, {"slug": "pul", "name": "Pul", "icon": "🫰", "text": "Pul, to'lov qilish", "pose": "money"}, {"slug": "hojatxona", "name": "Hojatxona", "icon": "✊", "text": "Hojatxona qayerda?", "pose": "open_hands"}, {"slug": "uy", "name": "Uy", "icon": "👐", "text": "Mening uyim", "pose": "house"}, {"slug": "maktab", "name": "Maktab / O'qish", "icon": "🤲", "text": "Maktab, o'qish joyi", "pose": "house"}];
         let tapGestureIdx = 0;
 
         if (avatarPod) {
@@ -3583,9 +3576,11 @@
                     avatarPod.classList.remove('minimized');
                     if (avatarMinBtn) avatarMinBtn.innerHTML = '<i class="fa-solid fa-compress"></i>';
                 }
-                const g = DEMO_TAP_GESTURES[tapGestureIdx % DEMO_TAP_GESTURES.length];
+                const idx = tapGestureIdx % ALL_UZ_GESTURES.length;
+                const g = ALL_UZ_GESTURES[idx];
                 tapGestureIdx++;
-                triggerAvatarGesture(g.gesture, g.icon, g.text);
+                const countPrefix = `[${idx + 1}/${ALL_UZ_GESTURES.length}] `;
+                triggerAvatarGesture(g.slug, g.icon, countPrefix + g.text, g.pose);
             });
         }
 
@@ -4247,31 +4242,50 @@
             }, 3800);
         }
 
-        function triggerAvatarGesture(rawText, icon = "✋", spokenLabel = "") {
+        function triggerAvatarGesture(rawText, icon = "✋", spokenLabel = "", explicitPose = null) {
             if (!rawText) return;
             const t = rawText.toLowerCase().trim();
             const label = spokenLabel || rawText;
 
             // 1. Agar 3D rejimida bo'lsa (Three.js kinematik suyaklar)
             if (!isRealHumanMode) {
-                let targetGesture = 'signing';
+                let targetGesture = explicitPose || 'signing';
                 let targetIcon = icon || "✋";
-                if (t.includes('salom') || t.includes('hello')) targetGesture = 'salom';
-                else if (t.includes('rahmat') || t.includes('tashakkur') || t.includes('thanks')) targetGesture = 'rahmat';
-                else if (t.includes('kut') || t.includes('stay') || t.includes('wait')) targetGesture = 'kuting';
-                else if (t.includes('zor') || t.includes('ajoyib') || t.includes('yaxshi')) targetGesture = 'zor';
-                else if (t.includes('sev') || t.includes('love')) targetGesture = 'sevaman';
-                else if (t.includes('yoq') || t.includes('emas') || t.includes('not')) targetGesture = 'yoq';
-                else if (t.includes('ha') || t.includes('roziman') || t.includes('togri')) targetGesture = 'ha';
-                else if (t.includes('iltimos') || t.includes('kechirasiz')) targetGesture = 'iltimos';
-                else if (t.includes('ozbekiston') || t.includes('vatan')) targetGesture = 'vatan';
-                else if (t.includes('yordam') || t.includes('sos')) targetGesture = 'yordam';
-                else if (t.includes('suv') || t.includes('ichish')) targetGesture = 'suv';
+
+                if (!explicitPose && typeof ALL_UZ_GESTURES !== 'undefined') {
+                    const match = ALL_UZ_GESTURES.find(g => 
+                        t.includes(g.slug) || 
+                        t.includes(g.name.toLowerCase()) || 
+                        g.name.toLowerCase().includes(t) ||
+                        t.includes(g.text.toLowerCase())
+                    );
+                    if (match) {
+                        targetGesture = match.pose;
+                        targetIcon = match.icon;
+                    } else if (t.includes('salom') || t.includes('hello')) targetGesture = 'wave';
+                    else if (t.includes('rahmat') || t.includes('thanks')) targetGesture = 'heart';
+                    else if (t.includes('ha') || t.includes('zor') || t.includes('ajoyib')) targetGesture = 'thumbs_up';
+                    else if (t.includes('yoq') || t.includes('emas')) targetGesture = 'shake_no';
+                    else if (t.includes('sev') || t.includes('love')) targetGesture = 'ily';
+                    else if (t.includes('kut') || t.includes('toxtang')) targetGesture = 'stop';
+                    else if (t.includes('suv') || t.includes('choy') || t.includes('ichish')) targetGesture = 'drink';
+                    else if (t.includes('ovqat') || t.includes('non') || t.includes('yeyish')) targetGesture = 'eat';
+                    else if (t.includes('pul') || t.includes('qancha')) targetGesture = 'money';
+                    else if (t.includes('telefon') || t.includes('aloqa')) targetGesture = 'phone';
+                    else if (t.includes('kitob') || t.includes('oquvchi')) targetGesture = 'book';
+                    else if (t.includes('uy') || t.includes('oila')) targetGesture = 'house';
+                    else if (t.includes('mashina') || t.includes('yol')) targetGesture = 'drive';
+                    else if (t.includes('yordam') || t.includes('doktor')) targetGesture = 'help';
+                    else if (t.includes('quyosh') || t.includes('havo')) targetGesture = 'nature';
+                    else if (t.includes('ota') || t.includes('ona') || t.includes('aka')) targetGesture = 'family';
+                    else if (t.includes('vaqt') || t.includes('soat') || t.includes('bugun')) targetGesture = 'time';
+                    else targetGesture = 'open_hands';
+                }
 
                 avatarState.gesture = targetGesture;
                 avatarState.text = label;
                 avatarState.icon = targetIcon;
-                avatarState.timer = performance.now() + 3800;
+                avatarState.timer = performance.now() + 4000;
 
                 if (avatarCaptionIcon) avatarCaptionIcon.textContent = targetIcon;
                 if (avatarCaptionText) avatarCaptionText.textContent = label;
@@ -4407,143 +4421,260 @@
                 }
 
                 switch (avatarState.gesture) {
+                    case 'wave':
                     case 'salom':
-                        lerpRotation(rArm, -0.10, 0.10, 0.60);
-                        lerpRotation(rForeArm, -1.05 + Math.sin(time * 6) * 0.1, 0.25, 0.65);
-                        lerpRotation(rHand, -0.30, 0.15, -0.10);
-                        lerpRotation(lArm, 0.70, 0.0, -0.15);
-                        lerpRotation(lForeArm, 0.35, 0.0, 0.20);
-                        if (head) lerpRotation(head, 0.16 + Math.sin(time * 4) * 0.06, 0.0, 0.0);
+                    case 'xayr':
+                        lerpRotation(rArm, 0.15, 0.10, 0.55);
+                        lerpRotation(rForeArm, -0.95 + Math.sin(time * 7) * 0.15, 0.25, 0.60);
+                        lerpRotation(rHand, -0.20, Math.sin(time * 7) * 0.25, 0);
+                        lerpRotation(lArm, 1.25, -0.05, -0.10);
+                        lerpRotation(lForeArm, 0.25, 0.0, 0.05);
+                        if (head) lerpRotation(head, 0.14 + Math.sin(time * 4) * 0.05, 0.0, 0.0);
+                        setFingerPose(b, 'right', 'open');
+                        setFingerPose(b, 'left', 'relaxed');
+                        break;
+
+                    case 'heart':
+                    case 'rahmat':
+                    case 'vatan':
+                        lerpRotation(rArm, 0.35, -0.20, -0.30);
+                        lerpRotation(rForeArm, -0.90, 0.30, 0.50);
+                        lerpRotation(rHand, -0.25, 0, 0);
+                        lerpRotation(lArm, 1.25, -0.05, -0.10);
+                        lerpRotation(lForeArm, 0.25, 0.0, 0.05);
+                        if (head) lerpRotation(head, 0.22 + Math.sin(time * 3) * 0.04, 0.0, 0.0);
                         setFingerPose(b, 'right', 'flat');
                         setFingerPose(b, 'left', 'relaxed');
                         break;
+
+                    case 'thumbs_up':
+                    case 'zor':
+                    case 'ha':
+                        lerpRotation(rArm, 0.25, 0.10, 0.45);
+                        lerpRotation(rForeArm, -0.80 + Math.sin(time * 6) * 0.08, 0.15, 0.45);
+                        lerpRotation(rHand, -0.20, 0, 0);
+                        lerpRotation(lArm, 1.25, -0.05, -0.10);
+                        lerpRotation(lForeArm, 0.25, 0.0, 0.05);
+                        if (head) lerpRotation(head, 0.18 + Math.sin(time * 6) * 0.10, 0.0, 0.0);
+                        setFingerPose(b, 'right', 'thumbsUp');
+                        setFingerPose(b, 'left', 'relaxed');
+                        break;
+
+                    case 'shake_no':
+                    case 'yoq':
+                        lerpRotation(rArm, 0.30, 0.05, 0.40);
+                        lerpRotation(rForeArm, -0.70, Math.sin(time * 8) * 0.30, 0.35);
+                        lerpRotation(rHand, 0.0, Math.sin(time * 8) * 0.35, 0.0);
+                        lerpRotation(lArm, 1.25, -0.05, -0.10);
+                        lerpRotation(lForeArm, 0.25, 0.0, 0.05);
+                        if (head) lerpRotation(head, 0.0, Math.sin(time * 8) * 0.22, 0.0);
+                        setFingerPose(b, 'right', 'flat');
+                        setFingerPose(b, 'left', 'relaxed');
+                        break;
+
+                    case 'ily':
+                    case 'sevaman':
+                        lerpRotation(rArm, 0.20, 0.05, 0.50);
+                        lerpRotation(rForeArm, -0.85, 0.15, 0.45);
+                        lerpRotation(rHand, -0.20, 0, 0);
+                        lerpRotation(lArm, 0.20, -0.05, -0.50);
+                        lerpRotation(lForeArm, -0.85, -0.15, -0.45);
+                        lerpRotation(lHand, -0.20, 0, 0);
+                        if (head) lerpRotation(head, 0.08, 0.0, 0.0);
+                        setFingerPose(b, 'right', 'ily');
+                        setFingerPose(b, 'left', 'ily');
+                        break;
+
+                    case 'point':
+                    case 'siz':
+                        lerpRotation(rArm, 0.25, 0.05, 0.40);
+                        lerpRotation(rForeArm, -0.65 + Math.sin(time * 4) * 0.08, 0.10, 0.30);
+                        lerpRotation(rHand, -0.15, 0.0, 0.0);
+                        lerpRotation(lArm, 1.25, -0.05, -0.10);
+                        lerpRotation(lForeArm, 0.25, 0.0, 0.05);
+                        if (head) lerpRotation(head, 0.06, 0.0, 0.0);
+                        setFingerPose(b, 'right', 'point');
+                        setFingerPose(b, 'left', 'relaxed');
+                        break;
+
+                    case 'stop':
+                    case 'kuting':
+                        lerpRotation(rArm, 0.22, 0.05, 0.45);
+                        lerpRotation(rForeArm, -0.70, 0.0, 0.35);
+                        lerpRotation(rHand, -0.55, 0.0, 0.0);
+                        lerpRotation(lArm, 1.25, -0.05, -0.10);
+                        lerpRotation(lForeArm, 0.25, 0.0, 0.05);
+                        if (head) lerpRotation(head, 0.0, 0.0, 0.0);
+                        setFingerPose(b, 'right', 'open');
+                        setFingerPose(b, 'left', 'relaxed');
+                        break;
+
+                    case 'drink':
+                        lerpRotation(rArm, 0.28, -0.15, 0.35);
+                        lerpRotation(rForeArm, -1.25 + Math.sin(time * 4) * 0.10, 0.30, 0.65);
+                        lerpRotation(rHand, -0.40, 0, 0);
+                        lerpRotation(lArm, 1.25, -0.05, -0.10);
+                        lerpRotation(lForeArm, 0.25, 0.0, 0.05);
+                        if (head) lerpRotation(head, -0.15, 0, 0);
+                        setFingerPose(b, 'right', 'pinch');
+                        setFingerPose(b, 'left', 'relaxed');
+                        break;
+
+                    case 'eat':
+                        lerpRotation(rArm, 0.30, -0.20, 0.30);
+                        lerpRotation(rForeArm, -1.30 + Math.sin(time * 5) * 0.12, 0.35, 0.60);
+                        lerpRotation(rHand, -0.25, 0, 0);
+                        lerpRotation(lArm, 1.25, -0.05, -0.10);
+                        lerpRotation(lForeArm, 0.25, 0.0, 0.05);
+                        if (head) lerpRotation(head, 0.08, 0, 0);
+                        setFingerPose(b, 'right', 'pinch');
+                        setFingerPose(b, 'left', 'relaxed');
+                        break;
+
+                    case 'money':
+                        lerpRotation(rArm, 0.30, 0.05, 0.35);
+                        lerpRotation(rForeArm, -0.75, 0.15, 0.40);
+                        lerpRotation(rHand, 0.20, Math.sin(time * 8) * 0.15, 0);
+                        lerpRotation(lArm, 1.25, -0.05, -0.10);
+                        lerpRotation(lForeArm, 0.25, 0.0, 0.05);
+                        setFingerPose(b, 'right', 'pinch');
+                        setFingerPose(b, 'left', 'relaxed');
+                        break;
+
+                    case 'phone':
+                        lerpRotation(rArm, 0.10, 0.15, 0.50);
+                        lerpRotation(rForeArm, -1.35, 0.35, 0.65);
+                        lerpRotation(rHand, -0.30, 0, 0);
+                        lerpRotation(lArm, 1.25, -0.05, -0.10);
+                        lerpRotation(lForeArm, 0.25, 0.0, 0.05);
+                        if (head) lerpRotation(head, 0.08, 0.12, 0.08);
+                        setFingerPose(b, 'right', 'ily');
+                        setFingerPose(b, 'left', 'relaxed');
+                        break;
+
+                    case 'book':
+                        lerpRotation(rArm, 0.35, 0.10, 0.30);
+                        lerpRotation(rForeArm, -0.80, 0.15, 0.40);
+                        lerpRotation(rHand, -0.40, -0.30, 0);
+                        lerpRotation(lArm, 0.35, -0.10, -0.30);
+                        lerpRotation(lForeArm, -0.80, -0.15, -0.40);
+                        lerpRotation(lHand, -0.40, 0.30, 0);
+                        if (head) lerpRotation(head, 0.15, 0, 0);
+                        setFingerPose(b, 'right', 'flat');
+                        setFingerPose(b, 'left', 'flat');
+                        break;
+
+                    case 'house':
+                        lerpRotation(rArm, 0.10, 0.10, 0.50);
+                        lerpRotation(rForeArm, -1.10, 0.20, 0.60);
+                        lerpRotation(lArm, 0.10, -0.10, -0.50);
+                        lerpRotation(lForeArm, -1.10, -0.20, -0.60);
+                        setFingerPose(b, 'right', 'flat');
+                        setFingerPose(b, 'left', 'flat');
+                        break;
+
+                    case 'drive':
+                        lerpRotation(rArm, 0.30, 0.10, 0.35);
+                        lerpRotation(rForeArm, -0.75 + Math.sin(time * 4) * 0.10, 0, 0.35);
+                        lerpRotation(lArm, 0.30, -0.10, -0.35);
+                        lerpRotation(lForeArm, -0.75 - Math.sin(time * 4) * 0.10, 0, -0.35);
+                        setFingerPose(b, 'right', 'fist');
+                        setFingerPose(b, 'left', 'fist');
+                        break;
+
+                    case 'help':
+                    case 'yordam':
+                        lerpRotation(rArm, 0.25, 0.10, 0.40);
+                        lerpRotation(rForeArm, -0.85, 0.20, 0.45);
+                        lerpRotation(lArm, 0.35, -0.10, -0.35);
+                        lerpRotation(lForeArm, -0.70, -0.15, -0.35);
+                        setFingerPose(b, 'right', 'flat');
+                        setFingerPose(b, 'left', 'fist');
+                        break;
+
+                    case 'nature':
+                        lerpRotation(rArm, -0.15, 0.15, 0.50);
+                        lerpRotation(rForeArm, -0.90 + Math.sin(time * 3) * 0.10, 0.15, 0.50);
+                        lerpRotation(lArm, 1.25, -0.05, -0.10);
+                        lerpRotation(lForeArm, 0.25, 0.0, 0.05);
+                        setFingerPose(b, 'right', 'open');
+                        setFingerPose(b, 'left', 'relaxed');
+                        break;
+
+                    case 'family':
+                        lerpRotation(rArm, 0.25, 0.10, 0.40);
+                        lerpRotation(rForeArm, -0.75, 0.15, 0.40);
+                        lerpRotation(lArm, 0.25, -0.10, -0.40);
+                        lerpRotation(lForeArm, -0.75, -0.15, -0.40);
+                        setFingerPose(b, 'right', 'relaxed');
+                        setFingerPose(b, 'left', 'relaxed');
+                        break;
+
+                    case 'time':
+                        lerpRotation(lArm, 0.35, -0.15, -0.35);
+                        lerpRotation(lForeArm, -0.85, -0.15, -0.45);
+                        lerpRotation(rArm, 0.30, 0.10, 0.35);
+                        lerpRotation(rForeArm, -0.90, 0.25, 0.55);
+                        setFingerPose(b, 'right', 'point');
+                        setFingerPose(b, 'left', 'flat');
+                        break;
+
+                    case 'number':
+                        lerpRotation(rArm, 0.25, 0.08, 0.45);
+                        lerpRotation(rForeArm, -0.75, 0.12, 0.40);
+                        lerpRotation(lArm, 1.25, -0.05, -0.10);
+                        lerpRotation(lForeArm, 0.25, 0.0, 0.05);
+                        setFingerPose(b, 'right', 'victory');
+                        setFingerPose(b, 'left', 'relaxed');
+                        break;
+
+                    case 'question':
+                    case 'savol':
+                        lerpRotation(rArm, 0.30, 0.15, 0.40);
+                        lerpRotation(rForeArm, -0.70 + Math.sin(time * 3) * 0.08, 0.25, 0.45);
+                        lerpRotation(rHand, -0.40, -0.35, 0.20);
+                        lerpRotation(lArm, 0.30, -0.15, -0.40);
+                        lerpRotation(lForeArm, -0.70 + Math.sin(time * 3) * 0.08, -0.25, -0.45);
+                        lerpRotation(lHand, -0.40, 0.35, -0.20);
+                        if (head) lerpRotation(head, 0.06, 0.08, 0.08);
+                        setFingerPose(b, 'right', 'open');
+                        setFingerPose(b, 'left', 'open');
+                        break;
+
+                    case 'daktil':
+                        lerpRotation(rArm, 0.25, 0.08, 0.45);
+                        lerpRotation(rForeArm, -0.85, 0.15, 0.45);
+                        lerpRotation(lArm, 1.25, -0.05, -0.10);
+                        lerpRotation(lForeArm, 0.25, 0.0, 0.05);
+                        setFingerPose(b, 'right', 'flat');
+                        setFingerPose(b, 'left', 'relaxed');
+                        break;
+
+                    case 'open_hands':
                     case 'xush_kelibsiz':
-                        lerpRotation(rArm, 0.15, 0.05, 0.50);
-                        lerpRotation(rForeArm, -0.55 + Math.sin(time * 3) * 0.08, 0.15, 0.35);
+                        lerpRotation(rArm, 0.22, 0.08, 0.45);
+                        lerpRotation(rForeArm, -0.65 + Math.sin(time * 3) * 0.08, 0.15, 0.35);
                         lerpRotation(rHand, -0.20, -0.30, 0.10);
-                        lerpRotation(lArm, 0.15, -0.05, -0.50);
-                        lerpRotation(lForeArm, -0.55 + Math.sin(time * 3) * 0.08, -0.15, -0.35);
+                        lerpRotation(lArm, 0.22, -0.08, -0.45);
+                        lerpRotation(lForeArm, -0.65 + Math.sin(time * 3) * 0.08, -0.15, -0.35);
                         lerpRotation(lHand, -0.20, 0.30, -0.10);
                         if (head) lerpRotation(head, 0.12, 0.0, 0.0);
                         setFingerPose(b, 'right', 'open');
                         setFingerPose(b, 'left', 'open');
                         break;
-                    case 'siz':
-                        lerpRotation(rArm, 0.20, 0.05, 0.45);
-                        lerpRotation(rForeArm, -0.60 + Math.sin(time * 4) * 0.08, 0.10, 0.30);
-                        lerpRotation(rHand, -0.15, 0.0, 0.0);
-                        lerpRotation(lArm, 0.70, 0.0, -0.15);
-                        lerpRotation(lForeArm, 0.35, 0.0, 0.20);
-                        if (head) lerpRotation(head, 0.06, 0.0, 0.0);
-                        setFingerPose(b, 'right', 'point');
-                        setFingerPose(b, 'left', 'relaxed');
-                        break;
-                    case 'savol':
-                        lerpRotation(rArm, 0.25, 0.10, 0.40);
-                        lerpRotation(rForeArm, -0.50 + Math.sin(time * 5) * 0.1, 0.20, 0.40);
-                        lerpRotation(rHand, -0.30, -0.35, 0.15);
-                        lerpRotation(lArm, 0.25, -0.10, -0.40);
-                        lerpRotation(lForeArm, -0.50 + Math.sin(time * 5) * 0.1, -0.20, -0.40);
-                        lerpRotation(lHand, -0.30, 0.35, -0.15);
-                        if (head) lerpRotation(head, 0.06, 0.08, 0.08);
-                        setFingerPose(b, 'right', 'open');
-                        setFingerPose(b, 'left', 'open');
-                        break;
-                    case 'yordam':
-                        lerpRotation(rArm, 0.10, 0.05, 0.55);
-                        lerpRotation(rForeArm, -0.80 + Math.sin(time * 5) * 0.1, 0.20, 0.50);
-                        lerpRotation(rHand, -0.25, 0.0, 0.0);
-                        lerpRotation(lArm, 0.25, -0.05, -0.40);
-                        lerpRotation(lForeArm, -0.65, -0.15, -0.35);
-                        lerpRotation(lHand, -0.30, 0.25, 0.0);
-                        if (head) lerpRotation(head, 0.10, 0.0, 0.0);
-                        setFingerPose(b, 'right', 'flat');
-                        setFingerPose(b, 'left', 'flat');
-                        break;
-                    case 'rahmat':
-                        lerpRotation(rArm, 0.05, 0.10, 0.55);
-                        lerpRotation(rForeArm, -0.95, 0.25, 0.60);
-                        lerpRotation(rHand, -0.30, 0.0, -0.10);
-                        lerpRotation(lArm, 0.05, -0.10, -0.55);
-                        lerpRotation(lForeArm, -0.95, -0.25, -0.60);
-                        lerpRotation(lHand, -0.30, 0.0, 0.10);
-                        if (head) lerpRotation(head, 0.22 + Math.sin(time * 3) * 0.05, 0.0, 0.0);
-                        setFingerPose(b, 'right', 'flat');
-                        setFingerPose(b, 'left', 'flat');
-                        break;
-                    case 'kuting':
-                        lerpRotation(rArm, 0.18, 0.05, 0.45);
-                        lerpRotation(rForeArm, -0.70, 0.0, 0.35);
-                        lerpRotation(rHand, -0.50, 0.0, 0.0);
-                        lerpRotation(lArm, 0.70, 0.0, -0.15);
-                        lerpRotation(lForeArm, 0.35, 0.0, 0.20);
-                        if (head) lerpRotation(head, 0.0, 0.0, 0.0);
-                        setFingerPose(b, 'right', 'open');
-                        setFingerPose(b, 'left', 'relaxed');
-                        break;
-                    case 'zor':
-                        lerpRotation(rArm, 0.15, 0.08, 0.50);
-                        lerpRotation(rForeArm, -0.75, 0.15, 0.45);
-                        lerpRotation(rHand, -0.20, 0.0, 0.0);
-                        lerpRotation(lArm, 0.70, 0.0, -0.15);
-                        lerpRotation(lForeArm, 0.35, 0.0, 0.20);
-                        if (head) lerpRotation(head, 0.12 + Math.sin(time * 5) * 0.08, 0.0, 0.0);
-                        setFingerPose(b, 'right', 'thumbsUp');
-                        setFingerPose(b, 'left', 'relaxed');
-                        break;
-                    case 'sevaman':
-                        lerpRotation(rArm, 0.15, 0.05, 0.50);
-                        lerpRotation(rForeArm, -0.75, 0.15, 0.45);
-                        lerpRotation(rHand, -0.20, 0.0, 0.0);
-                        lerpRotation(lArm, 0.15, -0.05, -0.50);
-                        lerpRotation(lForeArm, -0.75, -0.15, -0.45);
-                        lerpRotation(lHand, -0.20, 0.0, 0.0);
-                        if (head) lerpRotation(head, 0.0, 0.0, 0.0);
-                        setFingerPose(b, 'right', 'ily');
-                        setFingerPose(b, 'left', 'ily');
-                        break;
-                    case 'yoq':
-                        lerpRotation(rArm, 0.20, 0.05, 0.45);
-                        lerpRotation(rForeArm, -0.65, Math.sin(time * 8) * 0.25, 0.35);
-                        lerpRotation(rHand, 0.0, Math.sin(time * 8) * 0.35, 0.0);
-                        lerpRotation(lArm, 0.70, 0.0, -0.15);
-                        lerpRotation(lForeArm, 0.35, 0.0, 0.20);
-                        if (head) lerpRotation(head, 0.0, Math.sin(time * 8) * 0.22, 0.0);
-                        setFingerPose(b, 'right', 'open');
-                        setFingerPose(b, 'left', 'relaxed');
-                        break;
-                    case 'ha':
-                        lerpRotation(rArm, 0.20, 0.05, 0.45);
-                        lerpRotation(rForeArm, -0.65 + Math.sin(time * 8) * 0.1, 0.10, 0.35);
-                        lerpRotation(rHand, -0.20, 0.0, 0.0);
-                        lerpRotation(lArm, 0.70, 0.0, -0.15);
-                        lerpRotation(lForeArm, 0.35, 0.0, 0.20);
-                        if (head) lerpRotation(head, 0.22 + Math.sin(time * 8) * 0.14, 0.0, 0.0);
-                        setFingerPose(b, 'right', 'thumbsUp');
-                        setFingerPose(b, 'left', 'relaxed');
-                        break;
-                    case 'vatan':
-                        lerpRotation(rArm, 0.05, 0.10, 0.55);
-                        lerpRotation(rForeArm, -0.95, 0.25, 0.60);
-                        lerpRotation(rHand, -0.30, 0.0, -0.10);
-                        lerpRotation(lArm, 0.70, 0.0, -0.15);
-                        lerpRotation(lForeArm, 0.35, 0.0, 0.20);
-                        if (head) lerpRotation(head, 0.10, 0.0, 0.0);
-                        setFingerPose(b, 'right', 'flat');
-                        setFingerPose(b, 'left', 'relaxed');
-                        break;
+
                     case 'signing':
-                        lerpRotation(rArm, 0.22 + Math.sin(time * 4) * 0.08, 0.05, 0.42 + Math.cos(time * 3.5) * 0.12);
-                        lerpRotation(rForeArm, -0.65 + Math.cos(time * 4.5) * 0.18, 0.12, 0.40 + Math.sin(time * 4.5) * 0.15);
+                        lerpRotation(rArm, 0.25 + Math.sin(time * 4) * 0.08, 0.05, 0.42);
+                        lerpRotation(rForeArm, -0.65 + Math.cos(time * 4.5) * 0.15, 0.12, 0.40);
                         lerpRotation(rHand, -0.15 + Math.sin(time * 6) * 0.2, Math.cos(time * 5) * 0.25, 0);
-                        lerpRotation(lArm, 0.22 + Math.cos(time * 4.2) * 0.08, -0.05, -0.42 - Math.sin(time * 3.7) * 0.12);
-                        lerpRotation(lForeArm, -0.65 + Math.sin(time * 4.7) * 0.18, -0.12, -0.40 - Math.cos(time * 4.7) * 0.15);
+                        lerpRotation(lArm, 0.25 + Math.cos(time * 4) * 0.08, -0.05, -0.42);
+                        lerpRotation(lForeArm, -0.65 + Math.sin(time * 4.5) * 0.15, -0.12, -0.40);
                         lerpRotation(lHand, -0.15 + Math.cos(time * 5.8) * 0.2, -Math.sin(time * 5) * 0.25, 0);
-                        if (head) lerpRotation(head, 0.08 + Math.sin(time * 3.2) * 0.06, Math.sin(time * 2.1) * 0.08, Math.cos(time * 2.5) * 0.03);
-                        const fPose = (Math.sin(time * 3.5) > 0) ? 'open' : 'flat';
-                        setFingerPose(b, 'right', fPose);
-                        setFingerPose(b, 'left', fPose);
+                        if (head) lerpRotation(head, 0.08 + Math.sin(time * 3) * 0.05, Math.sin(time * 2) * 0.06, 0);
+                        setFingerPose(b, 'right', 'open');
+                        setFingerPose(b, 'left', 'flat');
                         break;
+
                     default:
                         // Tabiiy tinch holat (Qo'llar pastda gavda yonida erkin tushgan, nafas harakati)
                         lerpRotation(rArm, 1.25, 0.05, 0.10);
@@ -4753,12 +4884,23 @@
                 if (pose === 'open') curl = 0.05;
                 else if (pose === 'flat') curl = 0.15;
                 else if (pose === 'relaxed') curl = 0.35;
+                else if (pose === 'fist') curl = 1.35;
                 else if (pose === 'point') {
                     curl = (f === 'Index') ? 0.05 : 1.35;
+                } else if (pose === 'victory') {
+                    curl = (f === 'Index' || f === 'Middle') ? 0.05 : 1.35;
+                } else if (pose === 'three') {
+                    curl = (f === 'Index' || f === 'Middle' || f === 'Ring') ? 0.05 : 1.35;
+                } else if (pose === 'four') {
+                    curl = (f === 'Thumb') ? 1.35 : 0.05;
                 } else if (pose === 'thumbsUp') {
                     curl = (f === 'Thumb') ? -0.25 : 1.35;
                 } else if (pose === 'ily') {
                     curl = (f === 'Thumb' || f === 'Index' || f === 'Pinky') ? 0.05 : 1.35;
+                } else if (pose === 'ok') {
+                    curl = (f === 'Thumb' || f === 'Index') ? 0.95 : 0.05;
+                } else if (pose === 'pinch') {
+                    curl = (f === 'Thumb' || f === 'Index') ? 0.75 : 1.25;
                 }
 
                 lerpRotation(b1, curl, 0, 0, 0.2);

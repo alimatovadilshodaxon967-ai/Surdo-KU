@@ -14,8 +14,8 @@ dist_static = os.path.join(dist_dir, 'static')
 if not os.path.exists(dist_static):
     shutil.copytree('static', dist_static)
 
-# 2. Export 108 gestures to dist/static/gestures.json
-qs = SignGesture.objects.filter(is_active=True).exclude(category='Daktil')
+# 2. Export all 212 active gestures to dist/static/gestures.json
+qs = SignGesture.objects.filter(is_active=True)
 gestures = list(qs.values(
     'id', 'slug', 'name', 'category', 'hand_type', 'icon', 
     'spoken_text', 'description', 'audio_key', 'finger_pattern'
