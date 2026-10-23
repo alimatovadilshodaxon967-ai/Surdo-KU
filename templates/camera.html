@@ -3565,7 +3565,17 @@
             });
         }
 
-        // Avatar ustiga bosilganda salomlashish
+        // Avatar ustiga bosilganda imo-ishoralarni ketma-ket namoyish etish
+        const DEMO_TAP_GESTURES = [
+            { gesture: "salom", icon: "👋", text: "Assalomu alaykum!" },
+            { gesture: "rahmat", icon: "🙏", text: "Rahmat! / Tashakkur!" },
+            { gesture: "zor", icon: "👍", text: "Zo'r! / Ajoyib!" },
+            { gesture: "sevaman", icon: "🤟", text: "Sizni yaxshi ko'raman!" },
+            { gesture: "vatan", icon: "🇺🇿", text: "O'zbekiston!" },
+            { gesture: "kuting", icon: "✋", text: "Iltimos, kuting!" }
+        ];
+        let tapGestureIdx = 0;
+
         if (avatarPod) {
             avatarPod.addEventListener('click', (e) => {
                 if (e.target.closest('#avatar-min-btn') || e.target.closest('#avatar-size-btn')) return;
@@ -3573,10 +3583,9 @@
                     avatarPod.classList.remove('minimized');
                     if (avatarMinBtn) avatarMinBtn.innerHTML = '<i class="fa-solid fa-compress"></i>';
                 }
-                if (aiAvatarVideo && aiAvatarVideo.paused) {
-                    aiAvatarVideo.play().catch(() => {});
-                }
-                triggerAvatarGesture("salom", "👋", "Assalomu alaykum!");
+                const g = DEMO_TAP_GESTURES[tapGestureIdx % DEMO_TAP_GESTURES.length];
+                tapGestureIdx++;
+                triggerAvatarGesture(g.gesture, g.icon, g.text);
             });
         }
 
