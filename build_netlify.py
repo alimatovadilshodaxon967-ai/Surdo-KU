@@ -9,13 +9,10 @@ django.setup()
 from home.models import SignGesture
 
 dist_dir = 'dist'
-if os.path.exists(dist_dir):
-    shutil.rmtree(dist_dir)
 os.makedirs(dist_dir, exist_ok=True)
-
-# 1. Copy static folder to dist/static
 dist_static = os.path.join(dist_dir, 'static')
-shutil.copytree('static', dist_static)
+if not os.path.exists(dist_static):
+    shutil.copytree('static', dist_static)
 
 # 2. Export 108 gestures to dist/static/gestures.json
 qs = SignGesture.objects.filter(is_active=True).exclude(category='Daktil')
