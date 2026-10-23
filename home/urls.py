@@ -11,5 +11,7 @@ urlpatterns = [
     path('api/gestures/', views.GestureListView.as_view(), name='gesture_list'),
     path('api/gestures/match/', views.GestureMatchView.as_view(), name='gesture_match'),
     path('api/ai-grammar/', views.AIGrammarView.as_view(), name='ai_grammar'),
+    path('api/speech-chat/', views.SpeechChatView.as_view(), name='speech_chat'),
+    path('widget-demo/', views.WidgetDemoView.as_view(), name='widget_demo'),
 ]
 

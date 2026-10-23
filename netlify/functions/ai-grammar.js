@@ -1,6 +1,10 @@
 const https = require('https');
 
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY || Buffer.from("QVEuQWI4Uk42S0xvOGQ0Qmw3MlpRZl9TNkFya3VDTHdMaUc4RVZEVkxwVnVXdUU1MEh3bGc=", "base64").toString("utf-8");
+const GEMINI_API_KEYS = [
+    process.env.GEMINI_API_KEY || Buffer.from("QVEuQWI4Uk42S0xvOGQ0Qmw3MlpRZl9TNkFya3VDTHdMaUc4RVZEVkxwVnVXdUU1MEh3bGc=", "base64").toString("utf-8"),
+    process.env.GEMINI_BACKUP_KEY || Buffer.from("QVEuQWI4Uk42TEhER05tQU9BdzNBck16cjJhcGFxcHV4Y0Nqc1JYUXRuUmxPc2FwdjJld3c=", "base64").toString("utf-8")
+];
+let currentGeminiKeyIndex = 0;
 
 exports.handler = async function(event, context) {
     if (event.httpMethod !== 'POST') {
@@ -36,49 +40,61 @@ exports.handler = async function(event, context) {
         generationConfig: { temperature: 0.25 }
     });
 
-    const url = `/v1beta/models/gemini-flash-lite-latest:generateContent?key=${GEMINI_API_KEY}`;
+    let lastError = null;
+    for (let attempt = 0; attempt < GEMINI_API_KEYS.length; attempt++) {
+        const apiKey = GEMINI_API_KEYS[currentGeminiKeyIndex];
+        const url = `/v1beta/models/gemini-flash-lite-latest:generateContent?key=${apiKey}`;
 
-    try {
-        const geminiRes = await new Promise((resolve, reject) => {
-            const req = https.request({
-                hostname: 'generativelanguage.googleapis.com',
-                path: url,
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Content-Length': Buffer.byteLength(payload)
-                }
-            }, res => {
-                let data = '';
-                res.on('data', chunk => data += chunk);
-                res.on('end', () => {
-                    try {
-                        resolve(JSON.parse(data));
-                    } catch(e) {
-                        reject(e);
+        try {
+            const geminiRes = await new Promise((resolve, reject) => {
+                const req = https.request({
+                    hostname: 'generativelanguage.googleapis.com',
+                    path: url,
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Content-Length': Buffer.byteLength(payload)
                     }
+                }, res => {
+                    let data = '';
+                    res.on('data', chunk => data += chunk);
+                    res.on('end', () => {
+                        if (res.statusCode >= 200 && res.statusCode < 300) {
+                            try {
+                                resolve(JSON.parse(data));
+                            } catch(e) {
+                                reject(e);
+                            }
+                        } else {
+                            reject(new Error(`Gemini status ${res.statusCode}: ${data}`));
+                        }
+                    });
                 });
+                req.on('error', reject);
+                req.write(payload);
+                req.end();
             });
-            req.on('error', reject);
-            req.write(payload);
-            req.end();
-        });
 
-        let sentence = geminiRes.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || "";
-        if ((sentence.startsWith('"') && sentence.endsWith('"')) || (sentence.startsWith("'") && sentence.endsWith("'"))) {
-            sentence = sentence.slice(1, -1).trim();
+            let sentence = geminiRes.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || "";
+            if ((sentence.startsWith('"') && sentence.endsWith('"')) || (sentence.startsWith("'") && sentence.endsWith("'"))) {
+                sentence = sentence.slice(1, -1).trim();
+            }
+
+            return {
+                statusCode: 200,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status: 'success', sentence: sentence || wordsStr })
+            };
+        } catch(err) {
+            lastError = err;
+            console.warn(`[Gemini Grammar Key #${currentGeminiKeyIndex + 1} failover]: ${err.message}. Zaxira kalitga o'tilmoqda...`);
+            currentGeminiKeyIndex = (currentGeminiKeyIndex + 1) % GEMINI_API_KEYS.length;
         }
-
-        return {
-            statusCode: 200,
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ status: 'success', sentence: sentence || wordsStr })
-        };
-    } catch(err) {
-        return {
-            statusCode: 200,
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ status: 'success', sentence: `Hurmat bilan: ${wordsStr}. Rahmat!` })
-        };
     }
+
+    return {
+        statusCode: 200,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'success', sentence: `Hurmat bilan: ${wordsStr}. Rahmat!` })
+    };
 };

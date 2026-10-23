@@ -1,5 +1,34 @@
 const https = require('https');
 
+const GEMINI_API_KEYS = [
+    process.env.GEMINI_API_KEY || Buffer.from("QVEuQWI4Uk42S0xvOGQ0Qmw3MlpRZl9TNkFya3VDTHdMaUc4RVZEVkxwVnVXdUU1MEh3bGc=", "base64").toString("utf-8"),
+    process.env.GEMINI_BACKUP_KEY || Buffer.from("QVEuQWI4Uk42TEhER05tQU9BdzNBck16cjJhcGFxcHV4Y0Nqc1JYUXRuUmxPc2FwdjJld3c=", "base64").toString("utf-8")
+];
+let currentGeminiKeyIndex = 0;
+
+function pcmToWav(pcmBuffer, sampleRate = 24000, numChannels = 1, bitsPerSample = 16) {
+    const header = Buffer.alloc(44);
+    const byteRate = sampleRate * numChannels * (bitsPerSample / 8);
+    const blockAlign = numChannels * (bitsPerSample / 8);
+    const dataSize = pcmBuffer.length;
+    
+    header.write('RIFF', 0);
+    header.writeUInt32LE(36 + dataSize, 4);
+    header.write('WAVE', 8);
+    header.write('fmt ', 12);
+    header.writeUInt32LE(16, 16);
+    header.writeUInt16LE(1, 20);
+    header.writeUInt16LE(numChannels, 22);
+    header.writeUInt32LE(sampleRate, 24);
+    header.writeUInt32LE(byteRate, 28);
+    header.writeUInt16LE(blockAlign, 32);
+    header.writeUInt16LE(bitsPerSample, 34);
+    header.write('data', 36);
+    header.writeUInt32LE(dataSize, 40);
+    
+    return Buffer.concat([header, pcmBuffer]);
+}
+
 const VOICELAB_API_KEYS = [
     "vlk_x7y5QaqzTurjgFKNHJ5nFAK9D8One9XaJJV7x9FGdu4",
     "vlk_qQ4O4WlnQ-cPw23_PiBkZ8NK1Tj8Ywmu-GeltcH6VqQ",
@@ -33,6 +62,78 @@ exports.handler = async function(event, context) {
 
     if (!text) {
         return { statusCode: 400, body: 'Text query parameter is required' };
+    }
+
+    // 1. Google Gemini AI Ovoz sintezi
+    if (voice.includes('gemini') || voice.includes('google')) {
+        const vname = (voice.includes('puck') || voice.includes('erkak')) ? 'Puck' : 'Kore';
+        const geminiPayload = JSON.stringify({
+            contents: [{ parts: [{ text: `Read the following text aloud clearly: ${text}` }] }],
+            generationConfig: {
+                responseModalities: ["AUDIO"],
+                speechConfig: {
+                    voiceConfig: {
+                        prebuiltVoiceConfig: {
+                            voiceName: vname
+                        }
+                    }
+                }
+            }
+        });
+
+        for (let attempt = 0; attempt < GEMINI_API_KEYS.length; attempt++) {
+            const apiKey = GEMINI_API_KEYS[currentGeminiKeyIndex];
+            try {
+                const geminiBuffer = await new Promise((resolve, reject) => {
+                    const req = https.request({
+                        hostname: 'generativelanguage.googleapis.com',
+                        path: `/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${apiKey}`,
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Content-Length': Buffer.byteLength(geminiPayload)
+                        }
+                    }, (res) => {
+                        const chunks = [];
+                        res.on('data', chunk => chunks.push(chunk));
+                        res.on('end', () => {
+                            if (res.statusCode >= 200 && res.statusCode < 300) {
+                                try {
+                                    const parsed = JSON.parse(Buffer.concat(chunks).toString());
+                                    const b64 = parsed.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
+                                    if (b64) {
+                                        const pcm = Buffer.from(b64, 'base64');
+                                        resolve(pcmToWav(pcm));
+                                    } else {
+                                        reject(new Error("Gemini audio data missing"));
+                                    }
+                                } catch (e) {
+                                    reject(e);
+                                }
+                            } else {
+                                reject(new Error(`Gemini status ${res.statusCode}: ${Buffer.concat(chunks).toString()}`));
+                            }
+                        });
+                    });
+                    req.on('error', reject);
+                    req.write(geminiPayload);
+                    req.end();
+                });
+
+                return {
+                    statusCode: 200,
+                    headers: {
+                        'Content-Type': 'audio/wav',
+                        'Cache-Control': 'public, max-age=86400'
+                    },
+                    body: geminiBuffer.toString('base64'),
+                    isBase64Encoded: true
+                };
+            } catch (geminiErr) {
+                console.warn(`[Gemini TTS Key #${currentGeminiKeyIndex + 1} failover]: ${geminiErr.message}. Zaxira kalitga o'tilmoqda...`);
+                currentGeminiKeyIndex = (currentGeminiKeyIndex + 1) % GEMINI_API_KEYS.length;
+            }
+        }
     }
 
     const voiceId = VOICELAB_VOICES[voice] || VOICELAB_VOICES["madina"];

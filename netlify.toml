@@ -24,6 +24,16 @@
   status = 200
 
 [[redirects]]
+  from = "/api/speech-chat"
+  to = "/.netlify/functions/speech-chat"
+  status = 200
+
+[[redirects]]
+  from = "/api/speech-chat/"
+  to = "/.netlify/functions/speech-chat"
+  status = 200
+
+[[redirects]]
   from = "/api/gestures"
   to = "/static/gestures.json"
   status = 200

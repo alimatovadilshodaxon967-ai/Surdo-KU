@@ -3,7 +3,7 @@
 <html lang="uz">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Muloqot AI — O'zbek Imo-Ishora Tili va Daktil Tarjimoni</title>
     
     <!-- Google Fonts -->
@@ -19,9 +19,10 @@
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
 
-    <!-- Three.js & GLTF Loader (3D Photorealistic Surdo Avatar Engine) -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+    <!-- Three.js, MeshoptDecoder & GLTF Loader (Local High-Performance Engine) -->
+    <script src="{% static 'js/three.min.js' %}"></script>
+    <script src="{% static 'js/meshopt_decoder.js' %}"></script>
+    <script src="{% static 'js/GLTFLoader.js' %}"></script>
 
     <style>
         :root {
@@ -325,15 +326,18 @@
         }
 
         .action-btn.mic-btn {
-            background: rgba(255, 255, 255, 0.06);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            color: #e2e8f0;
+            background: linear-gradient(135deg, rgba(0, 242, 254, 0.12), rgba(79, 172, 254, 0.18));
+            border: 1px solid rgba(0, 242, 254, 0.4);
+            color: #00f2fe;
+            box-shadow: 0 0 10px rgba(0, 242, 254, 0.15);
+            font-weight: 700;
         }
 
         .action-btn.mic-btn:hover {
-            background: rgba(255, 255, 255, 0.12);
+            background: linear-gradient(135deg, rgba(0, 242, 254, 0.25), rgba(79, 172, 254, 0.3));
             color: #ffffff;
-            border-color: rgba(255, 255, 255, 0.25);
+            border-color: #00f2fe;
+            box-shadow: 0 0 16px rgba(0, 242, 254, 0.35);
         }
 
         .action-btn.mic-btn.listening {
@@ -936,6 +940,189 @@
             margin-top: 4px;
         }
 
+        /* 5. Fullscreen Ambient Corner & Edge Glow Animation (Apple Intelligence / Siri Aura) */
+        .screen-ambient-glow {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 12;
+            opacity: 0;
+            transition: opacity 0.4s ease-in-out;
+            box-shadow: inset 0 0 60px rgba(0, 242, 254, 0.4), inset 0 0 120px rgba(0, 102, 255, 0.25);
+        }
+
+        /* 4 ta burchak nurlari: O'ng, chap, tepa, past */
+        .corner-glow {
+            position: absolute;
+            width: 280px;
+            height: 280px;
+            pointer-events: none;
+            border-radius: 50%;
+            filter: blur(55px);
+            opacity: 0;
+            transition: all 0.4s ease-in-out;
+        }
+        .corner-glow.top-left {
+            top: -70px;
+            left: -70px;
+            background: radial-gradient(circle, rgba(0, 242, 254, 0.95) 0%, rgba(0, 102, 255, 0.65) 50%, transparent 80%);
+        }
+        .corner-glow.top-right {
+            top: -70px;
+            right: -70px;
+            background: radial-gradient(circle, rgba(0, 210, 255, 0.95) 0%, rgba(79, 172, 254, 0.65) 50%, transparent 80%);
+        }
+        .corner-glow.bottom-left {
+            bottom: -70px;
+            left: -70px;
+            background: radial-gradient(circle, rgba(0, 242, 254, 0.95) 0%, rgba(0, 255, 136, 0.55) 50%, transparent 80%);
+        }
+        .corner-glow.bottom-right {
+            bottom: -70px;
+            right: -70px;
+            background: radial-gradient(circle, rgba(0, 150, 255, 0.95) 0%, rgba(121, 40, 202, 0.55) 50%, transparent 80%);
+        }
+
+        /* Tepa, past, o'ng, chap to'lqin chiziqlari (Edge Waves) */
+        .edge-wave-bar {
+            position: absolute;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.35s ease;
+        }
+        .edge-wave-bar.top-edge {
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 4px;
+            background: linear-gradient(90deg, transparent, #00f2fe, #0077ff, #00f2fe, transparent);
+            box-shadow: 0 0 25px #00f2fe, 0 0 50px #0077ff;
+        }
+        .edge-wave-bar.bottom-edge {
+            bottom: 0;
+            left: 0;
+            width: 100vw;
+            height: 4px;
+            background: linear-gradient(90deg, transparent, #00f2fe, #00ff88, #00f2fe, transparent);
+            box-shadow: 0 0 25px #00f2fe, 0 0 50px #00ff88;
+        }
+        .edge-wave-bar.left-edge {
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100vh;
+            background: linear-gradient(180deg, transparent, #00f2fe, #0077ff, #00f2fe, transparent);
+            box-shadow: 0 0 25px #00f2fe, 0 0 50px #0077ff;
+        }
+        .edge-wave-bar.right-edge {
+            top: 0;
+            right: 0;
+            width: 4px;
+            height: 100vh;
+            background: linear-gradient(180deg, transparent, #00f2fe, #7928ca, #00f2fe, transparent);
+            box-shadow: 0 0 25px #00f2fe, 0 0 50px #7928ca;
+        }
+
+        /* Tinglash holati: mayin yashil-ko'k nafas olish nuri */
+        .screen-ambient-glow.listening {
+            opacity: 0.85;
+            box-shadow: inset 0 0 50px rgba(0, 242, 254, 0.4), inset 0 0 90px rgba(0, 255, 136, 0.2);
+            animation: ambientListenPulse 2.2s infinite ease-in-out;
+        }
+        .screen-ambient-glow.listening .corner-glow {
+            opacity: 0.75;
+            animation: cornerGentlePulse 2s infinite alternate ease-in-out;
+        }
+        .screen-ambient-glow.listening .edge-wave-bar {
+            opacity: 0.7;
+        }
+
+        /* O'ylash holati: tezlashgan neon ko'k nurlar */
+        .screen-ambient-glow.thinking {
+            opacity: 0.95;
+            box-shadow: inset 0 0 60px rgba(0, 242, 254, 0.55), inset 0 0 120px rgba(0, 136, 255, 0.35);
+            animation: ambientThinkPulse 1s infinite alternate ease-in-out;
+        }
+        .screen-ambient-glow.thinking .corner-glow {
+            opacity: 0.9;
+            transform: scale(1.15);
+            animation: cornerThinkPulse 0.9s infinite alternate;
+        }
+        .screen-ambient-glow.thinking .edge-wave-bar {
+            opacity: 0.9;
+        }
+
+        /* GAPIRAYOTGANDA (Speaking / AI javob berayotganda):
+           To'liq to'lqin animatsiyasi va 4 burchakda ko'k rang o'chib-yonuvchi neon to'lqin! */
+        .screen-ambient-glow.speaking {
+            opacity: 1;
+            box-shadow: 
+                inset 0 0 55px rgba(0, 242, 254, 0.9),
+                inset 0 0 110px rgba(0, 119, 255, 0.75),
+                inset 0 0 180px rgba(0, 70, 255, 0.55);
+            animation: ambientScreenWave 1.2s infinite ease-in-out;
+        }
+        .screen-ambient-glow.speaking .corner-glow {
+            opacity: 1;
+            transform: scale(1.4);
+            animation: cornerSpeakingWave 1.1s infinite alternate ease-in-out;
+        }
+        .screen-ambient-glow.speaking .edge-wave-bar {
+            opacity: 1;
+            animation: edgeWaveSpeaking 1s infinite alternate ease-in-out;
+        }
+
+        @keyframes ambientListenPulse {
+            0%, 100% { box-shadow: inset 0 0 35px rgba(0, 242, 254, 0.3), inset 0 0 60px rgba(0, 119, 255, 0.15); }
+            50% { box-shadow: inset 0 0 65px rgba(0, 242, 254, 0.6), inset 0 0 100px rgba(0, 255, 136, 0.3); }
+        }
+
+        @keyframes ambientThinkPulse {
+            0% { box-shadow: inset 0 0 40px rgba(0, 242, 254, 0.4), inset 0 0 80px rgba(0, 136, 255, 0.25); }
+            100% { box-shadow: inset 0 0 85px rgba(0, 242, 254, 0.75), inset 0 0 140px rgba(0, 136, 255, 0.5); }
+        }
+
+        @keyframes ambientScreenWave {
+            0% {
+                box-shadow: 
+                    inset 0 0 40px rgba(0, 242, 254, 0.65),
+                    inset 0 0 80px rgba(0, 119, 255, 0.45);
+            }
+            50% {
+                box-shadow: 
+                    inset 0 0 85px rgba(0, 242, 254, 1),
+                    inset 0 0 150px rgba(0, 150, 255, 0.85),
+                    inset 0 0 210px rgba(0, 80, 255, 0.65);
+            }
+            100% {
+                box-shadow: 
+                    inset 0 0 40px rgba(0, 242, 254, 0.65),
+                    inset 0 0 80px rgba(0, 119, 255, 0.45);
+            }
+        }
+
+        @keyframes cornerGentlePulse {
+            0% { transform: scale(0.95); opacity: 0.55; }
+            100% { transform: scale(1.15); opacity: 0.85; }
+        }
+        @keyframes cornerThinkPulse {
+            0% { transform: scale(1); opacity: 0.7; }
+            100% { transform: scale(1.25); opacity: 1; }
+        }
+        @keyframes cornerSpeakingWave {
+            0% { transform: scale(1.1); opacity: 0.75; filter: blur(40px); }
+            50% { transform: scale(1.55); opacity: 1; filter: blur(70px); }
+            100% { transform: scale(1.1); opacity: 0.75; filter: blur(40px); }
+        }
+
+        @keyframes edgeWaveSpeaking {
+            0% { filter: brightness(1) drop-shadow(0 0 10px #00f2fe); }
+            100% { filter: brightness(1.7) drop-shadow(0 0 30px #00f2fe); }
+        }
+
         /* Daktil & UzSL Dictionary Quick Reference Ribbon */
         .gestures-ribbon {
             display: flex;
@@ -1343,8 +1530,7 @@
         .surdo-avatar-pod.minimized .avatar-pod-footer,
         .surdo-avatar-pod.minimized .avatar-title,
         .surdo-avatar-pod.minimized #avatar-toggle-voice,
-        .surdo-avatar-pod.minimized #avatar-size-btn,
-        .surdo-avatar-pod.minimized #avatar-model-switch-btn {
+        .surdo-avatar-pod.minimized #avatar-size-btn {
             display: none !important;
         }
 
@@ -1379,6 +1565,18 @@
             animation: pulse-dot 1.5s infinite;
         }
 
+        .avatar-live-dot.translating {
+            background: #a855f7;
+            box-shadow: 0 0 12px #a855f7, 0 0 20px #00f2fe;
+            animation: pulse-translating 0.75s infinite;
+        }
+
+        @keyframes pulse-translating {
+            0% { transform: scale(0.9); opacity: 0.8; }
+            50% { transform: scale(1.4); opacity: 1; }
+            100% { transform: scale(0.9); opacity: 0.8; }
+        }
+
         @keyframes pulse-dot {
             0% { transform: scale(0.9); opacity: 0.7; }
             50% { transform: scale(1.2); opacity: 1; }
@@ -1386,10 +1584,20 @@
         }
 
         .avatar-title {
-            font-size: 13px;
+            font-size: 12.5px;
             font-weight: 700;
             color: #ffffff;
             letter-spacing: 0.3px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 150px;
+            transition: color 0.3s ease;
+        }
+
+        .avatar-title.translating {
+            color: #38bdf8;
+            text-shadow: 0 0 10px rgba(56, 189, 248, 0.6);
         }
 
         .avatar-controls {
@@ -1429,18 +1637,23 @@
             overflow: hidden;
         }
 
+        #ai-avatar-national-img {
+            display: none !important;
+        }
+
         #ai-avatar-video {
-            display: block;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            background: #000;
+            display: none !important;
+            width: 100% !important;
+            height: 100% !important;
+            object-fit: cover !important;
+            border-radius: 18px;
         }
 
         #avatar-canvas {
-            display: none;
+            display: block !important;
             width: 100% !important;
             height: 100% !important;
+            border-radius: 18px;
         }
 
         .avatar-caption-badge {
@@ -1542,16 +1755,436 @@
             text-overflow: ellipsis;
         }
 
-        @media (max-width: 768px) {
+        /* ==========================================
+           📱 RESPONSIVE DESIGN (PLANSHET VA TELEFONLAR)
+           ========================================== */
+
+        /* 1. Planshetlar va Kichik Noutbuklar (Tablets & Small Laptops: 769px - 1200px) */
+        @media (max-width: 1200px) {
+            .hud-header {
+                gap: 8px;
+                align-items: center;
+                width: 100%;
+            }
+            .header-wing-left {
+                padding: 6px 10px;
+                gap: 6px;
+                flex-shrink: 0;
+            }
+            .header-wing-left .metric-badge {
+                display: none !important;
+            }
+            .header-wing-right {
+                gap: 5px;
+                flex-shrink: 1;
+                min-width: 0;
+            }
+            .header-wing-right .btn-ctrl {
+                padding: 0 8px;
+                font-size: 11.5px;
+                height: 32px;
+                gap: 5px;
+                white-space: nowrap;
+            }
+            .header-wing-right .voice-selector-ctrl span {
+                max-width: 85px;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+                display: inline-block;
+            }
+            .header-wing-right .hud-status-badge {
+                height: 32px;
+                padding: 0 8px;
+                font-size: 11px;
+                white-space: nowrap;
+            }
+        }
+
+        /* 1A. Planshet Albom Ko'rinishi (Tablet Landscape: 961px - 1200px) */
+        @media (min-width: 961px) and (max-width: 1200px) and (orientation: landscape) {
+            .hud-bottom {
+                position: fixed;
+                left: 16px;
+                bottom: 14px;
+                width: calc(100% - 275px);
+                margin: 0;
+                z-index: 100;
+            }
+            .smart-master-dock {
+                padding: 10px 14px;
+                border-radius: 18px;
+                gap: 7px;
+            }
+            .dock-sentence-tier {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 6px;
+            }
+            .sentence-display {
+                width: 100%;
+                min-height: 34px;
+                gap: 8px;
+            }
+            .sentence-chips-container {
+                min-height: 34px;
+                gap: 6px;
+                overflow-x: auto;
+                flex-wrap: nowrap;
+            }
+            .sentence-actions {
+                width: 100%;
+                display: flex;
+                flex-wrap: nowrap;
+                gap: 6px;
+                justify-content: space-between;
+            }
+            .action-btn {
+                flex: 1 1 auto;
+                height: 36px;
+                padding: 0 10px;
+                font-size: 12px;
+                border-radius: 11px;
+                white-space: nowrap;
+            }
             .surdo-avatar-pod {
-                right: 12px;
-                bottom: 85px;
-                width: 170px;
-                height: 240px;
+                right: 16px;
+                bottom: 14px;
+                width: 245px;
+                height: 310px;
+                border-radius: 18px;
+                z-index: 99;
+            }
+            .surdo-avatar-pod.expanded {
+                width: 330px;
+                height: 420px;
+            }
+            .avatar-pod-header {
+                padding: 8px 12px;
+            }
+            .avatar-title {
+                font-size: 12px;
+                max-width: 140px;
+            }
+        }
+
+        /* 1B. Planshet Portret Ko'rinishi (Tablet Portrait: 601px - 960px) */
+        @media (max-width: 960px) and (min-width: 601px), (max-width: 1024px) and (orientation: portrait) {
+            .hud-bottom {
+                position: fixed;
+                left: 14px;
+                right: 14px;
+                bottom: 12px;
+                width: calc(100% - 28px);
+                max-width: 100%;
+                margin: 0;
+                z-index: 100;
+            }
+            .smart-master-dock {
+                padding: 10px 14px;
+                border-radius: 18px;
+                gap: 8px;
+            }
+            .dock-sentence-tier {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 8px;
+            }
+            .sentence-display {
+                width: 100%;
+                min-height: 36px;
+                gap: 8px;
+            }
+            .sentence-chips-container {
+                min-height: 36px;
+                gap: 6px;
+                overflow-x: auto;
+                flex-wrap: nowrap;
+            }
+            .sentence-actions {
+                width: 100%;
+                display: flex;
+                flex-wrap: nowrap;
+                gap: 6px;
+                justify-content: space-between;
+            }
+            .action-btn {
+                flex: 1 1 auto;
+                height: 38px;
+                padding: 0 10px;
+                font-size: 12px;
+                border-radius: 11px;
+                gap: 5px;
+                justify-content: center;
+                white-space: nowrap;
+            }
+
+            /* Portret planshetda avatar dock ustida, o'ng pastki burchakda turadi */
+            .surdo-avatar-pod {
+                right: 14px;
+                bottom: 155px;
+                width: 190px;
+                height: 255px;
+                border-radius: 18px;
+                box-shadow: 0 14px 40px rgba(0, 0, 0, 0.75), 0 0 22px rgba(0, 242, 254, 0.3);
+                z-index: 99;
+            }
+            .surdo-avatar-pod.expanded {
+                width: 270px;
+                height: 360px;
+                bottom: 155px;
+            }
+            .surdo-avatar-pod.minimized {
+                width: 50px;
+                height: 50px;
+                bottom: 155px;
+                right: 14px;
+            }
+            .avatar-pod-header {
+                padding: 6px 10px;
+            }
+            .avatar-title {
+                font-size: 11.5px;
+                max-width: 115px;
+            }
+            .avatar-btn {
+                width: 24px;
+                height: 24px;
+                font-size: 11px;
+            }
+        }
+
+        /* 2. Telefonlar va Kichik Ekranlar (Smartphones: <= 768px) */
+        @media (max-width: 768px) {
+            .hud-overlay {
+                padding: 8px 10px;
+            }
+
+            /* Header (Top Wings) */
+            .hud-header {
+                gap: 6px;
+                align-items: flex-start;
+            }
+            .header-wing-left {
+                padding: 4px 8px;
+                border-radius: 12px;
+                gap: 6px;
+            }
+            .brand-logo {
+                width: 28px;
+                height: 28px;
+                font-size: 14px;
+            }
+            .brand-title-wrap h1 {
+                font-size: 13px;
+                letter-spacing: 0.5px;
+            }
+            .wing-divider {
+                display: none;
+            }
+            .hud-status-badge {
+                height: 28px;
+                padding: 0 7px;
+                font-size: 11px;
+            }
+            .metric-badge {
+                display: none !important;
+            }
+
+            .header-wing-right {
+                gap: 4px;
+            }
+            .btn-ctrl {
+                height: 32px;
+                padding: 0 8px;
+                font-size: 11.5px;
+                border-radius: 10px;
+                gap: 5px;
+            }
+
+            /* Master Dock (Pastki boshqaruv paneli) */
+            .hud-bottom {
+                position: fixed;
+                left: 8px;
+                right: 8px;
+                bottom: 8px;
+                width: calc(100% - 16px);
+                max-width: 100%;
+                margin: 0;
+                z-index: 100;
+            }
+            .smart-master-dock {
+                padding: 8px 10px;
+                border-radius: 16px;
+                gap: 6px;
+            }
+
+            .dock-live-tier {
+                padding: 0;
+            }
+            .dock-sign-icon-bubble {
+                width: 32px;
+                height: 32px;
+                font-size: 16px;
+                border-width: 1px;
+            }
+            .dock-spoken-title {
+                font-size: 15px;
+            }
+            .dock-live-hint {
+                display: none;
+            }
+
+            /* Sentence Tier (So'zlar va tugmalar) */
+            .dock-sentence-tier {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 6px;
+            }
+            .sentence-display {
+                width: 100%;
+                min-height: 32px;
+                gap: 6px;
+            }
+            .sentence-label {
+                font-size: 9.5px;
+                padding: 4px 7px;
+                border-radius: 7px;
+            }
+            .sentence-chips-container {
+                min-height: 32px;
+                gap: 5px;
+            }
+            .sentence-chip {
+                padding: 3px 8px;
+                font-size: 11.5px;
+                border-radius: 8px;
+            }
+
+            .sentence-actions {
+                width: 100%;
+                display: flex;
+                flex-wrap: wrap;
+                gap: 5px;
+                justify-content: space-between;
+            }
+            .action-btn {
+                flex: 1 1 auto;
+                height: 34px;
+                padding: 0 7px;
+                font-size: 11px;
+                border-radius: 9px;
+                gap: 4px;
+                justify-content: center;
+                white-space: nowrap;
+            }
+            .action-btn i {
+                font-size: 12px;
+            }
+
+            /* 3D Surdo Avatar Pod (Mobil ekranlarda dock ustiga tushmaydi) */
+            .surdo-avatar-pod {
+                right: 8px;
+                bottom: 140px;
+                width: 140px;
+                height: 195px;
+                border-radius: 16px;
+                box-shadow: 0 12px 30px rgba(0, 0, 0, 0.8), 0 0 18px rgba(0, 242, 254, 0.25);
+                z-index: 99;
+            }
+            .surdo-avatar-pod.expanded {
+                width: 220px;
+                height: 300px;
+                bottom: 140px;
+            }
+            .surdo-avatar-pod.minimized {
+                width: 48px;
+                height: 48px;
+                bottom: 140px;
+                right: 8px;
+            }
+            .avatar-pod-header {
+                padding: 6px 8px;
+            }
+            .avatar-title {
+                font-size: 11px;
+                gap: 5px;
+            }
+            .avatar-title .live-dot {
+                width: 6px;
+                height: 6px;
+            }
+            .avatar-btn {
+                width: 22px;
+                height: 22px;
+                font-size: 10px;
+            }
+            .avatar-caption-badge {
+                padding: 4px 6px;
+                font-size: 10.5px;
+                bottom: 5px;
+                left: 5px;
+                right: 5px;
+                border-radius: 8px;
+                gap: 4px;
+            }
+            .avatar-pod-footer {
+                padding: 4px 6px;
+            }
+            .avatar-quick-gestures {
+                gap: 3px;
+                padding: 2px 0;
+            }
+            .quick-sign-btn {
+                padding: 3px 6px;
+                font-size: 9.5px;
+                border-radius: 6px;
+            }
+            .avatar-footer-meta {
+                display: none;
+            }
+
+            #ai-avatar-national-img,
+            #ai-avatar-video {
+                display: none !important;
             }
             #avatar-canvas {
-                width: 150px;
-                height: 150px;
+                display: block !important;
+                width: 100% !important;
+                height: 100% !important;
+                border-radius: 14px;
+            }
+        }
+
+        /* 3. Juda kichik telefonlar (iPhone SE, Galaxy A seriya: <= 400px) */
+        @media (max-width: 400px) {
+            .brand-title-wrap {
+                display: none;
+            }
+            .hud-header {
+                padding: 0;
+            }
+            .header-wing-left {
+                padding: 4px 6px;
+            }
+            .header-wing-right {
+                gap: 3px;
+            }
+            .btn-ctrl span {
+                display: none;
+            }
+            .btn-ctrl {
+                width: 32px;
+                padding: 0;
+                justify-content: center;
+            }
+            .action-btn span {
+                font-size: 10px;
+            }
+            .surdo-avatar-pod {
+                width: 125px;
+                height: 175px;
+                bottom: 145px;
             }
         }
     </style>
@@ -1627,7 +2260,7 @@
             <!-- Right Wing: Controls & Safety -->
             <div class="header-wing-right">
                 <!-- Controls & Safety -->
-                <button id="voice-select-btn" class="btn-ctrl active" title="VoiceLab milliy o'zbek ovozlarini tanlash (Abdulhay, Madina, Amir, Javohir, Kamola...)">
+                <button id="voice-select-btn" class="btn-ctrl active" title="Imo-ishora ovozi: VoiceLab.uz (Abdulhay, Madina, Dilnoza, Amir...)">
                     <i class="fa-solid fa-wand-magic-sparkles" style="color: var(--accent);"></i>
                     <span id="voice-name">Abdulhay (VoiceLab Dublyaj)</span>
                 </button>
@@ -1645,11 +2278,6 @@
                 <button id="voice-toggle" class="btn-ctrl active" title="Ovozli eshittirishni yoqish/o'chirish">
                     <i class="fa-solid fa-volume-high"></i>
                     <span>Ovoz</span>
-                </button>
-
-                <button id="sos-open-btn" class="btn-sos" title="Favqulodda yordam chaqirish">
-                    <i class="fa-solid fa-triangle-exclamation"></i>
-                    <span>SOS 103/102</span>
                 </button>
             </div>
         </header>
@@ -1680,6 +2308,18 @@
                     <i class="fa-solid fa-check"></i> Matnga qo'yish
                 </button>
             </div>
+        </div>
+
+        <!-- Apple Intelligence / Cyber Screen Ambient Glow (To'lqin va 4 burchak ko'k nurlar) -->
+        <div id="screen-ambient-glow" class="screen-ambient-glow">
+            <div class="corner-glow top-left"></div>
+            <div class="corner-glow top-right"></div>
+            <div class="corner-glow bottom-left"></div>
+            <div class="corner-glow bottom-right"></div>
+            <div class="edge-wave-bar top-edge"></div>
+            <div class="edge-wave-bar bottom-edge"></div>
+            <div class="edge-wave-bar left-edge"></div>
+            <div class="edge-wave-bar right-edge"></div>
         </div>
 
         <!-- Bottom Section: Single Unified Smart Master Dock -->
@@ -1719,10 +2359,10 @@
                     </div>
 
                     <div class="sentence-actions">
-                        <!-- Mikrofon Speech-to-Speech Button -->
-                        <button id="mic-action-btn" class="action-btn mic-btn" title="Mikrofonga gapirish (Speech-to-Speech)">
+                        <!-- Mikrofon Ovozli Nutq Tugmasi -->
+                        <button id="mic-action-btn" class="action-btn mic-btn" title="Google Gemini AI bilan jonli Speech-to-Speech muloqot">
                             <i class="fa-solid fa-microphone"></i>
-                            <span id="mic-action-text">Gapirish</span>
+                            <span id="mic-action-text">Gemini Jonli Muloqot</span>
                         </button>
 
                         <!-- AI Smart Grammar Button -->
@@ -1754,14 +2394,11 @@
         <div class="avatar-pod-header">
             <div class="avatar-status-wrap">
                 <span class="avatar-live-dot"></span>
-                <span class="avatar-title">AI Surdotarjimon</span>
+                <span class="avatar-title">AI Surdotarjimon (Sardor)</span>
             </div>
             <div class="avatar-controls">
                 <button id="avatar-size-btn" class="avatar-btn" title="O'lchamni almashtirish (Katta / Standart)">
                     <i class="fa-solid fa-up-right-and-down-left-from-center"></i>
-                </button>
-                <button id="avatar-model-switch-btn" class="avatar-btn" title="Rejimni almashtirish (Haqiqiy Inson AI Video / 3D Model)">
-                    <i class="fa-solid fa-user-tie"></i>
                 </button>
                 <button id="avatar-min-btn" class="avatar-btn" title="Yashirish / Ko'rsatish">
                     <i class="fa-solid fa-compress"></i>
@@ -1769,26 +2406,8 @@
             </div>
         </div>
         <div class="avatar-viewport">
-            <video id="ai-avatar-video" playsinline autoplay muted loop src="/static/avatars/real_human_presenter.mp4" style="width:100%; height:100%; object-fit:cover; border-radius:18px; display:block;"></video>
-            <canvas id="avatar-canvas" style="display:none;"></canvas>
-            <div id="avatar-caption-badge" class="avatar-caption-badge">
-                <span id="avatar-caption-icon">✋</span>
-                <span id="avatar-caption-text">Imo-ishora kutilmoqda...</span>
-            </div>
-        </div>
-        <div class="avatar-pod-footer">
-            <div class="avatar-quick-gestures">
-                <button class="quick-sign-btn" data-sign="salom">👋 Salom</button>
-                <button class="quick-sign-btn" data-sign="rahmat">🙏 Rahmat</button>
-                <button class="quick-sign-btn" data-sign="zor">👍 Zo'r</button>
-                <button class="quick-sign-btn" data-sign="kuting">⏳ Kuting</button>
-                <button class="quick-sign-btn" data-sign="sevaman">❤️ Sevaman</button>
-                <button class="quick-sign-btn" data-sign="yoq">🙅‍♂️ Yo'q</button>
-            </div>
-            <div class="avatar-footer-meta">
-                <span id="avatar-model-label" class="avatar-role-label">Jonli AI Surdotarjimon (HeyGen / D-ID Video)</span>
-                <span id="avatar-status-desc" class="avatar-status-desc">Haqiqiy Inson AI Avatari (Faol)</span>
-            </div>
+            <canvas id="avatar-canvas"></canvas>
+            <video id="ai-avatar-video" playsinline muted loop style="display:none;"></video>
         </div>
     </div>
 
@@ -2035,23 +2654,23 @@
             };
         }
 
-        // Voice Selection & State (VoiceLab.uz Milliy O'zbek Shirali Ovozlar - voicelab.uz)
+        // Voice Selection & State (VoiceLab.uz Milliy O'zbek Shirali Ovozlar - Faqat Kamera Imo-ishoralari uchun)
         const voiceSelectBtn = document.getElementById('voice-select-btn');
         const voiceNameSpan = document.getElementById('voice-name');
         const UZ_VOICES = [
             { id: 'abdulhay', name: "Abdulhay (VoiceLab Dublyaj)", intro: "Assalomu alaykum! VoiceLab Abdulhay Otaxo'jayev ovozi tanlandi." },
             { id: 'madina', name: "Madina (VoiceLab Shirali)", intro: "Assalomu alaykum! VoiceLab Madina shirali ovozi tanlandi." },
+            { id: 'dilnoza', name: "Dilnoza (VoiceLab Baxmal)", intro: "Assalomu alaykum! VoiceLab Dilnoza ovozi tanlandi." },
             { id: 'amir', name: "Amir (VoiceLab Hikoyachi)", intro: "Assalomu alaykum! VoiceLab Amir bosiq erkak ovozi tanlandi." },
             { id: 'javohir', name: "Javohir (VoiceLab Ta'limiy)", intro: "Assalomu alaykum! VoiceLab Javohir ta'limiy diktor ovozi tanlandi." },
             { id: 'kamola', name: "Kamola (VoiceLab Mayin)", intro: "Assalomu alaykum! VoiceLab Kamola mayin ovozi tanlandi." },
-            { id: 'dilnoza', name: "Dilnoza (VoiceLab Baxmal)", intro: "Assalomu alaykum! VoiceLab Dilnoza ovozi tanlandi." },
             { id: 'jasur', name: "Jasur (VoiceLab Noir)", intro: "Assalomu alaykum! VoiceLab Jasur ovozi tanlandi." },
             { id: 'safiya', name: "Safiya (VoiceLab Suhbatdosh)", intro: "Assalomu alaykum! VoiceLab Safiya ovozi tanlandi." },
             { id: 'shohruxmirzo', name: "Shohruxmirzo (VoiceLab)", intro: "Assalomu alaykum! VoiceLab Shohruxmirzo ovozi tanlandi." },
             { id: 'nozima', name: "Nozima (VoiceLab Mayin)", intro: "Assalomu alaykum! VoiceLab Nozima ovozi tanlandi." }
         ];
         let currentVoiceIndex = 0;
-        let currentVoice = UZ_VOICES[0].id; // 'abdulhay'
+        let currentVoice = UZ_VOICES[0].id; // 'abdulhay' (Standart VoiceLab milliy ovozi)
 
         if (voiceSelectBtn) {
             voiceSelectBtn.addEventListener('click', () => {
@@ -2059,7 +2678,7 @@
                 const v = UZ_VOICES[currentVoiceIndex];
                 currentVoice = v.id;
                 if (voiceNameSpan) voiceNameSpan.textContent = v.name;
-                speakNeural(v.intro, "", "uz");
+                speakNeural(v.intro, "", "uz", null, false, v.id);
             });
         }
 
@@ -2132,69 +2751,128 @@
                 if (speaking) arWaves.classList.add('active-waves');
                 else arWaves.classList.remove('active-waves');
             }
+            if (!speaking && typeof stopGeminiVoiceSignTranslation === 'function') {
+                stopGeminiVoiceSignTranslation();
+            }
         }
 
         let activeAudio = null;
 
-        // Multi-Language & Voice Neural Audio Synthesis (ElevenLabs Premium AI)
-        function speakNeural(text, audioKey, lang = currentLang) {
-            if (!isVoiceEnabled || !text) return;
+        // Multi-Language & Voice Neural Audio Synthesis (ElevenLabs / Gemini / VoiceLab)
+        function speakNeural(text, audioKey, lang = currentLang, onComplete = null, isVoiceChat = false, forceVoice = null) {
+            if (!isVoiceEnabled || !text) {
+                if (onComplete) onComplete();
+                return;
+            }
+            // AGAR JONLI OVOZLI MULOQOT FAOL BO'LSA:
+            // Faqat va faqat foydalanuvchi mikrofonga gapirganda Gemini bergan javob ovoz chiqarishi kerak!
+            // Kamera imo-ishoralari bu paytda ovoz chiqarib xalaqit bermasligi shart!
+            if (isLiveDialogueActive && !isVoiceChat) {
+                if (onComplete) onComplete();
+                return;
+            }
+
             const now = performance.now();
-            if (text === lastSpokenText && (now - lastSpeechTime) < 2500) return;
+            if (text === lastSpokenText && (now - lastSpeechTime) < 2500) {
+                if (onComplete) onComplete();
+                return;
+            }
 
             lastSpokenText = text;
             lastSpeechTime = now;
 
-            // ElevenLabs neyron ovozi orqali sintez qilish
-            playDynamicTTS(text, lang);
+            // QAT'IY QOIDA:
+            // 1. Mikrofondan savol berilganda / Gemini gapirganda (isVoiceChat === true) -> FAQAT VA FAQAT GEMINI OVOZI!
+            // 2. Kameraga imo-ishora qilinganda (isVoiceChat === false) -> FAQAT VA FAQAT VOICELAB.UZ OVOZI (Abdulhay, Madina, Dilnoza...)!
+            let voiceToUse = forceVoice;
+            if (isVoiceChat) {
+                voiceToUse = 'gemini';
+            } else if (!voiceToUse) {
+                voiceToUse = (currentVoice && currentVoice !== 'gemini') ? currentVoice : 'abdulhay';
+            }
+
+            playDynamicTTS(text, lang, onComplete, voiceToUse);
         }
 
         // Backward compatibility alias
-        function speakUzbek(text, audioKey) {
-            speakNeural(text, audioKey, currentLang);
+        function speakUzbek(text, audioKey, onComplete = null) {
+            speakNeural(text, audioKey, currentLang, onComplete, false);
         }
 
-        function playDynamicTTS(text, lang = currentLang) {
+        function playDynamicTTS(text, lang = currentLang, onComplete = null, voiceOverride = null) {
             if (activeAudio) {
                 try {
                     activeAudio.pause();
                     activeAudio.currentTime = 0;
                 } catch(e) {}
+                activeAudio = null;
             }
-            const audioUrl = `/api/tts/?text=${encodeURIComponent(text)}&voice=${encodeURIComponent(currentVoice)}&lang=${lang}`;
+
+            let completed = false;
+            const finishSpeech = () => {
+                if (completed) return;
+                completed = true;
+                clearTimeout(safetyTimeout);
+                activeAudio = null;
+                setSpeakingState(false);
+                if (typeof onComplete === 'function') {
+                    onComplete();
+                }
+            };
+
+            // Maksimal 14 soniyalik xavfsizlik taymeri (mikrofon aslo qotib qolmasligi uchun)
+            const safetyTimeout = setTimeout(() => {
+                finishSpeech();
+            }, 14000);
+
+            // Ovoz tanlash: Gemini (mikrofon) yoki VoiceLab (kamera)
+            const chosenVoice = voiceOverride || ((currentVoice && currentVoice !== 'gemini') ? currentVoice : 'abdulhay');
+            const audioUrl = `/api/tts/?text=${encodeURIComponent(text)}&voice=${encodeURIComponent(chosenVoice)}&lang=${lang}`;
             const audio = new Audio(audioUrl);
             activeAudio = audio;
             setSpeakingState(true);
+
+            audio.onplay = () => {
+                setSpeakingState(true);
+            };
+
             audio.onended = () => {
-                if (activeAudio === audio) activeAudio = null;
-                setSpeakingState(false);
+                finishSpeech();
             };
-            audio.onerror = () => {
-                if (activeAudio === audio) activeAudio = null;
-                setSpeakingState(false);
-                console.warn("Ta'limiy TTS audio yuklanmadi.");
+
+            audio.onerror = (err) => {
+                console.warn("TTS audio yuklashda xatolik:", err);
+                finishSpeech();
             };
+
             audio.play().catch(err => {
-                if (activeAudio === audio) activeAudio = null;
-                setSpeakingState(false);
-                console.warn("Ta'limiy audio ijrosi xatosi:", err);
+                console.warn("Audio play xatoligi:", err);
+                finishSpeech();
             });
         }
 
-        function fallbackWebSpeech(text, lang = currentLang) {
+        function fallbackWebSpeech(text, lang = currentLang, onDone = null) {
             if ('speechSynthesis' in window) {
                 window.speechSynthesis.cancel();
                 const utterance = new SpeechSynthesisUtterance(text);
-                utterance.rate = 0.95;
+                utterance.rate = 1.0;
+                utterance.pitch = 1.0;
                 if (lang === 'en') utterance.lang = 'en-US';
                 else if (lang === 'ru') utterance.lang = 'ru-RU';
                 else utterance.lang = 'uz-UZ';
                 utterance.onstart = () => setSpeakingState(true);
-                utterance.onend = () => setSpeakingState(false);
-                utterance.onerror = () => setSpeakingState(false);
+                utterance.onend = () => {
+                    setSpeakingState(false);
+                    if (onDone) onDone();
+                };
+                utterance.onerror = () => {
+                    setSpeakingState(false);
+                    if (onDone) onDone();
+                };
                 window.speechSynthesis.speak(utterance);
             } else {
                 setSpeakingState(false);
+                if (onDone) onDone();
             }
         }
 
@@ -2306,34 +2984,241 @@
         }
 
         // ==========================================
-        // 🎙️ TWO-WAY SPEECH-TO-SPEECH (VoiceLab STT/TTS ENGINE)
+        // 🎙️ REAL-TIME LIVE SPEECH-TO-SPEECH ENGINE (Jonli Ovozli Muloqot)
         // ==========================================
         const micToggleBtn = document.getElementById('mic-toggle-btn');
         const micStatusText = document.getElementById('mic-status-text');
         const micActionBtn = document.getElementById('mic-action-btn');
-        const micActionText = document.getElementById('mic-action-text');
+        let micActionText = document.getElementById('mic-action-text');
+
+        // Screen Ambient Glow Overlay
+        const screenAmbientGlow = document.getElementById('screen-ambient-glow');
+
+        // Alias DOM elements for safe live speech updates
+        const signIconElem = signIcon;
+        const signCategoryElem = signCategory;
+        const signTextElem = signText;
 
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         let speechRecognition = null;
+        let isLiveDialogueActive = false;
         let isMicListening = false;
+        let isAIProcessing = false;
         let micRestartTimer = null;
+        let speechSilenceTimer = null;
+        let currentCapturedText = '';
+        let chatHistory = []; // multi-turn conversation memory
+
+        function resetMicButtonUI() {
+            if (micToggleBtn) {
+                micToggleBtn.classList.remove('listening');
+                micToggleBtn.innerHTML = '<i class="fa-solid fa-microphone"></i> <span id="mic-status-text">Mikrofon</span>';
+            }
+            if (micActionBtn) {
+                micActionBtn.classList.remove('listening');
+                micActionBtn.innerHTML = '<i class="fa-solid fa-microphone"></i> <span id="mic-action-text">Gemini Jonli Muloqot</span>';
+            }
+            micActionText = document.getElementById('mic-action-text');
+        }
+
+        function setLiveHudState(state, text = '') {
+            if (screenAmbientGlow) {
+                if (state === 'listening') {
+                    screenAmbientGlow.className = 'screen-ambient-glow listening';
+                } else if (state === 'thinking') {
+                    screenAmbientGlow.className = 'screen-ambient-glow thinking';
+                } else if (state === 'speaking') {
+                    screenAmbientGlow.className = 'screen-ambient-glow speaking';
+                } else {
+                    screenAmbientGlow.className = 'screen-ambient-glow';
+                }
+            }
+
+            if (state === 'listening') {
+                if (micActionBtn) {
+                    micActionBtn.classList.add('listening');
+                    micActionBtn.innerHTML = '<i class="fa-solid fa-microphone-lines fa-beat" style="color: #00ff88;"></i> <span id="mic-action-text">Gemini Tinglamoqda...</span>';
+                }
+                if (micToggleBtn) {
+                    micToggleBtn.classList.add('listening');
+                    micToggleBtn.innerHTML = '<i class="fa-solid fa-microphone-lines fa-beat" style="color: #00ff88;"></i> <span id="mic-status-text">Gemini Jonli</span>';
+                }
+                if (signIconElem) signIconElem.textContent = "🎙️";
+                if (signCategoryElem) signCategoryElem.textContent = "Gemini Live";
+                if (signTextElem) signTextElem.textContent = text || "🎙️ Gemini tinglamoqda... Bemalol gapiring";
+                setSpeakingState(true);
+            } else if (state === 'thinking') {
+                if (micActionBtn) {
+                    micActionBtn.innerHTML = '<i class="fa-solid fa-brain fa-spin" style="color: #ffb703;"></i> <span id="mic-action-text">Gemini O\'ylamoqda...</span>';
+                }
+                if (signIconElem) signIconElem.textContent = "🧠";
+                if (signCategoryElem) signCategoryElem.textContent = "Gemini Live";
+                if (signTextElem) signTextElem.textContent = text || "🧠 Gemini AI javob tayyorlamoqda...";
+                setSpeakingState(false);
+            } else if (state === 'speaking') {
+                if (micActionBtn) {
+                    micActionBtn.innerHTML = '<i class="fa-solid fa-waveform-lines fa-beat" style="color: #00f2fe;"></i> <span id="mic-action-text">Gemini Gapirmoqda...</span>';
+                }
+                if (signIconElem) signIconElem.textContent = "🤖";
+                if (signCategoryElem) signCategoryElem.textContent = "Gemini Live";
+                if (signTextElem) signTextElem.textContent = text || "🤖 Gemini gapirmoqda...";
+                setSpeakingState(true);
+            } else {
+                resetMicButtonUI();
+                if (signIconElem) signIconElem.textContent = "✋";
+                if (signCategoryElem) signCategoryElem.textContent = "UzSL AI";
+                if (signTextElem) signTextElem.textContent = "Imo-ishora qiling yoki mikrofonga gapiring...";
+                setSpeakingState(false);
+            }
+        }
+
+        function sendToGeminiChat(cleanText) {
+            if (!cleanText || !cleanText.trim()) return;
+            const userMsg = cleanText.trim();
+            isAIProcessing = true;
+            clearTimeout(speechSilenceTimer);
+
+            // Foydalanuvchi gapini pastki dockda aks ettirish
+            if (signIconElem) signIconElem.textContent = "🗣️";
+            if (signCategoryElem) signCategoryElem.textContent = "Gemini Live";
+            if (signTextElem) signTextElem.textContent = `🗣️ Siz: "${userMsg}"`;
+
+            // Matn chiplariga qo'shish
+            sentenceWords.push(`🗣️ Siz: ${userMsg}`);
+            updateSentenceDisplay(sentenceWords.length - 1);
+
+            // Burchaklar va chegaralarda o'ylash nuri
+            setLiveHudState('thinking', `🧠 Gemini AI javob tayyorlamoqda...`);
+
+            fetch('/api/speech-chat/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    message: userMsg,
+                    lang: currentLang,
+                    history: chatHistory
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                isAIProcessing = false;
+                const reply = (data && data.reply) ? data.reply : userMsg;
+
+                // Suhbat tarixini yangilash
+                chatHistory.push({ role: 'user', text: userMsg });
+                chatHistory.push({ role: 'model', text: reply });
+                if (chatHistory.length > 12) chatHistory = chatHistory.slice(-12);
+
+                const modelName = (data && data.model) ? data.model : "AI Live";
+                if (signIconElem) signIconElem.textContent = "⚡";
+                if (signCategoryElem) signCategoryElem.textContent = modelName;
+                if (signTextElem) signTextElem.textContent = `🤖 ${reply}`;
+                const aiTag = document.getElementById('ai-model-tag');
+                if (aiTag) aiTag.textContent = modelName;
+
+                sentenceWords.push(`🤖 ${reply}`);
+                updateSentenceDisplay(sentenceWords.length - 1);
+
+                // Gemini javobini 3D avatar orqali ovozga mos imo-ishoraga jonli tarjima qilish:
+                if (typeof startGeminiVoiceSignTranslation === 'function') {
+                    startGeminiVoiceSignTranslation(reply);
+                } else if (typeof triggerAvatarGesture === 'function') {
+                    triggerAvatarGesture(reply, "🤖", reply);
+                }
+
+                // AI Javobini TTS orqali o'qish: ekran burchaklarida to'lqinli ko'k nur yonadi!
+                if (isVoiceEnabled) {
+                    setLiveHudState('speaking', `🤖 Gemini: "${reply}"`);
+                    speakNeural(reply, "", currentLang, () => {
+                        // AI gapirib bo'ldi -> avatarni tinch holatga qaytarish!
+                        if (typeof stopGeminiVoiceSignTranslation === 'function') {
+                            stopGeminiVoiceSignTranslation();
+                        }
+                        if (isLiveDialogueActive) {
+                            // Uzluksiz jonli muloqot: avtomatik navbatdagi tinglash sessiyasini boshlash!
+                            setTimeout(() => {
+                                if (isLiveDialogueActive && !isAIProcessing) {
+                                    startListeningSession();
+                                }
+                            }, 350);
+                        } else {
+                            resetMicButtonUI();
+                            setLiveHudState('idle');
+                        }
+                    }, true, 'gemini'); // faqat mikrofon/Gemini javobi uchun Gemini ovozi!
+                } else {
+                    const durationMs = Math.max(4500, Math.min(14000, reply.length * 90));
+                    setTimeout(() => {
+                        if (typeof stopGeminiVoiceSignTranslation === 'function') {
+                            stopGeminiVoiceSignTranslation();
+                        }
+                        if (isLiveDialogueActive) {
+                            setTimeout(() => {
+                                if (isLiveDialogueActive && !isAIProcessing) {
+                                    startListeningSession();
+                                }
+                            }, 350);
+                        } else {
+                            resetMicButtonUI();
+                            setLiveHudState('idle');
+                        }
+                    }, durationMs);
+                }
+            })
+            .catch(err => {
+                isAIProcessing = false;
+                console.warn("Speech Chat xatosi:", err);
+                const fallbackReply = (currentLang === 'en') ? "I heard you clearly!" : (currentLang === 'ru' ? "Я вас понял!" : "Sizni eshitdim, suhbatni davom ettiramiz.");
+                
+                if (signIconElem) signIconElem.textContent = "🤖";
+                if (signCategoryElem) signCategoryElem.textContent = "Gemini Live";
+                if (signTextElem) signTextElem.textContent = `🤖 Gemini: "${fallbackReply}"`;
+
+                if (typeof startGeminiVoiceSignTranslation === 'function') {
+                    startGeminiVoiceSignTranslation(fallbackReply);
+                }
+
+                if (isVoiceEnabled) {
+                    setLiveHudState('speaking', `🤖 Gemini: "${fallbackReply}"`);
+                    speakNeural(fallbackReply, "", currentLang, () => {
+                        if (typeof stopGeminiVoiceSignTranslation === 'function') {
+                            stopGeminiVoiceSignTranslation();
+                        }
+                        if (isLiveDialogueActive) {
+                            setTimeout(() => { if (isLiveDialogueActive) startListeningSession(); }, 350);
+                        } else {
+                            resetMicButtonUI();
+                            setLiveHudState('idle');
+                        }
+                    }, true, 'gemini');
+                } else {
+                    setTimeout(() => {
+                        if (typeof stopGeminiVoiceSignTranslation === 'function') {
+                            stopGeminiVoiceSignTranslation();
+                        }
+                        if (isLiveDialogueActive) {
+                            setTimeout(() => { if (isLiveDialogueActive) startListeningSession(); }, 400);
+                        }
+                    }, 4000);
+                }
+            });
+        }
 
         if (SpeechRecognition) {
             speechRecognition = new SpeechRecognition();
             speechRecognition.continuous = true;
             speechRecognition.interimResults = true;
-            speechRecognition.lang = 'uz-UZ';
 
             speechRecognition.onstart = () => {
                 isMicListening = true;
+                currentCapturedText = '';
                 if (micToggleBtn) micToggleBtn.classList.add('listening');
                 if (micActionBtn) micActionBtn.classList.add('listening');
-                if (micStatusText) micStatusText.textContent = "Eshitmoqda...";
-                if (micActionText) micActionText.textContent = "To'xtatish";
-                if (signIconElem) signIconElem.textContent = "🎙️";
-                if (signCategoryElem) signCategoryElem.textContent = "Nutq AI";
-                if (signTextElem) signTextElem.textContent = "Gapiring, eshitmoqdaman...";
-                setSpeakingState(true);
+                if (micStatusText) micStatusText.textContent = "Jonli Muloqot";
+                if (micActionBtn) {
+                    micActionBtn.innerHTML = '<i class="fa-solid fa-microphone-lines fa-beat" style="color: #00ff88;"></i> <span id="mic-action-text">Jonli Muloqot Faol</span>';
+                }
+                setLiveHudState('listening');
             };
 
             speechRecognition.onresult = (event) => {
@@ -2348,100 +3233,144 @@
                     }
                 }
 
-                if (interimTranscript && signTextElem) {
-                    signTextElem.textContent = interimTranscript;
-                }
+                const speechHeard = (finalTranscript || interimTranscript || '').trim();
+                if (speechHeard) {
+                    currentCapturedText = speechHeard;
+                    if (signIconElem) signIconElem.textContent = "🎙️";
+                    if (signCategoryElem) signCategoryElem.textContent = "Gemini Live";
+                    if (signTextElem) signTextElem.textContent = `🗣️ Siz: "${speechHeard}"...`;
 
-                if (finalTranscript && finalTranscript.trim()) {
-                    const cleanText = finalTranscript.trim();
-                    if (signTextElem) signTextElem.textContent = cleanText;
-
-                    // Matn chiplariga qo'shish
-                    const words = cleanText.split(/\s+/).filter(w => w.trim());
-                    words.forEach(w => sentenceWords.push(w));
-                    updateSentenceDisplay(sentenceWords.length - 1);
-
-                    // SPEECH-TO-SPEECH: VoiceLab orqali ovozlashtirish
-                    if (isVoiceEnabled) {
-                        speakNeural(cleanText, "", "uz");
-                    }
-                    if (typeof triggerAvatarGesture === 'function') {
-                        triggerAvatarGesture(cleanText, "🎙️", cleanText);
-                    }
+                    // Gap tugagach 0.7 soniya jimlik bo'lsa -> Avtomatik ravishda AI ga tezkor yuborish!
+                    clearTimeout(speechSilenceTimer);
+                    speechSilenceTimer = setTimeout(() => {
+                        if (isMicListening && currentCapturedText.trim() && !isAIProcessing) {
+                            const textToSend = currentCapturedText.trim();
+                            stopRecognitionOnly();
+                            sendToGeminiChat(textToSend);
+                        }
+                    }, 700);
                 }
             };
 
             speechRecognition.onerror = (event) => {
-                console.warn("Nutqni tanish xatosi:", event.error);
+                console.warn("Nutqni tanish xabari:", event.error);
+                if (event.error === 'no-speech') {
+                    return; // Jim turilganda xato bermaymiz, kutamiz
+                }
+                if (event.error === 'network') {
+                    console.warn("Nutqni tanish tarmog'ida uzilish (Google STT).");
+                    return;
+                }
                 if (event.error === 'not-allowed') {
-                    alert("Mikrofon ruxsati berilmadi. Iltimos, brauzer sozlamalarida mikrofonni yoqing.");
-                    stopMicrophone();
+                    alert("⚠️ Brauzerda mikrofon ruxsati yoqilmagan!\n\nIltimos, brauzer manzil satrining chap tomonidagi sozlamalar belgisini bosing va 'Микрофон' (Microphone) ga ruxsat bering.");
+                    stopLiveDialogue();
                 }
             };
 
             speechRecognition.onend = () => {
-                if (isMicListening) {
-                    // Agar faol bo'lsa, uzluksiz davom etish
+                isMicListening = false;
+                // Agar jonli muloqot rejimi faol bo'lsa va hozir AI gapirmayotgan/o'ylamayotgan bo'lsa -> qayta ulaymiz
+                if (isLiveDialogueActive && !isAIProcessing && !isSpeaking) {
                     micRestartTimer = setTimeout(() => {
                         try {
-                            if (isMicListening && speechRecognition) speechRecognition.start();
+                            if (isLiveDialogueActive && !isAIProcessing && !isSpeaking && speechRecognition) {
+                                speechRecognition.start();
+                            }
                         } catch(e) {}
                     }, 250);
-                } else {
-                    stopMicrophoneState();
                 }
             };
         }
 
-        function startMicrophone() {
+        function startListeningSession() {
             if (!SpeechRecognition) {
-                alert("Brauzeringizda mikrofon orqali nutqni tanish qo'llab-quvvatlanmaydi. Google Chrome yoki Microsoft Edge brauzeridan foydalaning.");
+                alert("Brauzeringizda ovozni tanish qo'llab-quvvatlanmaydi. Iltimos, Google Chrome yoki Microsoft Edge brauzeridan foydalaning.");
                 return;
             }
-            try {
-                isMicListening = true;
-                speechRecognition.start();
-            } catch(e) {
-                console.warn("Mikrofonni boshlashda xato:", e);
+            if (activeAudio) {
+                try { activeAudio.pause(); activeAudio.currentTime = 0; } catch(e) {}
             }
-        }
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+            }
 
-        function stopMicrophone() {
-            isMicListening = false;
-            clearTimeout(micRestartTimer);
-            if (speechRecognition) {
+            try {
+                if (currentLang === 'ru') speechRecognition.lang = 'ru-RU';
+                else if (currentLang === 'en') speechRecognition.lang = 'en-US';
+                else speechRecognition.lang = 'uz-UZ';
+
+                isMicListening = true;
+                currentCapturedText = '';
+                speechRecognition.start();
+                setLiveHudState('listening');
+            } catch(e) {
                 try {
                     speechRecognition.stop();
-                } catch(e) {}
+                    setTimeout(() => {
+                        if (isLiveDialogueActive && !isAIProcessing) {
+                            speechRecognition.start();
+                            setLiveHudState('listening');
+                        }
+                    }, 180);
+                } catch(e2) {}
             }
-            stopMicrophoneState();
         }
 
-        function stopMicrophoneState() {
-            if (micToggleBtn) micToggleBtn.classList.remove('listening');
-            if (micActionBtn) micActionBtn.classList.remove('listening');
-            if (micStatusText) micStatusText.textContent = "Mikrofon";
-            if (micActionText) micActionText.textContent = "Gapirish";
+        function stopRecognitionOnly() {
+            isMicListening = false;
+            clearTimeout(speechSilenceTimer);
+            clearTimeout(micRestartTimer);
+            if (speechRecognition) {
+                try { speechRecognition.stop(); } catch(e) {}
+            }
+        }
+
+        function startLiveDialogue() {
+            if (!SpeechRecognition) {
+                alert("Brauzeringizda mikrofon orqali ovozni tanish qo'llab-quvvatlanmaydi. Iltimos, Google Chrome yoki Microsoft Edge brauzeridan foydalaning.");
+                return;
+            }
+
+            isLiveDialogueActive = true;
+            setLiveHudState('listening', "🎙️ Gemini tinglamoqda... Bemalol gapiring");
+            startListeningSession();
+        }
+
+        function stopLiveDialogue() {
+            isLiveDialogueActive = false;
+            isAIProcessing = false;
+            stopRecognitionOnly();
+            if (activeAudio) {
+                try { activeAudio.pause(); activeAudio.currentTime = 0; } catch(e) {}
+            }
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+            }
+            resetMicButtonUI();
+            setLiveHudState('idle');
             if (signIconElem) signIconElem.textContent = "✋";
             if (signCategoryElem) signCategoryElem.textContent = "UzSL AI";
-            if (signTextElem) signTextElem.textContent = "Imo-ishora qiling...";
-            setSpeakingState(false);
+            if (signTextElem) signTextElem.textContent = "Imo-ishora qiling yoki mikrofonga gapiring...";
         }
 
-        function toggleMicrophone() {
-            if (isMicListening) {
-                stopMicrophone();
+        function toggleLiveDialogue() {
+            if (isLiveDialogueActive) {
+                // Agar allaqachon gapirib turgan bo'lsa va gapida matn bo'lsa -> jo'natish
+                if (currentCapturedText.trim() && !isAIProcessing) {
+                    const textToSend = currentCapturedText.trim();
+                    stopRecognitionOnly();
+                    sendToGeminiChat(textToSend);
+                } else {
+                    stopLiveDialogue();
+                }
             } else {
-                startMicrophone();
+                startLiveDialogue();
             }
         }
 
-        if (micToggleBtn) {
-            micToggleBtn.addEventListener('click', toggleMicrophone);
-        }
-        if (micActionBtn) {
-            micActionBtn.addEventListener('click', toggleMicrophone);
-        }
+        // Tugmalar ulanishi
+        if (micToggleBtn) micToggleBtn.addEventListener('click', toggleLiveDialogue);
+        if (micActionBtn) micActionBtn.addEventListener('click', toggleLiveDialogue);
 
         // ==========================================
         // 🤖 3D & AI VIDEO SURDOTARJIMON AVATAR ENGINE
@@ -2449,7 +3378,7 @@
         const avatarPod = document.getElementById('surdo-avatar-pod');
         const avatarMinBtn = document.getElementById('avatar-min-btn');
         const avatarSizeBtn = document.getElementById('avatar-size-btn');
-        const avatarModelSwitchBtn = document.getElementById('avatar-model-switch-btn');
+        const aiAvatarNationalImg = document.getElementById('ai-avatar-national-img');
         const aiAvatarVideo = document.getElementById('ai-avatar-video');
         const avatarCanvas = document.getElementById('avatar-canvas');
         const avatarCaptionIcon = document.getElementById('avatar-caption-icon');
@@ -2457,7 +3386,7 @@
         const avatarModelLabel = document.getElementById('avatar-model-label');
         const avatarStatusDesc = document.getElementById('avatar-status-desc');
 
-        let isRealHumanMode = true; // Birlamchi rejim: Haqiqiy jonli inson AI video avatari
+        let isRealHumanMode = false; // 3D Fotorealistik Avatar doimiy faol
         let avatarSigningTimer = null;
 
         // Three.js Core Components
@@ -2468,12 +3397,13 @@
         let avatarBones = {};
         let avatarMorphMeshes = [];
         let is3DModelLoaded = false;
+        let modelCameraAligned = false;
+        let nextBlinkTime = performance.now() + 2000;
+        let blinkPhase = 0;
 
-        // Model Tanlash Tizimi (GitHub & RPM Modellar)
+        // Yagona 3D Surdotarjimon Avatar (Sardor)
         const AVATAR_MODELS = [
-            { id: 'madina', name: 'Madina (Ready Player Me)', url: '/static/models/brunette.glb', role: 'Madina • UZSL Fotorealistik Tarjimon' },
-            { id: 'aziz', name: 'Aziz (Avaturn Suit)', url: '/static/models/real_avatar.glb', role: 'Aziz • UZSL Biznes Tarjimon' },
-            { id: 'nilufar', name: 'Nilufar (Avatar SDK Scan)', url: '/static/models/avatarsdk.glb', role: 'Nilufar • UZSL 3D Tarjimon' }
+            { id: 'avatarsdk', name: 'Sardor', url: '/static/models/avatarsdk_male.glb', role: 'AI Surdotarjimon (Sardor)', type: '3d' }
         ];
         let currentModelIdx = 0;
 
@@ -2482,10 +3412,93 @@
             gesture: 'idle',
             text: "Tayyor...",
             icon: "✋",
-            timer: 0
+            timer: 0,
+            isGeminiTranslating: false,
+            geminiGestureQueue: [],
+            geminiGestureIdx: 0,
+            geminiNextGestureTime: 0
         };
-        let nextBlinkTime = performance.now() + 2500;
-        let blinkPhase = 0;
+
+        // Gemini AI nutqini 3D avatar imo-ishoralariga real vaqtda jonli tarjima qilish tizimi
+        function startGeminiVoiceSignTranslation(replyText) {
+            if (!replyText) return;
+            const t = replyText.toLowerCase();
+
+            avatarState.isGeminiTranslating = true;
+            avatarState.text = replyText;
+
+            // Avatarning header sarlavhasini tarjima holatiga o'tkazish
+            const titleElem = document.querySelector('.avatar-title');
+            if (titleElem) {
+                titleElem.textContent = "AI Surdotarjimon (Tarjima qilmoqda...)";
+                titleElem.classList.add('translating');
+            }
+            const liveDot = document.querySelector('.avatar-live-dot');
+            if (liveDot) liveDot.classList.add('translating');
+
+            const queue = [];
+
+            // Gapdagi kalit so'zlarni ketma-ket aniqlash
+            if (t.includes('salom') || t.includes('assalom') || t.includes('alaykum') || t.includes('hello')) {
+                queue.push({ gesture: 'salom', icon: '👋', label: 'Assalomu alaykum' });
+            }
+            if (t.includes('xush') || t.includes('hush') || t.includes('marhamat') || t.includes('kelibsiz') || t.includes('welcome')) {
+                queue.push({ gesture: 'xush_kelibsiz', icon: '🤲', label: 'Xush kelibsiz' });
+            }
+            if (t.includes('siz') || t.includes('sizga') || t.includes('sen')) {
+                queue.push({ gesture: 'siz', icon: '👉', label: 'Sizga' });
+            }
+            if (t.includes('yordam') || t.includes('yordamchi') || t.includes('help')) {
+                queue.push({ gesture: 'yordam', icon: '🤝', label: 'Yordam' });
+            }
+            if (t.includes('qanday') || t.includes('nima') || t.includes('qanaqa') || t.includes('savol') || t.includes('?')) {
+                queue.push({ gesture: 'savol', icon: '❓', label: 'Qanday yordam' });
+            }
+            if (t.includes('rahmat') || t.includes('tashakkur') || t.includes('thanks')) {
+                queue.push({ gesture: 'rahmat', icon: '🙏', label: 'Rahmat' });
+            }
+            if (t.includes('zor') || t.includes('zo\'r') || t.includes('ajoyib') || t.includes('yaxshi') || t.includes('alo')) {
+                queue.push({ gesture: 'zor', icon: '👍', label: 'Ajoyib' });
+            }
+            if (t.includes('ha') || t.includes('albatta') || t.includes('roziman') || t.includes('togri')) {
+                queue.push({ gesture: 'ha', icon: '👌', label: 'Albatta' });
+            }
+            if (t.includes('yoq') || t.includes('emas') || t.includes('mumkin emas')) {
+                queue.push({ gesture: 'yoq', icon: '🙅‍♂️', label: 'Yo\'q' });
+            }
+            if (t.includes('kut') || t.includes('kuting') || t.includes('daqiqa')) {
+                queue.push({ gesture: 'kuting', icon: '✋', label: 'Kuting' });
+            }
+
+            // Har doim imo-ishora ketma-ketligi mavjud bo'lishi va gap davomida surdo interpretatsiya qilish uchun
+            if (queue.length === 0) {
+                queue.push({ gesture: 'signing', icon: '🤟', label: 'Imo-ishora tarjimasi' });
+            }
+
+            avatarState.geminiGestureQueue = queue;
+            avatarState.geminiGestureIdx = 0;
+            avatarState.geminiNextGestureTime = performance.now() + 1800;
+
+            const first = queue[0];
+            avatarState.gesture = first.gesture;
+            avatarState.icon = first.icon;
+            avatarState.timer = performance.now() + 35000; // Gemini gapirib bo'lguncha faol
+        }
+
+        function stopGeminiVoiceSignTranslation() {
+            avatarState.isGeminiTranslating = false;
+            avatarState.gesture = 'idle';
+            avatarState.geminiGestureQueue = [];
+            avatarState.timer = 0;
+
+            const titleElem = document.querySelector('.avatar-title');
+            if (titleElem) {
+                titleElem.textContent = "AI Surdotarjimon (Sardor)";
+                titleElem.classList.remove('translating');
+            }
+            const liveDot = document.querySelector('.avatar-live-dot');
+            if (liveDot) liveDot.classList.remove('translating');
+        }
 
         // Kichraytirish / Yashirish tugmasi
         if (avatarMinBtn && avatarPod) {
@@ -2494,9 +3507,6 @@
                 avatarPod.classList.toggle('minimized');
                 const isMin = avatarPod.classList.contains('minimized');
                 avatarMinBtn.innerHTML = isMin ? '<i class="fa-solid fa-expand"></i>' : '<i class="fa-solid fa-compress"></i>';
-                if (!isMin && avatarRenderer && avatarCamera) {
-                    setTimeout(onAvatarResize, 350);
-                }
             });
         }
 
@@ -2510,57 +3520,32 @@
                     ? '<i class="fa-solid fa-down-left-and-up-right-to-center"></i>' 
                     : '<i class="fa-solid fa-up-right-and-down-left-from-center"></i>';
                 avatarSizeBtn.title = isExp ? "Standart o'lchamga qaytarish" : "Kattalashtirish (HD Ko'rinish)";
-                setTimeout(onAvatarResize, 360);
-            });
-        }
-
-        // Modelni almashtirish tugmasi (Haqiqiy inson AI Video va 3D modellar orasida o'tish)
-        if (avatarModelSwitchBtn) {
-            avatarModelSwitchBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                if (isRealHumanMode) {
-                    isRealHumanMode = false;
-                    if (aiAvatarVideo) aiAvatarVideo.style.display = 'none';
-                    if (avatarCanvas) avatarCanvas.style.display = 'block';
-                    loadCurrentAvatarModel();
-                    if (avatarModelLabel) avatarModelLabel.textContent = AVATAR_MODELS[currentModelIdx].role;
-                    if (avatarStatusDesc) avatarStatusDesc.textContent = "3D Fotorealistik Surdotarjimon (Faol)";
-                    avatarModelSwitchBtn.innerHTML = '<i class="fa-solid fa-video"></i>';
-                    avatarModelSwitchBtn.title = "Haqiqiy Inson AI Video rejimiga o'tish";
-                    onAvatarResize();
-                } else {
-                    currentModelIdx++;
-                    if (currentModelIdx >= AVATAR_MODELS.length) {
-                        currentModelIdx = 0;
-                        isRealHumanMode = true;
-                        if (aiAvatarVideo) {
-                            aiAvatarVideo.style.display = 'block';
-                            aiAvatarVideo.play().catch(() => {});
-                        }
-                        if (avatarCanvas) avatarCanvas.style.display = 'none';
-                        if (avatarModelLabel) avatarModelLabel.textContent = "Jonli AI Surdotarjimon (HeyGen / D-ID Video)";
-                        if (avatarStatusDesc) avatarStatusDesc.textContent = "Haqiqiy Inson AI Avatari (Faol)";
-                        avatarModelSwitchBtn.innerHTML = '<i class="fa-solid fa-user-tie"></i>';
-                        avatarModelSwitchBtn.title = "3D Avatar rejimiga o'tish";
-                    } else {
-                        loadCurrentAvatarModel();
-                        if (avatarModelLabel) avatarModelLabel.textContent = AVATAR_MODELS[currentModelIdx].role;
-                    }
-                }
             });
         }
 
         // Avatar ustiga bosilganda salomlashish
         if (avatarPod) {
             avatarPod.addEventListener('click', (e) => {
-                if (e.target.closest('#avatar-min-btn') || e.target.closest('#avatar-size-btn') || e.target.closest('#avatar-model-switch-btn')) return;
+                if (e.target.closest('#avatar-min-btn') || e.target.closest('#avatar-size-btn')) return;
                 if (avatarPod.classList.contains('minimized')) {
                     avatarPod.classList.remove('minimized');
                     if (avatarMinBtn) avatarMinBtn.innerHTML = '<i class="fa-solid fa-compress"></i>';
-                    setTimeout(onAvatarResize, 350);
+                }
+                if (aiAvatarVideo && aiAvatarVideo.paused) {
+                    aiAvatarVideo.play().catch(() => {});
                 }
                 triggerAvatarGesture("salom", "👋", "Assalomu alaykum!");
             });
+        }
+
+        // Sichqoncha g'ildiragi (wheel) orqali avatarni yaqinlashtirish / uzoqlashtirish (Zoom)
+        if (avatarCanvas) {
+            avatarCanvas.addEventListener('wheel', (e) => {
+                e.preventDefault();
+                if (!avatarCamera) return;
+                avatarCamera.position.z += e.deltaY * 0.0018;
+                avatarCamera.position.z = Math.max(0.9, Math.min(2.8, avatarCamera.position.z));
+            }, { passive: false });
         }
 
         function onAvatarResize() {
@@ -2573,20 +3558,47 @@
             if (avatarModel) fitAvatarCamera(avatarModel);
         }
 
-        // Kamerani har qanday avatar modeliga avtomatik to'g'ri fokuslash (bosh va qo'llar to'liq ko'rinishi)
+        // Kamerani har qanday avatar modeliga avtomatik to'g'ri fokuslash (bosh, yuz va imo-ishora qo'llari to'liq sig'ishi uchun)
         function fitAvatarCamera(model) {
             if (!avatarCamera || !model) return;
+            model.updateMatrixWorld(true);
+
+            // 1. Agar bosh yoki bo'yin suyagi bo'lsa (GLTF rigged inson modeli)
+            const headBone = avatarBones['Head'] || avatarBones['mixamorigHead'] || avatarBones['Neck'] || avatarBones['mixamorigNeck'];
+            if (headBone) {
+                const headPos = new THREE.Vector3();
+                headBone.getWorldPosition(headPos);
+                if (headPos.y > 0.4 && headPos.y < 3.0) {
+                    const aspect = avatarCamera.aspect || (avatarCanvas ? avatarCanvas.clientWidth / avatarCanvas.clientHeight : 1);
+                    // Aspect ratio tor bo'lganda (planshet/mobil) kamerani sal orqaroqqa surib, qo'llar va gavdani to'liq sig'dirish
+                    const zDist = 1.58 / Math.min(1.0, Math.max(0.68, aspect * 1.12));
+                    avatarCamera.fov = 38;
+                    avatarCamera.position.set(headPos.x, headPos.y - 0.20, headPos.z + zDist);
+                    avatarCamera.lookAt(headPos.x, headPos.y - 0.24, headPos.z);
+                    avatarCamera.updateProjectionMatrix();
+                    return;
+                }
+            }
+
+            // 2. Bounding box bo'yicha markazlashtirish
             const box = new THREE.Box3().setFromObject(model);
-            const maxY = box.max.y;
-            const minY = box.min.y;
+            const size = new THREE.Vector3();
+            box.getSize(size);
+            const center = new THREE.Vector3();
+            box.getCenter(center);
 
-            // Insonning yuqori gavdasi (bosh tepasi, yuz, ko'zlar, bo'yin, ko'krak va imo-ishora qiluvchi qo'llar)
-            const targetY = maxY - 0.28;
-            const camY = maxY - 0.23;
+            if (size.y > 0.2 && size.y < 10.0) {
+                avatarCamera.fov = 38;
+                avatarCamera.position.set(center.x, box.max.y - size.y * 0.26, center.z + Math.max(size.y * 0.85, 1.58));
+                avatarCamera.lookAt(center.x, box.max.y - size.y * 0.32, center.z);
+                avatarCamera.updateProjectionMatrix();
+                return;
+            }
 
-            avatarCamera.fov = 42;
-            avatarCamera.position.set(0, camY, 1.16);
-            avatarCamera.lookAt(0, targetY, 0);
+            // 3. Standart procedurial parametrlar
+            avatarCamera.fov = 38;
+            avatarCamera.position.set(0, 1.35, 1.58);
+            avatarCamera.lookAt(0, 1.25, 0);
             avatarCamera.updateProjectionMatrix();
         }
 
@@ -2603,11 +3615,18 @@
             }
         }
 
-        // Tanlangan 3D modelni yuklash
+        // Sardor 3D modelini yuklash
         function loadCurrentAvatarModel() {
-            const m = AVATAR_MODELS[currentModelIdx];
+            const m = AVATAR_MODELS[currentModelIdx] || AVATAR_MODELS[0];
             if (avatarModelLabel) avatarModelLabel.textContent = m.role;
             if (avatarStatusDesc) avatarStatusDesc.textContent = `${m.name} yuklanmoqda...`;
+
+            isRealHumanMode = false;
+            if (aiAvatarVideo) {
+                aiAvatarVideo.style.display = 'none';
+                try { aiAvatarVideo.pause(); } catch(e) {}
+            }
+            if (avatarCanvas) avatarCanvas.style.display = 'block';
 
             if (!window.THREE || !window.THREE.GLTFLoader) {
                 createProceduralHumanoid();
@@ -2622,54 +3641,69 @@
             avatarBones = {};
             avatarMorphMeshes = [];
             is3DModelLoaded = false;
+            modelCameraAligned = false;
 
-            const loader = new THREE.GLTFLoader();
-            loader.load(
-                m.url,
-                (gltf) => {
-                    avatarModel = gltf.scene;
-                    avatarModel.position.set(0, 0, 0);
-                    avatarModel.scale.set(1, 1, 1);
-
-                    avatarBones = {};
-                    avatarMorphMeshes = [];
-
-                    avatarModel.traverse((child) => {
-                        if (child.isBone) {
-                            avatarBones[child.name] = child;
-                            const clean = child.name.replace('mixamorig:', '').replace('mixamorig', '');
-                            avatarBones[clean] = child;
-                        }
-                        if (child.isMesh) {
-                            child.castShadow = true;
-                            child.receiveShadow = true;
-                            if (child.material) {
-                                child.material.roughness = 0.55;
-                                child.material.metalness = 0.08;
-                            }
-                            if (child.morphTargetDictionary && child.morphTargetInfluences) {
-                                avatarMorphMeshes.push(child);
-                            }
-                        }
-                    });
-
-                    avatarScene.add(avatarModel);
-                    fitAvatarCamera(avatarModel);
-                    is3DModelLoaded = true;
-
-                    if (avatarStatusDesc) avatarStatusDesc.textContent = `${m.name} (Faol)`;
-                },
-                (xhr) => {
-                    if (xhr.lengthComputable && avatarStatusDesc) {
-                        const percent = Math.round((xhr.loaded / xhr.total) * 100);
-                        avatarStatusDesc.textContent = `${m.name}: ${percent}%`;
-                    }
-                },
-                (err) => {
-                    console.warn("GLB yuklanmadi, zaxira model:", err);
-                    createProceduralHumanoid();
+            const executeGLBLoad = () => {
+                const loader = new THREE.GLTFLoader();
+                if (window.MeshoptDecoder) {
+                    loader.setMeshoptDecoder(window.MeshoptDecoder);
                 }
-            );
+                loader.load(
+                    m.url,
+                    (gltf) => {
+                        avatarModel = gltf.scene;
+                        avatarModel.position.set(0, 0, 0);
+                        avatarModel.scale.set(1, 1, 1);
+
+                        avatarBones = {};
+                        avatarMorphMeshes = [];
+
+                        avatarModel.traverse((child) => {
+                            if (child.isBone) {
+                                avatarBones[child.name] = child;
+                                const clean = child.name.replace('mixamorig:', '').replace('mixamorig', '');
+                                avatarBones[clean] = child;
+                            }
+                            if (child.isMesh) {
+                                child.castShadow = true;
+                                child.receiveShadow = true;
+                                child.frustumCulled = false;
+                                if (child.material) {
+                                    child.material.roughness = 0.55;
+                                    child.material.metalness = 0.08;
+                                    child.material.needsUpdate = true;
+                                }
+                                if (child.morphTargetDictionary && child.morphTargetInfluences) {
+                                    avatarMorphMeshes.push(child);
+                                }
+                            }
+                        });
+
+                        avatarScene.add(avatarModel);
+                        is3DModelLoaded = true;
+                        onAvatarResize();
+                        fitAvatarCamera(avatarModel);
+
+                        if (avatarStatusDesc) avatarStatusDesc.textContent = `${m.name} (Faol)`;
+                    },
+                    (xhr) => {
+                        if (xhr.lengthComputable && avatarStatusDesc) {
+                            const percent = Math.round((xhr.loaded / xhr.total) * 100);
+                            avatarStatusDesc.textContent = `${m.name}: ${percent}%`;
+                        }
+                    },
+                    (err) => {
+                        console.warn("GLB yuklanmadi, zaxira model:", err);
+                        createProceduralHumanoid();
+                    }
+                );
+            };
+
+            if (window.MeshoptDecoder && window.MeshoptDecoder.ready && typeof window.MeshoptDecoder.ready.then === 'function') {
+                window.MeshoptDecoder.ready.then(executeGLBLoad).catch(executeGLBLoad);
+            } else {
+                executeGLBLoad();
+            }
         }
 
         // 3D Sahna va Yoritish tizimini o'rnatish
@@ -3111,14 +4145,14 @@
             if (!isRealHumanMode || !aiAvatarVideo) return;
 
             if (signVideoQueue.length === 0) {
-                // Barcha imo-ishoralar ko'rsatib bo'lingach, tinch holatdagi real taqdimotchi loopsiga qaytadi
+                // Barcha imo-ishoralar ko'rsatib bo'lingach, kutish holatiga (Stay.mp4) qaytadi
                 isPlayingSignQueue = false;
-                aiAvatarVideo.src = '/static/avatars/real_human_presenter.mp4';
-                aiAvatarVideo.loop = true;
-                aiAvatarVideo.play().catch(() => {});
-                if (avatarCaptionIcon) avatarCaptionIcon.textContent = "✋";
-                if (avatarCaptionText) avatarCaptionText.textContent = "Imo-ishora kutilmoqda...";
-                if (avatarStatusDesc) avatarStatusDesc.textContent = "Haqiqiy Inson AI Avatari (Faol)";
+                if (aiAvatarVideo) {
+                    aiAvatarVideo.src = '/static/signs/words/Stay.mp4';
+                    aiAvatarVideo.loop = true;
+                    aiAvatarVideo.currentTime = 0;
+                    aiAvatarVideo.play().catch(() => {});
+                }
                 return;
             }
 
@@ -3133,6 +4167,8 @@
                 setTimeout(() => badge.classList.remove('signing'), 1200);
             }
 
+            if (aiAvatarNationalImg) aiAvatarNationalImg.style.display = 'none';
+            aiAvatarVideo.style.display = 'block';
             aiAvatarVideo.src = item.video;
             aiAvatarVideo.loop = false;
             aiAvatarVideo.currentTime = 0;
@@ -3160,11 +4196,16 @@
                 let targetGesture = 'signing';
                 let targetIcon = icon || "✋";
                 if (t.includes('salom') || t.includes('hello')) targetGesture = 'salom';
-                else if (t.includes('rahmat') || t.includes('thanks')) targetGesture = 'rahmat';
-                else if (t.includes('kut') || t.includes('stay')) targetGesture = 'kuting';
-                else if (t.includes('zor') || t.includes('yaxshi')) targetGesture = 'zor';
+                else if (t.includes('rahmat') || t.includes('tashakkur') || t.includes('thanks')) targetGesture = 'rahmat';
+                else if (t.includes('kut') || t.includes('stay') || t.includes('wait')) targetGesture = 'kuting';
+                else if (t.includes('zor') || t.includes('ajoyib') || t.includes('yaxshi')) targetGesture = 'zor';
                 else if (t.includes('sev') || t.includes('love')) targetGesture = 'sevaman';
-                else if (t.includes('yoq') || t.includes('not')) targetGesture = 'yoq';
+                else if (t.includes('yoq') || t.includes('emas') || t.includes('not')) targetGesture = 'yoq';
+                else if (t.includes('ha') || t.includes('roziman') || t.includes('togri')) targetGesture = 'ha';
+                else if (t.includes('iltimos') || t.includes('kechirasiz')) targetGesture = 'iltimos';
+                else if (t.includes('ozbekiston') || t.includes('vatan')) targetGesture = 'vatan';
+                else if (t.includes('yordam') || t.includes('sos')) targetGesture = 'yordam';
+                else if (t.includes('suv') || t.includes('ichish')) targetGesture = 'suv';
 
                 avatarState.gesture = targetGesture;
                 avatarState.text = label;
@@ -3174,6 +4215,12 @@
                 if (avatarCaptionIcon) avatarCaptionIcon.textContent = targetIcon;
                 if (avatarCaptionText) avatarCaptionText.textContent = label;
                 if (avatarStatusDesc) avatarStatusDesc.textContent = `3D Imo-ishora: "${label}"`;
+
+                const badge = document.getElementById('avatar-caption-badge');
+                if (badge) {
+                    badge.classList.add('signing');
+                    setTimeout(() => badge.classList.remove('signing'), 1200);
+                }
                 return;
             }
 
@@ -3222,7 +4269,23 @@
             const time = now * 0.003;
 
             // Timer tugashi -> Idle
-            if (now > avatarState.timer && avatarState.gesture !== 'idle') {
+            if (avatarState.isGeminiTranslating && avatarState.geminiGestureQueue && avatarState.geminiGestureQueue.length > 0) {
+                // Gemini gapirayotganda navbatdagi imo-ishora kadrini yangilab turish
+                if (now > avatarState.geminiNextGestureTime) {
+                    avatarState.geminiGestureIdx++;
+                    if (avatarState.geminiGestureIdx < avatarState.geminiGestureQueue.length) {
+                        const nextG = avatarState.geminiGestureQueue[avatarState.geminiGestureIdx];
+                        avatarState.gesture = nextG.gesture;
+                        avatarState.icon = nextG.icon;
+                        avatarState.text = nextG.label;
+                        avatarState.geminiNextGestureTime = now + 1900;
+                    } else {
+                        avatarState.gesture = 'signing';
+                        avatarState.icon = '🤟';
+                        avatarState.geminiNextGestureTime = now + 2500;
+                    }
+                }
+            } else if (now > avatarState.timer && avatarState.gesture !== 'idle') {
                 avatarState.gesture = 'idle';
                 avatarState.text = "Imo-ishora kutilmoqda...";
                 avatarState.icon = "✋";
@@ -3232,6 +4295,12 @@
             }
 
             const breath = Math.sin(time * 2.2) * 0.02;
+
+            // Model to'liq yuklangach birinchi kadrda kamerani bosh suyagiga to'g'irlash
+            if (is3DModelLoaded && !modelCameraAligned && avatarModel) {
+                fitAvatarCamera(avatarModel);
+                modelCameraAligned = true;
+            }
 
             // 1. Agar Fotorealistik 3D Inson Modeli (Avaturn GLB) yuklangan bo'lsa:
             if (is3DModelLoaded && (avatarBones['RightArm'] || avatarBones['mixamorigRightArm'])) {
@@ -3265,11 +4334,11 @@
 
                     setMorphWeight('mouthSmile', 0.2);
 
-                    if (avatarState.gesture !== 'idle') {
-                        const mouthSpeed = (avatarState.gesture === 'signing') ? 12 : 9;
-                        const mouthVal = Math.abs(Math.sin(time * mouthSpeed)) * 0.45;
+                    if (avatarState.gesture !== 'idle' || avatarState.isGeminiTranslating) {
+                        const mouthSpeed = (avatarState.isGeminiTranslating) ? 14 : 9;
+                        const mouthVal = Math.abs(Math.sin(time * mouthSpeed)) * 0.55;
                         setMorphWeight('viseme_aa', mouthVal);
-                        setMorphWeight('mouthOpen', mouthVal * 0.55);
+                        setMorphWeight('mouthOpen', mouthVal * 0.6);
                     } else {
                         setMorphWeight('viseme_aa', 0);
                         setMorphWeight('mouthOpen', 0);
@@ -3278,77 +4347,149 @@
 
                 switch (avatarState.gesture) {
                     case 'salom':
-                        lerpRotation(rArm, 0.15, 0.35, -0.95);
-                        lerpRotation(rForeArm, -0.65, 0.25, -1.65 + Math.sin(time * 10) * 0.25);
-                        lerpRotation(rHand, -0.2, Math.sin(time * 10) * 0.45, 0);
-                        lerpRotation(lArm, 0.85, 0.08, 0.25);
-                        lerpRotation(lForeArm, 0.15, -0.05, 0.45);
-                        if (head) lerpRotation(head, 0, -0.08, -0.05);
+                        lerpRotation(rArm, -0.10, 0.10, 0.60);
+                        lerpRotation(rForeArm, -1.05 + Math.sin(time * 6) * 0.1, 0.25, 0.65);
+                        lerpRotation(rHand, -0.30, 0.15, -0.10);
+                        lerpRotation(lArm, 0.70, 0.0, -0.15);
+                        lerpRotation(lForeArm, 0.35, 0.0, 0.20);
+                        if (head) lerpRotation(head, 0.16 + Math.sin(time * 4) * 0.06, 0.0, 0.0);
+                        setFingerPose(b, 'right', 'flat');
+                        setFingerPose(b, 'left', 'relaxed');
+                        break;
+                    case 'xush_kelibsiz':
+                        lerpRotation(rArm, 0.15, 0.05, 0.50);
+                        lerpRotation(rForeArm, -0.55 + Math.sin(time * 3) * 0.08, 0.15, 0.35);
+                        lerpRotation(rHand, -0.20, -0.30, 0.10);
+                        lerpRotation(lArm, 0.15, -0.05, -0.50);
+                        lerpRotation(lForeArm, -0.55 + Math.sin(time * 3) * 0.08, -0.15, -0.35);
+                        lerpRotation(lHand, -0.20, 0.30, -0.10);
+                        if (head) lerpRotation(head, 0.12, 0.0, 0.0);
                         setFingerPose(b, 'right', 'open');
+                        setFingerPose(b, 'left', 'open');
+                        break;
+                    case 'siz':
+                        lerpRotation(rArm, 0.20, 0.05, 0.45);
+                        lerpRotation(rForeArm, -0.60 + Math.sin(time * 4) * 0.08, 0.10, 0.30);
+                        lerpRotation(rHand, -0.15, 0.0, 0.0);
+                        lerpRotation(lArm, 0.70, 0.0, -0.15);
+                        lerpRotation(lForeArm, 0.35, 0.0, 0.20);
+                        if (head) lerpRotation(head, 0.06, 0.0, 0.0);
+                        setFingerPose(b, 'right', 'point');
+                        setFingerPose(b, 'left', 'relaxed');
+                        break;
+                    case 'savol':
+                        lerpRotation(rArm, 0.25, 0.10, 0.40);
+                        lerpRotation(rForeArm, -0.50 + Math.sin(time * 5) * 0.1, 0.20, 0.40);
+                        lerpRotation(rHand, -0.30, -0.35, 0.15);
+                        lerpRotation(lArm, 0.25, -0.10, -0.40);
+                        lerpRotation(lForeArm, -0.50 + Math.sin(time * 5) * 0.1, -0.20, -0.40);
+                        lerpRotation(lHand, -0.30, 0.35, -0.15);
+                        if (head) lerpRotation(head, 0.06, 0.08, 0.08);
+                        setFingerPose(b, 'right', 'open');
+                        setFingerPose(b, 'left', 'open');
+                        break;
+                    case 'yordam':
+                        lerpRotation(rArm, 0.10, 0.05, 0.55);
+                        lerpRotation(rForeArm, -0.80 + Math.sin(time * 5) * 0.1, 0.20, 0.50);
+                        lerpRotation(rHand, -0.25, 0.0, 0.0);
+                        lerpRotation(lArm, 0.25, -0.05, -0.40);
+                        lerpRotation(lForeArm, -0.65, -0.15, -0.35);
+                        lerpRotation(lHand, -0.30, 0.25, 0.0);
+                        if (head) lerpRotation(head, 0.10, 0.0, 0.0);
+                        setFingerPose(b, 'right', 'flat');
+                        setFingerPose(b, 'left', 'flat');
                         break;
                     case 'rahmat':
-                        lerpRotation(rArm, 0.86, -0.29, -0.93);
-                        lerpRotation(rForeArm, 0.08, 0.06, -1.79);
-                        lerpRotation(rHand, -0.5, 0, -0.15);
-                        lerpRotation(lArm, 0.68, 0.33, 0.98);
-                        lerpRotation(lForeArm, 0.08, -0.06, 1.84);
-                        lerpRotation(lHand, -0.5, 0, 0.15);
-                        if (head) lerpRotation(head, 0.25 + Math.sin(time * 2.5) * 0.05, 0, 0);
+                        lerpRotation(rArm, 0.05, 0.10, 0.55);
+                        lerpRotation(rForeArm, -0.95, 0.25, 0.60);
+                        lerpRotation(rHand, -0.30, 0.0, -0.10);
+                        lerpRotation(lArm, 0.05, -0.10, -0.55);
+                        lerpRotation(lForeArm, -0.95, -0.25, -0.60);
+                        lerpRotation(lHand, -0.30, 0.0, 0.10);
+                        if (head) lerpRotation(head, 0.22 + Math.sin(time * 3) * 0.05, 0.0, 0.0);
                         setFingerPose(b, 'right', 'flat');
                         setFingerPose(b, 'left', 'flat');
                         break;
                     case 'kuting':
-                        lerpRotation(rArm, 0.35, 0.1, -0.75);
-                        lerpRotation(rForeArm, -0.65, -0.2, -1.45);
-                        lerpRotation(rHand, -0.5, 0, 0);
-                        lerpRotation(lArm, 0.85, 0.08, 0.25);
-                        lerpRotation(lForeArm, 0.15, -0.05, 0.45);
-                        if (head) lerpRotation(head, 0, 0, 0);
+                        lerpRotation(rArm, 0.18, 0.05, 0.45);
+                        lerpRotation(rForeArm, -0.70, 0.0, 0.35);
+                        lerpRotation(rHand, -0.50, 0.0, 0.0);
+                        lerpRotation(lArm, 0.70, 0.0, -0.15);
+                        lerpRotation(lForeArm, 0.35, 0.0, 0.20);
+                        if (head) lerpRotation(head, 0.0, 0.0, 0.0);
                         setFingerPose(b, 'right', 'open');
+                        setFingerPose(b, 'left', 'relaxed');
                         break;
                     case 'zor':
-                        lerpRotation(rArm, 0.45, 0.2, -0.85);
-                        lerpRotation(rForeArm, -0.42, -0.15, -1.55);
-                        lerpRotation(rHand, -0.25, -0.4, -0.2);
-                        lerpRotation(lArm, 0.85, 0.08, 0.25);
-                        lerpRotation(lForeArm, 0.15, -0.05, 0.45);
-                        if (head) lerpRotation(head, Math.sin(time * 6) * 0.08, 0, 0);
+                        lerpRotation(rArm, 0.15, 0.08, 0.50);
+                        lerpRotation(rForeArm, -0.75, 0.15, 0.45);
+                        lerpRotation(rHand, -0.20, 0.0, 0.0);
+                        lerpRotation(lArm, 0.70, 0.0, -0.15);
+                        lerpRotation(lForeArm, 0.35, 0.0, 0.20);
+                        if (head) lerpRotation(head, 0.12 + Math.sin(time * 5) * 0.08, 0.0, 0.0);
                         setFingerPose(b, 'right', 'thumbsUp');
+                        setFingerPose(b, 'left', 'relaxed');
                         break;
                     case 'sevaman':
-                        lerpRotation(rArm, 0.3, 0.2, -0.85);
-                        lerpRotation(rForeArm, -0.65, 0, -1.5);
-                        lerpRotation(lArm, 0.3, -0.2, 0.85);
-                        lerpRotation(lForeArm, -0.65, 0, 1.5);
-                        if (head) lerpRotation(head, 0, 0, 0);
+                        lerpRotation(rArm, 0.15, 0.05, 0.50);
+                        lerpRotation(rForeArm, -0.75, 0.15, 0.45);
+                        lerpRotation(rHand, -0.20, 0.0, 0.0);
+                        lerpRotation(lArm, 0.15, -0.05, -0.50);
+                        lerpRotation(lForeArm, -0.75, -0.15, -0.45);
+                        lerpRotation(lHand, -0.20, 0.0, 0.0);
+                        if (head) lerpRotation(head, 0.0, 0.0, 0.0);
                         setFingerPose(b, 'right', 'ily');
                         setFingerPose(b, 'left', 'ily');
                         break;
                     case 'yoq':
-                        lerpRotation(rArm, 0.35, 0.1, -0.75);
-                        lerpRotation(rForeArm, -0.65, Math.sin(time * 8) * 0.3, -1.45);
-                        lerpRotation(rHand, 0, Math.sin(time * 8) * 0.35, 0);
-                        lerpRotation(lArm, 0.85, 0.08, 0.25);
-                        lerpRotation(lForeArm, 0.15, -0.05, 0.45);
-                        if (head) lerpRotation(head, 0, Math.sin(time * 8) * 0.25, 0);
+                        lerpRotation(rArm, 0.20, 0.05, 0.45);
+                        lerpRotation(rForeArm, -0.65, Math.sin(time * 8) * 0.25, 0.35);
+                        lerpRotation(rHand, 0.0, Math.sin(time * 8) * 0.35, 0.0);
+                        lerpRotation(lArm, 0.70, 0.0, -0.15);
+                        lerpRotation(lForeArm, 0.35, 0.0, 0.20);
+                        if (head) lerpRotation(head, 0.0, Math.sin(time * 8) * 0.22, 0.0);
                         setFingerPose(b, 'right', 'open');
+                        setFingerPose(b, 'left', 'relaxed');
+                        break;
+                    case 'ha':
+                        lerpRotation(rArm, 0.20, 0.05, 0.45);
+                        lerpRotation(rForeArm, -0.65 + Math.sin(time * 8) * 0.1, 0.10, 0.35);
+                        lerpRotation(rHand, -0.20, 0.0, 0.0);
+                        lerpRotation(lArm, 0.70, 0.0, -0.15);
+                        lerpRotation(lForeArm, 0.35, 0.0, 0.20);
+                        if (head) lerpRotation(head, 0.22 + Math.sin(time * 8) * 0.14, 0.0, 0.0);
+                        setFingerPose(b, 'right', 'thumbsUp');
+                        setFingerPose(b, 'left', 'relaxed');
+                        break;
+                    case 'vatan':
+                        lerpRotation(rArm, 0.05, 0.10, 0.55);
+                        lerpRotation(rForeArm, -0.95, 0.25, 0.60);
+                        lerpRotation(rHand, -0.30, 0.0, -0.10);
+                        lerpRotation(lArm, 0.70, 0.0, -0.15);
+                        lerpRotation(lForeArm, 0.35, 0.0, 0.20);
+                        if (head) lerpRotation(head, 0.10, 0.0, 0.0);
+                        setFingerPose(b, 'right', 'flat');
+                        setFingerPose(b, 'left', 'relaxed');
                         break;
                     case 'signing':
-                        lerpRotation(rArm, 0.35 + Math.sin(time * 4) * 0.15, 0.1, -0.85 + Math.cos(time * 4) * 0.15);
-                        lerpRotation(rForeArm, -0.65 + Math.cos(time * 5) * 0.2, 0, -1.45);
-                        lerpRotation(lArm, 0.35 + Math.cos(time * 4.5) * 0.15, -0.1, 0.85 - Math.sin(time * 4.5) * 0.15);
-                        lerpRotation(lForeArm, -0.65 + Math.sin(time * 5.5) * 0.2, 0, 1.45);
-                        if (head) lerpRotation(head, Math.sin(time * 3) * 0.07, Math.cos(time * 2.5) * 0.05, 0);
-                        setFingerPose(b, 'right', 'open');
-                        setFingerPose(b, 'left', 'open');
+                        lerpRotation(rArm, 0.22 + Math.sin(time * 4) * 0.08, 0.05, 0.42 + Math.cos(time * 3.5) * 0.12);
+                        lerpRotation(rForeArm, -0.65 + Math.cos(time * 4.5) * 0.18, 0.12, 0.40 + Math.sin(time * 4.5) * 0.15);
+                        lerpRotation(rHand, -0.15 + Math.sin(time * 6) * 0.2, Math.cos(time * 5) * 0.25, 0);
+                        lerpRotation(lArm, 0.22 + Math.cos(time * 4.2) * 0.08, -0.05, -0.42 - Math.sin(time * 3.7) * 0.12);
+                        lerpRotation(lForeArm, -0.65 + Math.sin(time * 4.7) * 0.18, -0.12, -0.40 - Math.cos(time * 4.7) * 0.15);
+                        lerpRotation(lHand, -0.15 + Math.cos(time * 5.8) * 0.2, -Math.sin(time * 5) * 0.25, 0);
+                        if (head) lerpRotation(head, 0.08 + Math.sin(time * 3.2) * 0.06, Math.sin(time * 2.1) * 0.08, Math.cos(time * 2.5) * 0.03);
+                        const fPose = (Math.sin(time * 3.5) > 0) ? 'open' : 'flat';
+                        setFingerPose(b, 'right', fPose);
+                        setFingerPose(b, 'left', fPose);
                         break;
                     default:
                         // Tabiiy tinch holat (Qo'llar pastda bo'shashgan, nafas harakati)
-                        lerpRotation(rArm, 0.85, -0.08, -0.25);
-                        lerpRotation(rForeArm, 0.15, 0.05, -0.45 + breath * 1.5);
+                        lerpRotation(rArm, 0.75, 0.0, 0.15);
+                        lerpRotation(rForeArm, 0.35, 0.0, -0.20 + breath * 1.2);
                         lerpRotation(rHand, 0, 0, 0);
-                        lerpRotation(lArm, 0.85, 0.08, 0.25);
-                        lerpRotation(lForeArm, 0.15, -0.05, 0.45 + breath * 1.5);
+                        lerpRotation(lArm, 0.75, 0.0, -0.15);
+                        lerpRotation(lForeArm, 0.35, 0.0, 0.20 + breath * 1.2);
                         lerpRotation(lHand, 0, 0, 0);
                         if (head) lerpRotation(head, breath * 1.2, Math.sin(time * 0.8) * 0.03, 0);
                         setFingerPose(b, 'right', 'relaxed');
@@ -3434,6 +4575,53 @@
                         setProceduralFingers(pr.fingers, 'open');
                         break;
 
+                    case 'ha':
+                        lerpRotation(rArm, 0.5, 0.2, -0.6);
+                        lerpRotation(rForeArm, -0.5, 0, -1.2);
+                        lerpRotation(rHand, -0.2, 0, 0);
+                        lerpRotation(lArm, 0.85, 0.08, 0.25);
+                        lerpRotation(lForeArm, 0.15, -0.05, 0.45);
+                        if (head) lerpRotation(head, 0.22 + Math.sin(time * 8) * 0.12, 0, 0);
+                        setFingerPose(b, 'right', 'thumbsUp');
+                        break;
+                    case 'iltimos':
+                        lerpRotation(rArm, 0.75, -0.25, -0.8);
+                        lerpRotation(rForeArm, 0.1, 0.05, -1.7);
+                        lerpRotation(rHand, -0.4, 0, -0.1);
+                        lerpRotation(lArm, 0.75, 0.25, 0.8);
+                        lerpRotation(lForeArm, 0.1, -0.05, 1.7);
+                        lerpRotation(lHand, -0.4, 0, 0.1);
+                        if (head) lerpRotation(head, 0.18 + Math.sin(time * 3) * 0.05, 0, 0);
+                        setFingerPose(b, 'right', 'flat');
+                        setFingerPose(b, 'left', 'flat');
+                        break;
+                    case 'vatan':
+                        lerpRotation(rArm, 0.78, -0.32, -0.88);
+                        lerpRotation(rForeArm, 0.12, 0.08, -1.82);
+                        lerpRotation(rHand, -0.45, 0, -0.12);
+                        lerpRotation(lArm, 0.85, 0.08, 0.25);
+                        lerpRotation(lForeArm, 0.15, -0.05, 0.45);
+                        if (head) lerpRotation(head, 0.1, 0, 0);
+                        setFingerPose(b, 'right', 'flat');
+                        break;
+                    case 'yordam':
+                        lerpRotation(rArm, 0.25 + Math.sin(time * 5) * 0.1, 0.1, -0.9);
+                        lerpRotation(rForeArm, -0.7, 0, -1.3);
+                        lerpRotation(lArm, 0.25 + Math.sin(time * 5) * 0.1, -0.1, 0.9);
+                        lerpRotation(lForeArm, -0.7, 0, 1.3);
+                        if (head) lerpRotation(head, -0.1, 0, 0);
+                        setFingerPose(b, 'right', 'open');
+                        setFingerPose(b, 'left', 'open');
+                        break;
+                    case 'suv':
+                        lerpRotation(rArm, 0.5, 0.1, -0.7);
+                        lerpRotation(rForeArm, -0.85, 0, -1.6);
+                        lerpRotation(rHand, -0.3, 0, 0);
+                        lerpRotation(lArm, 0.85, 0.08, 0.25);
+                        lerpRotation(lForeArm, 0.15, -0.05, 0.45);
+                        if (head) lerpRotation(head, 0.05, 0, 0);
+                        setFingerPose(b, 'right', 'open');
+                        break;
                     case 'signing': // Faol surdo tarjimasi fazasi
                         lerpRotation(pr.shoulder, -0.35 + Math.sin(time * 5) * 0.25, 0, -0.55 + Math.cos(time * 5) * 0.2);
                         lerpRotation(pr.elbow, -1.3 + Math.cos(time * 6) * 0.25, 0, 0);
@@ -3504,7 +4692,9 @@
                 if (pose === 'open') curl = 0.05;
                 else if (pose === 'flat') curl = 0.15;
                 else if (pose === 'relaxed') curl = 0.35;
-                else if (pose === 'thumbsUp') {
+                else if (pose === 'point') {
+                    curl = (f === 'Index') ? 0.05 : 1.35;
+                } else if (pose === 'thumbsUp') {
                     curl = (f === 'Thumb') ? -0.25 : 1.35;
                 } else if (pose === 'ily') {
                     curl = (f === 'Thumb' || f === 'Index' || f === 'Pinky') ? 0.05 : 1.35;
@@ -3515,8 +4705,19 @@
             });
         }
 
-        // Three.js 3D Surdo Avatarni ishga tushirish
-        initThreeAvatar();
+        // 3D Surdotarjimon Avatarni ishga tushirish (Three.js WebGL Engine)
+        let isThreeAvatarInitialized = false;
+        function setupThreeAvatar() {
+            if (isThreeAvatarInitialized) return;
+            initThreeAvatar();
+            isThreeAvatarInitialized = true;
+        }
+
+        if (document.readyState === 'complete' || document.readyState === 'interactive') {
+            setupThreeAvatar();
+        } else {
+            window.addEventListener('DOMContentLoaded', setupThreeAvatar);
+        }
         window.addEventListener('resize', onAvatarResize);
 
         // Tezkor Imo-ishoralar tugmalari (Quick Sign Buttons)
@@ -3723,6 +4924,9 @@
                     const badge = document.getElementById('catalog-count-badge');
                     if (badge) badge.textContent = GESTURES_DATABASE.length;
 
+                    // Kategoriya tablarini dinamik hisoblab chizish
+                    renderCategoryTabs();
+
                     // Katalogni qayta chizish
                     renderCatalog();
 
@@ -3907,8 +5111,25 @@
             });
         }
 
-        // Category Tab switching
-        if (catalogTabs) {
+        // Category Tablarini dinamik chizish
+        function renderCategoryTabs() {
+            if (!catalogTabs || !GESTURES_DATABASE) return;
+
+            const counts = {};
+            GESTURES_DATABASE.forEach(g => {
+                counts[g.category] = (counts[g.category] || 0) + 1;
+            });
+
+            const categories = Object.keys(counts);
+            let html = `<button class="catalog-tab ${activeCatalogCategory === 'all' ? 'active' : ''}" data-cat="all">Barchasi (${GESTURES_DATABASE.length})</button>`;
+
+            categories.forEach(cat => {
+                const isActive = (activeCatalogCategory === cat) ? 'active' : '';
+                html += `<button class="catalog-tab ${isActive}" data-cat="${cat}">${cat} (${counts[cat]})</button>`;
+            });
+
+            catalogTabs.innerHTML = html;
+
             catalogTabs.querySelectorAll('.catalog-tab').forEach(tab => {
                 tab.addEventListener('click', () => {
                     catalogTabs.querySelectorAll('.catalog-tab').forEach(t => t.classList.remove('active'));
@@ -4367,13 +5588,15 @@
                     // 1. Ishora kartasini ko'rsatish (pastki subtitr dockida va qo'l ustidagi AR pufakda)
                     showSignAlert(spokenText, gestureIcon, gestureCategory, consensusGesture.slug);
 
-                    // Sof neyron ovozli o'qish (ElevenLabs Multilingual v2)
-                    speakNeural(speechToPlay, audioKey, 'uz');
+                    // Sof neyron ovozli o'qish: Jonli Ovozli Muloqot faol bo'lsa, kamera imo-ishoralari gapirmaydi!
+                    if (!isLiveDialogueActive) {
+                        speakNeural(speechToPlay, audioKey, 'uz', null, false);
+                    }
 
-                    // Sentence satriga yangi chip sifatida qo'shish (O'zbekcha so'z)
+                    // Sentence satriga yangi chip sifatida qo'shish (faqat jonli ovozli muloqot bo'lmaganda)
                     const chipWord = gestureName;
 
-                    if (sentenceWords.length === 0 || sentenceWords[sentenceWords.length - 1] !== chipWord) {
+                    if (!isLiveDialogueActive && (sentenceWords.length === 0 || sentenceWords[sentenceWords.length - 1] !== chipWord)) {
                         sentenceWords.push(chipWord);
                         updateSentenceDisplay(sentenceWords.length - 1);
 
@@ -4396,6 +5619,9 @@
         let alertTimeout = null;
         let arBubbleTimeout = null;
         function showSignAlert(text, icon, category, slug = '') {
+            // Jonli ovozli muloqot rejimida imo-ishora matni va taymerlari suhbatni buzmasligi shart
+            if (isLiveDialogueActive) return;
+
             const masterDock = document.getElementById('smart-master-dock');
             const liveTier = document.getElementById('dock-live-tier');
             const trans = getTranslationForSlug(slug, text);
@@ -4611,19 +5837,16 @@
             cameraToggleBtn.addEventListener('click', toggleCamera);
         }
 
-        // Sahifa to'liq yuklanganda darhol kamera va AI Avatar videosini ishga tushirish
+        // Sahifa to'liq yuklanganda darhol kamerani ishga tushirish
         if (document.readyState === 'complete' || document.readyState === 'interactive') {
             startWebcam();
-            if (aiAvatarVideo) aiAvatarVideo.play().catch(() => {});
         } else {
             window.addEventListener('DOMContentLoaded', () => {
                 startWebcam();
-                if (aiAvatarVideo) aiAvatarVideo.play().catch(() => {});
             });
         }
         window.addEventListener('click', () => {
             if (!webcamStarted) startWebcam();
-            if (aiAvatarVideo && aiAvatarVideo.paused) aiAvatarVideo.play().catch(() => {});
         }, { once: true });
     </script>
 </body>

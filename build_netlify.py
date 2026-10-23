@@ -47,4 +47,12 @@ html = html.replace("fetch('/api/gestures/')", "fetch('/static/gestures.json')")
 with open(os.path.join(dist_dir, 'index.html'), 'w', encoding='utf-8') as f:
     f.write(html)
 
+# 4. Compile templates/widget_demo.html to dist/widget-demo.html
+if os.path.exists('templates/widget_demo.html'):
+    with open('templates/widget_demo.html', 'r', encoding='utf-8') as f:
+        demo_html = f.read()
+    with open(os.path.join(dist_dir, 'widget-demo.html'), 'w', encoding='utf-8') as f:
+        f.write(demo_html)
+    print("Generated dist/widget-demo.html successfully!")
+
 print("Generated dist/index.html successfully!")

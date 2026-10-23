@@ -11,6 +11,13 @@ class SignGesture(models.Model):
         ('Zaruratlar', 'Zaruratlar & Taom'),
         ('Buyruqlar', 'Harakatlar & Buyruqlar'),
         ('Favqulodda SOS', 'Favqulodda SOS'),
+        ('Oila & Insonlar', 'Oila & Insonlar'),
+        ('Vaqt & Kunlar', 'Vaqt & Kunlar'),
+        ('Joylar & Transport', 'Joylar & Transport'),
+        ('Taomlar & Mevalar', 'Taomlar & Mevalar'),
+        ('Kundalik Muloqot', 'Kundalik Muloqot & Suhbat'),
+        ('Tabiat & Ob-havo', 'Tabiat & Ob-havo'),
+        ('Sifatlar & Holatlar', 'Sifatlar & Holatlar'),
     ]
 
     slug = models.SlugField(max_length=64, unique=True, verbose_name="Ishora kodi")
