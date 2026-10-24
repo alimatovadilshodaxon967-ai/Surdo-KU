@@ -3857,12 +3857,7 @@
         // Sichqoncha g'ildiragi (wheel) orqali avatarni yaqinlashtirish / uzoqlashtirish (Zoom)
         if (avatarCanvas) {
             avatarCanvas.addEventListener('click', (e) => {
-                const welcomeSigns = ['salom', 'yaxshimisiz', 'rahmat', 'open_hands'];
-                tapGestureIdx = (tapGestureIdx + 1) % welcomeSigns.length;
-                const chosen = welcomeSigns[tapGestureIdx];
-                if (typeof triggerAvatarGesture === 'function') {
-                    triggerAvatarGesture(chosen, "👋", "Assalomu alaykum!");
-                }
+                // Qo'llar sokin holatda qoladi, faqat Gemini gapirganda imo-ishora boshlanadi
             });
 
             avatarCanvas.addEventListener('wheel', (e) => {
@@ -4549,6 +4544,12 @@
             const t = rawText.toLowerCase().trim();
             const label = spokenLabel || rawText;
 
+            // QAT'IY TALAB: 2-rasmdagi "Gemini Jonli Muloqot" gapirmaguncha avatarning qo'llari
+            // tananing ikki yonida sokin pastga tushgan holatda turadi!
+            if (!avatarState.isGeminiTranslating && !isSpeaking) {
+                return;
+            }
+
             // 1. Agar 3D rejimida bo'lsa (Three.js kinematik suyaklar)
             if (!isRealHumanMode) {
                 let targetGesture = explicitPose || 'signing';
@@ -4645,9 +4646,13 @@
             const now = performance.now();
             const time = now * 0.003;
 
-            // Timer tugashi -> Idle
-            if (avatarState.isGeminiTranslating) {
-                // Gemini gapirayotganda imo-ishoralarni to'xtovsiz jonli almashtirib turish
+            // QAT'IY TALAB: 2-rasmdagi "Gemini Jonli Muloqot" gapirmaguncha avatarning ikkala qo'li
+            // tananing ikki yonida sokin pastga tushgan holatda turadi!
+            if (!avatarState.isGeminiTranslating && !isSpeaking) {
+                avatarState.gesture = 'idle';
+                avatarState.active200GestureId = null;
+            } else if (avatarState.isGeminiTranslating) {
+                // Faqat Gemini gapirayotganda imo-ishoralarni jonli almashtirib turish
                 if (now > avatarState.geminiNextGestureTime) {
                     avatarState.geminiGestureIdx++;
                     if (avatarState.geminiGestureQueue && avatarState.geminiGestureIdx < avatarState.geminiGestureQueue.length) {
@@ -4657,10 +4662,15 @@
                         avatarState.text = nextG.label;
                     } else {
                         const altGestures = [
-                            { gesture: 'signing', icon: '🤟', label: 'Nutq tarjimasi' },
-                            { gesture: 'open_hands', icon: '🤲', label: 'Tushuntirish' },
-                            { gesture: 'point', icon: '👉', label: "E'tibor" },
-                            { gesture: 'heart', icon: '🙏', label: "Ta'kid" }
+                            { gesture: 'salom', icon: '👋', label: 'Salomlashish' },
+                            { gesture: 'yaxshimisiz', icon: '🤝', label: 'Yaxshimisiz?' },
+                            { gesture: 'rahmat', icon: '🙏', label: 'Rahmat' },
+                            { gesture: 'iltimos', icon: '🤲', label: 'Iltimos' },
+                            { gesture: 'ha', icon: '👌', label: 'Ha' },
+                            { gesture: 'yoq', icon: '✋', label: "Yo'q" },
+                            { gesture: 'tushunmadim', icon: '🤷', label: 'Tushunmadim' },
+                            { gesture: 'bordir', icon: '👉', label: 'Bordir' },
+                            { gesture: 'xayr', icon: '👋', label: 'Xayr' }
                         ];
                         const alt = altGestures[Math.floor((now / 1400) % altGestures.length)];
                         avatarState.gesture = alt.gesture;
@@ -4673,11 +4683,6 @@
                 }
             } else if (now > avatarState.timer && avatarState.gesture !== 'idle') {
                 avatarState.gesture = 'idle';
-                avatarState.text = "Imo-ishora kutilmoqda...";
-                avatarState.icon = "✋";
-                if (avatarCaptionIcon) avatarCaptionIcon.textContent = "✋";
-                if (avatarCaptionText) avatarCaptionText.textContent = "Imo-ishora kutilmoqda...";
-                if (avatarStatusDesc) avatarStatusDesc.textContent = "3D Fotorealistik Surdotarjimon (Faol)";
             }
 
             const breath = Math.sin(time * 2.2) * 0.02;
