@@ -3773,6 +3773,8 @@
             const m = AVATAR_MODELS[currentModelIdx] || AVATAR_MODELS[0];
             if (avatarModelLabel) avatarModelLabel.textContent = m.role;
             if (avatarStatusDesc) avatarStatusDesc.textContent = `${m.name} yuklanmoqda...`;
+            if (avatarCaptionIcon) avatarCaptionIcon.textContent = "⏳";
+            if (avatarCaptionText) avatarCaptionText.textContent = `${m.name} 3D yuklanmoqda...`;
 
             isRealHumanMode = false;
             if (aiAvatarVideo) {
@@ -3821,11 +3823,14 @@
                                 child.castShadow = true;
                                 child.receiveShadow = true;
                                 child.frustumCulled = false;
-                                if (child.material) {
-                                    child.material.roughness = 0.55;
-                                    child.material.metalness = 0.08;
-                                    child.material.needsUpdate = true;
-                                }
+                                const mats = Array.isArray(child.material) ? child.material : [child.material];
+                                mats.forEach(mat => {
+                                    if (mat) {
+                                        mat.roughness = 0.55;
+                                        mat.metalness = 0.08;
+                                        mat.needsUpdate = true;
+                                    }
+                                });
                                 if (child.morphTargetDictionary && child.morphTargetInfluences) {
                                     avatarMorphMeshes.push(child);
                                 }
@@ -3848,16 +3853,21 @@
                         onAvatarResize();
                         fitAvatarCamera(avatarModel);
 
+                        if (avatarCaptionIcon) avatarCaptionIcon.textContent = "✋";
+                        if (avatarCaptionText) avatarCaptionText.textContent = `${m.name} • MetaPerson AI 3D Surdotarjimon`;
                         if (avatarStatusDesc) avatarStatusDesc.textContent = `${m.name} (Faol)`;
                     },
                     (xhr) => {
-                        if (xhr.lengthComputable && avatarStatusDesc) {
+                        if (xhr.lengthComputable && xhr.total > 0) {
                             const percent = Math.round((xhr.loaded / xhr.total) * 100);
-                            avatarStatusDesc.textContent = `${m.name}: ${percent}%`;
+                            if (avatarCaptionText) avatarCaptionText.textContent = `${m.name} yuklanmoqda (${percent}%)...`;
+                            if (avatarStatusDesc) avatarStatusDesc.textContent = `${m.name}: ${percent}%`;
                         }
                     },
                     (err) => {
                         console.warn("GLB yuklanmadi, zaxira model:", err);
+                        if (avatarCaptionIcon) avatarCaptionIcon.textContent = "👤";
+                        if (avatarCaptionText) avatarCaptionText.textContent = `${m.name} (Zaxira 3D model)`;
                         createProceduralHumanoid();
                     }
                 );
@@ -5523,7 +5533,7 @@
                 return;
             }
 
-            filtered.forEach(item => {
+            filtered.forEach((item, index) => {
                 const el = document.createElement('div');
                 el.className = 'catalog-item';
                 const itemNum = index + 1;
