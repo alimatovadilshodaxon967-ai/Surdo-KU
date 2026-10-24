@@ -3801,11 +3801,21 @@
             const executeGLBLoad = () => {
                 const loader = new THREE.GLTFLoader();
                 if (window.MeshoptDecoder) {
-                    loader.setMeshoptDecoder(window.MeshoptDecoder);
+                    try { loader.setMeshoptDecoder(window.MeshoptDecoder); } catch(e) {}
                 }
+                let loadTimeout = setTimeout(() => {
+                    if (!is3DModelLoaded) {
+                        console.warn("Avatar yuklanishi cho'zildi, zaxira faollashtirilmoqda");
+                        if (avatarCaptionIcon) avatarCaptionIcon.textContent = "👤";
+                        if (avatarCaptionText) avatarCaptionText.textContent = `${m.name} (3D Zaxira)`;
+                        createProceduralHumanoid();
+                    }
+                }, 10000);
+
                 loader.load(
                     m.url,
                     (gltf) => {
+                        clearTimeout(loadTimeout);
                         avatarModel = gltf.scene;
                         avatarModel.position.set(0, 0, 0);
                         avatarModel.scale.set(1, 1, 1);
@@ -3860,11 +3870,16 @@
                     (xhr) => {
                         if (xhr.lengthComputable && xhr.total > 0) {
                             const percent = Math.round((xhr.loaded / xhr.total) * 100);
-                            if (avatarCaptionText) avatarCaptionText.textContent = `${m.name} yuklanmoqda (${percent}%)...`;
-                            if (avatarStatusDesc) avatarStatusDesc.textContent = `${m.name}: ${percent}%`;
+                            const mb = (xhr.loaded / (1024 * 1024)).toFixed(1);
+                            const totalMb = (xhr.total / (1024 * 1024)).toFixed(1);
+                            if (avatarCaptionText) avatarCaptionText.textContent = `${m.name} yuklanmoqda (${percent}% - ${mb}/${totalMb} MB)...`;
+                        } else if (xhr.loaded) {
+                            const mb = (xhr.loaded / (1024 * 1024)).toFixed(1);
+                            if (avatarCaptionText) avatarCaptionText.textContent = `${m.name} yuklanmoqda (${mb} MB)...`;
                         }
                     },
                     (err) => {
+                        clearTimeout(loadTimeout);
                         console.warn("GLB yuklanmadi, zaxira model:", err);
                         if (avatarCaptionIcon) avatarCaptionIcon.textContent = "👤";
                         if (avatarCaptionText) avatarCaptionText.textContent = `${m.name} (Zaxira 3D model)`;
@@ -3873,11 +3888,7 @@
                 );
             };
 
-            if (window.MeshoptDecoder && window.MeshoptDecoder.ready && typeof window.MeshoptDecoder.ready.then === 'function') {
-                window.MeshoptDecoder.ready.then(executeGLBLoad).catch(executeGLBLoad);
-            } else {
-                executeGLBLoad();
-            }
+            executeGLBLoad();
         }
 
         // 3D Sahna va Yoritish tizimini o'rnatish
