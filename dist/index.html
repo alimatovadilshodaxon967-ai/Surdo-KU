@@ -1368,6 +1368,12 @@
             transform: translateY(-2px);
         }
 
+        .catalog-item.active-sign {
+            border-color: #00f2fe !important;
+            box-shadow: 0 0 16px rgba(0, 242, 254, 0.45) !important;
+            background: rgba(0, 242, 254, 0.12) !important;
+        }
+
         .catalog-item-header {
             display: flex;
             justify-content: space-between;
@@ -2493,6 +2499,11 @@
                             <span id="mic-action-text">Gemini Jonli Muloqot</span>
                         </button>
 
+                        <!-- 200 ta Imo-Ishora Baza Tugmasi -->
+                        <button id="main-200-btn" class="action-btn" title="👆 200 ta Imo-Ishora (3D MetaPerson Baza)" style="background: linear-gradient(135deg, rgba(0, 242, 254, 0.22), rgba(79, 172, 254, 0.22)); border: 1px solid var(--primary); color: var(--primary);">
+                            <i class="fa-solid fa-hands-asl-interpreting"></i>
+                            <span>200 ta Imo-Ishora</span>
+                        </button>
                         <!-- AI Smart Grammar Button -->
                         <button id="ai-grammar-btn" class="action-btn ai-magic-btn" title="AI yordamida chiroyli adabiy gap tuzish">
                             <i class="fa-solid fa-wand-magic-sparkles"></i>
@@ -2525,6 +2536,9 @@
                 <span class="avatar-title" id="avatar-pod-title">AI Surdotarjimon (Sardor)</span>
             </div>
             <div class="avatar-controls">
+                <button id="open-200-catalog-btn" class="avatar-btn" title="👆 200 ta Imo-Ishora (3D MetaPerson Kartalari)" style="color: #00f2fe; font-weight: 800; border-color: rgba(0, 242, 254, 0.4);">
+                    <i class="fa-solid fa-hand-sparkles" style="color: #00f2fe;"></i> 200
+                </button>
                 <button id="avatar-model-switch-btn" class="avatar-btn" title="Keyingi 3D Avatar (Sardor, Laylo, Aziz, Jasur, Madina, Nilufar, X-Bot, Harbiy)">
                     <i class="fa-solid fa-user-group"></i>
                 </button>
@@ -5194,18 +5208,20 @@
             const fingers = ['Thumb', 'Index', 'Middle', 'Ring', 'Pinky'];
             fingers.forEach((f, idx) => {
                 const c = (curls && curls[idx] !== undefined) ? curls[idx] : 0.35;
-                const b1 = avatarBones[prefix + f + '1'];
-                const b2 = avatarBones[prefix + f + '2'];
-                const b3 = avatarBones[prefix + f + '3'];
+                const b1 = avatarBones[prefix + f + '1'] || avatarBones['mixamorig:' + prefix + f + '1'];
+                const b2 = avatarBones[prefix + f + '2'] || avatarBones['mixamorig:' + prefix + f + '2'];
+                const b3 = avatarBones[prefix + f + '3'] || avatarBones['mixamorig:' + prefix + f + '3'];
+                const b4 = avatarBones[prefix + f + '4'] || avatarBones['mixamorig:' + prefix + f + '4'];
                 if (b1) {
                     if (f === 'Thumb') {
-                        lerpRotation(b1, c * 0.5, c * 0.4, (side === 'right' ? -c : c) * 0.6, 0.22);
+                        lerpRotation(b1, c * 0.45, c * 0.35, (side === 'right' ? -c : c) * 0.65, 0.22);
                     } else {
-                        lerpRotation(b1, c, 0, 0, 0.22);
+                        lerpRotation(b1, c * 0.70, 0, 0, 0.22);
                     }
                 }
-                if (b2) lerpRotation(b2, c * 0.85, 0, 0, 0.22);
-                if (b3) lerpRotation(b3, c * 0.70, 0, 0, 0.22);
+                if (b2) lerpRotation(b2, c * 1.0, 0, 0, 0.22);
+                if (b3) lerpRotation(b3, c * 0.85, 0, 0, 0.22);
+                if (b4) lerpRotation(b4, c * 0.60, 0, 0, 0.22);
             });
         }
 
@@ -5239,25 +5255,38 @@
             });
         }
 
-        // Rigged GLTF barmoq suyaklarini burish
+        // Rigged GLTF barmoq suyaklarini burish (Barcha 4 ta bo'g'in b1..b4 boshqariladi)
         function setFingerPose(bones, side, pose) {
             const prefix = side === 'right' ? 'RightHand' : 'LeftHand';
             const fingers = ['Thumb', 'Index', 'Middle', 'Ring', 'Pinky'];
 
-            fingers.forEach((f) => {
+            fingers.forEach((f, idx) => {
                 const b1 = bones[`${prefix}${f}1`] || bones[`mixamorig:${prefix}${f}1`];
                 const b2 = bones[`${prefix}${f}2`] || bones[`mixamorig:${prefix}${f}2`];
+                const b3 = bones[`${prefix}${f}3`] || bones[`mixamorig:${prefix}${f}3`];
+                const b4 = bones[`${prefix}${f}4`] || bones[`mixamorig:${prefix}${f}4`];
                 if (!b1) return;
 
                 let curl = 0;
-                if (pose === 'open') curl = 0.05;
-                else if (pose === 'flat') curl = 0.15;
-                else if (pose === 'relaxed') curl = 0.35;
-                else if (pose === 'fist') curl = 1.35;
-                else if (pose === 'point') {
-                    curl = (f === 'Index') ? 0.05 : 1.35;
+                let splay = 0;
+                if (pose === 'open') {
+                    curl = 0.04;
+                    splay = (idx - 2) * 0.08;
+                } else if (pose === 'flat') {
+                    curl = 0.08;
+                    splay = 0;
+                } else if (pose === 'relaxed') {
+                    curl = 0.35;
+                    splay = (idx - 2) * 0.04;
+                } else if (pose === 'fist') {
+                    curl = 1.35;
+                    splay = 0;
+                } else if (pose === 'point') {
+                    curl = (f === 'Index') ? 0.02 : 1.35;
+                    splay = 0;
                 } else if (pose === 'victory') {
-                    curl = (f === 'Index' || f === 'Middle') ? 0.05 : 1.35;
+                    curl = (f === 'Index' || f === 'Middle') ? 0.02 : 1.35;
+                    splay = (f === 'Index') ? -0.15 : (f === 'Middle' ? 0.15 : 0);
                 } else if (pose === 'three') {
                     curl = (f === 'Index' || f === 'Middle' || f === 'Ring') ? 0.05 : 1.35;
                 } else if (pose === 'four') {
@@ -5272,8 +5301,17 @@
                     curl = (f === 'Thumb' || f === 'Index') ? 0.75 : 1.25;
                 }
 
-                lerpRotation(b1, curl, 0, 0, 0.2);
-                if (b2) lerpRotation(b2, curl * 0.8, 0, 0, 0.2);
+                if (f === 'Thumb') {
+                    lerpRotation(b1, curl * 0.5, curl * 0.35, (side === 'right' ? -curl : curl) * 0.6, 0.22);
+                    if (b2) lerpRotation(b2, curl * 0.8, 0, 0, 0.22);
+                    if (b3) lerpRotation(b3, curl * 0.7, 0, 0, 0.22);
+                    if (b4) lerpRotation(b4, curl * 0.5, 0, 0, 0.22);
+                } else {
+                    lerpRotation(b1, curl * 0.7, 0, (side === 'right' ? -splay : splay), 0.22);
+                    if (b2) lerpRotation(b2, curl * 1.0, 0, 0, 0.22);
+                    if (b3) lerpRotation(b3, curl * 0.85, 0, 0, 0.22);
+                    if (b4) lerpRotation(b4, curl * 0.6, 0, 0, 0.22);
+                }
             });
         }
 
@@ -5649,9 +5687,13 @@
                     avatarState.gesture = item.slug || 'custom';
                     avatarState.text = item.name;
                     avatarState.icon = item.icon || '✋';
-                    avatarState.timer = performance.now() + 4500;
+                    avatarState.timer = performance.now() + 4800;
                     if (avatarCaptionIcon) avatarCaptionIcon.textContent = item.icon || '✋';
-                    if (avatarCaptionText) avatarCaptionText.textContent = `[#${itemNum}/200] ${item.name}`;
+                    if (avatarCaptionText) avatarCaptionText.textContent = `[#${itemNum}/200] ${item.name}: "${item.text}"`;
+                    
+                    document.querySelectorAll('.catalog-item').forEach(c => c.classList.remove('active-sign'));
+                    el.classList.add('active-sign');
+                    
                     speakUzbek(item.text, item.audioKey);
                 };
 
@@ -5685,10 +5727,27 @@
         function openCatalog() {
             if (!catalogModal) return;
             catalogModal.classList.add('open');
+            if (avatarPod && avatarPod.classList.contains('minimized')) {
+                avatarPod.classList.remove('minimized');
+            }
             renderCatalog(activeCatalogCategory, catalogSearchInput ? catalogSearchInput.value : '');
             if (catalogSearchInput) catalogSearchInput.focus();
         }
 
+        const open200CatalogBtn = document.getElementById('open-200-catalog-btn');
+        if (open200CatalogBtn) {
+            open200CatalogBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                openCatalog();
+            });
+        }
+        const main200Btn = document.getElementById('main-200-btn');
+        if (main200Btn) {
+            main200Btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                openCatalog();
+            });
+        }
         if (catalogOpenBtn) {
             catalogOpenBtn.addEventListener('click', openCatalog);
         }
