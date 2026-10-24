@@ -2917,6 +2917,36 @@
         }
 
         let activeAudio = null;
+        let globalSpeechAudio = new Audio();
+        let isAudioSubsystemUnlocked = false;
+
+        // Brauzer autoplay va audio cheklovlarini yechish (foydalanuvchi biror tugmani bosganda)
+        function unlockAudioSubsystem() {
+            if (isAudioSubsystemUnlocked) return;
+            try {
+                if (!globalSpeechAudio.src) {
+                    globalSpeechAudio.src = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA';
+                }
+                const p = globalSpeechAudio.play();
+                if (p !== undefined) {
+                    p.then(() => {
+                        isAudioSubsystemUnlocked = true;
+                    }).catch(() => {});
+                }
+            } catch(e) {}
+            if (window.AudioContext || window.webkitAudioContext) {
+                try {
+                    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                    if (ctx.state === 'suspended') {
+                        ctx.resume();
+                    }
+                } catch(e) {}
+            }
+        }
+
+        window.addEventListener('click', unlockAudioSubsystem, { passive: true });
+        window.addEventListener('touchstart', unlockAudioSubsystem, { passive: true });
+        window.addEventListener('keydown', unlockAudioSubsystem, { passive: true });
 
         // Multi-Language & Voice Neural Audio Synthesis (ElevenLabs / Gemini / VoiceLab)
         function speakNeural(text, audioKey, lang = currentLang, onComplete = null, isVoiceChat = false, forceVoice = null) {
@@ -2960,6 +2990,8 @@
         }
 
         function playDynamicTTS(text, lang = currentLang, onComplete = null, voiceOverride = null) {
+            unlockAudioSubsystem();
+
             if (activeAudio) {
                 try {
                     activeAudio.pause();
@@ -2967,8 +2999,19 @@
                 } catch(e) {}
                 activeAudio = null;
             }
+            if ('speechSynthesis' in window) {
+                try { window.speechSynthesis.cancel(); } catch(e) {}
+            }
 
             let completed = false;
+            let fallbackRan = false;
+
+            // Matn hajmiga qarab dinamik xavfsizlik vaqti (kamida 30 soniya)
+            const safetyTimeoutMs = Math.max(30000, text.length * 150);
+            const safetyTimeout = setTimeout(() => {
+                finishSpeech();
+            }, safetyTimeoutMs);
+
             const finishSpeech = () => {
                 if (completed) return;
                 completed = true;
@@ -2980,16 +3023,25 @@
                 }
             };
 
-            // Maksimal 14 soniyalik xavfsizlik taymeri (mikrofon aslo qotib qolmasligi uchun)
-            const safetyTimeout = setTimeout(() => {
-                finishSpeech();
-            }, 14000);
+            const triggerFallback = (reason) => {
+                if (completed || fallbackRan) return;
+                fallbackRan = true;
+                console.warn(`[TTS Fallback] Sabab: ${reason}. Brauzer SpeechSynthesis ovozi ulanmoqda.`);
+                fallbackWebSpeech(text, lang, finishSpeech);
+            };
 
             // Ovoz tanlash: Gemini (mikrofon) yoki VoiceLab (kamera)
             const chosenVoice = voiceOverride || ((currentVoice && currentVoice !== 'gemini') ? currentVoice : 'abdulhay');
             const audioUrl = `/api/tts/?text=${encodeURIComponent(text)}&voice=${encodeURIComponent(chosenVoice)}&lang=${lang}`;
-            const audio = new Audio(audioUrl);
+
+            // Unlocked audio elementidan foydalanish brauzer autoplay cheklovlarini to'liq hal qiladi
+            const audio = globalSpeechAudio || new Audio();
             activeAudio = audio;
+            audio.src = audioUrl;
+            audio.currentTime = 0;
+            audio.volume = 1.0;
+
+            // Avatarni va to'lqinlarni darhol gapirish/tarjima qilish holatiga o'tkazish
             setSpeakingState(true, text);
 
             audio.onplay = () => {
@@ -3001,26 +3053,43 @@
             };
 
             audio.onerror = (err) => {
-                console.warn("TTS audio yuklashda xatolik:", err);
-                finishSpeech();
+                console.warn('TTS audio yuklashda xatolik:', err);
+                triggerFallback('audio_load_or_network_error');
             };
 
-            audio.play().catch(err => {
-                console.warn("Audio play xatoligi:", err);
-                finishSpeech();
-            });
+            const playPromise = audio.play();
+            if (playPromise !== undefined) {
+                playPromise.then(() => {
+                    setSpeakingState(true, text);
+                }).catch(err => {
+                    console.warn("Audio play() brauzer tomonidan to'xtatildi:", err);
+                    triggerFallback('browser_autoplay_policy_blocked');
+                });
+            }
         }
 
         function fallbackWebSpeech(text, lang = currentLang, onDone = null) {
             if ('speechSynthesis' in window) {
-                window.speechSynthesis.cancel();
+                try { window.speechSynthesis.cancel(); } catch(e) {}
                 const utterance = new SpeechSynthesisUtterance(text);
                 utterance.rate = 1.0;
                 utterance.pitch = 1.0;
                 if (lang === 'en') utterance.lang = 'en-US';
                 else if (lang === 'ru') utterance.lang = 'ru-RU';
                 else utterance.lang = 'uz-UZ';
-                utterance.onstart = () => setSpeakingState(true);
+
+                try {
+                    const voices = window.speechSynthesis.getVoices();
+                    if (voices && voices.length > 0) {
+                        const targetPrefix = utterance.lang.substring(0, 2).toLowerCase();
+                        const matchedVoice = voices.find(v => v.lang && v.lang.toLowerCase().startsWith(targetPrefix));
+                        if (matchedVoice) utterance.voice = matchedVoice;
+                    }
+                } catch(ve) {}
+
+                utterance.onstart = () => {
+                    setSpeakingState(true, text);
+                };
                 utterance.onend = () => {
                     setSpeakingState(false);
                     if (onDone) onDone();
@@ -3261,7 +3330,6 @@
             })
             .then(res => res.json())
             .then(data => {
-                isAIProcessing = false;
                 const reply = (data && data.reply) ? data.reply : userMsg;
 
                 // Suhbat tarixini yangilash
@@ -3290,6 +3358,7 @@
                 if (isVoiceEnabled) {
                     setLiveHudState('speaking', `🤖 Gemini: "${reply}"`);
                     speakNeural(reply, "", currentLang, () => {
+                        isAIProcessing = false;
                         // AI gapirib bo'ldi -> avatarni tinch holatga qaytarish!
                         if (typeof stopGeminiVoiceSignTranslation === 'function') {
                             stopGeminiVoiceSignTranslation();
@@ -3514,6 +3583,8 @@
         }
 
         function toggleLiveDialogue() {
+
+            unlockAudioSubsystem();
             if (isLiveDialogueActive) {
                 // Agar allaqachon gapirib turgan bo'lsa va gapida matn bo'lsa -> jo'natish
                 if (currentCapturedText.trim() && !isAIProcessing) {

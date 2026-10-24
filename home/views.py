@@ -492,8 +492,7 @@ class TTSView(View):
                         pass
                     return HttpResponse(audio_stream, content_type="audio/wav")
             except Exception as gemini_err:
-                print(f"[Gemini TTS] Xatolik: {gemini_err}")
-                return HttpResponse(f"Gemini TTS ovozini yuklab bo'lmadi: {gemini_err}", status=502)
+                print(f"[Gemini TTS] Vaqtincha xatolik: {gemini_err}. Zaxira ovoz tizimlariga o'tilmoqda...")
 
         # 2. VoiceLab.uz dagi ovoz ID sini aniqlash
         if voice.startswith("voice_"):
@@ -581,11 +580,38 @@ class TTSView(View):
                 except Exception:
                     pass
                 return HttpResponse(audio_stream, content_type="audio/wav")
-            else:
-                return HttpResponse("VoiceLab audio bo'sh qaytdi", status=502)
         except Exception as vl_err:
-            print("VoiceLab API xatoligi:", vl_err)
-            return HttpResponse(f"VoiceLab TTS xatosi: {vl_err}", status=502)
+            print("VoiceLab API xatoligi:", vl_err, "Edge-TTS zaxirasiga o'tilmoqda...")
+
+        # 3. Zaxira: Microsoft Edge TTS (uz-UZ-MadinaNeural / uz-UZ-SardorNeural)
+        try:
+            import edge_tts
+            edge_voice = 'uz-UZ-MadinaNeural'
+            if lang == 'ru':
+                edge_voice = 'ru-RU-SvetlanaNeural'
+            elif lang == 'en':
+                edge_voice = 'en-US-JennyNeural'
+            elif any(k in voice.lower() for k in ['puck', 'sardor', 'erkak', 'abdulhay']):
+                edge_voice = 'uz-UZ-SardorNeural'
+
+            communicate = edge_tts.Communicate(text, edge_voice)
+            chunks = []
+            async for chunk in communicate.stream():
+                if chunk['type'] == 'audio':
+                    chunks.append(chunk['data'])
+            edge_audio = b''.join(chunks)
+            if edge_audio:
+                VOICE_AUDIO_CACHE[cache_key] = edge_audio
+                try:
+                    with open(disk_file, 'wb') as df:
+                        df.write(edge_audio)
+                except Exception:
+                    pass
+                return HttpResponse(edge_audio, content_type="audio/mpeg")
+        except Exception as edge_err:
+            print("Edge-TTS zaxira xatosi:", edge_err)
+
+        return HttpResponse("TTS xizmatlarida vaqtincha uzilish", status=503)
 
 
 class GestureListView(View):
