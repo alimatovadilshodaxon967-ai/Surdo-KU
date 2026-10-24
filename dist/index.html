@@ -1736,6 +1736,7 @@
             transform: translateY(-1px);
         }
         .avatar-caption-badge {
+            display: none !important;
             position: absolute;
             bottom: 10px;
             left: 12px;
@@ -2556,7 +2557,7 @@
         <div class="avatar-viewport">
             <canvas id="avatar-canvas"></canvas>
             <video id="ai-avatar-video" playsinline muted loop style="display:none;" poster="/static/avatars/uzbek_national_avatar.jpg" src="/static/avatars/uzbek_avatar_idle.mp4"></video>
-            <div id="avatar-caption-badge" class="avatar-caption-badge">
+            <div id="avatar-caption-badge" class="avatar-caption-badge" style="display: none !important;">
                 <span id="avatar-caption-icon">✋</span>
                 <span id="avatar-caption-text">Sardor • MetaPerson AI Avatar [1/8]</span>
             </div>
