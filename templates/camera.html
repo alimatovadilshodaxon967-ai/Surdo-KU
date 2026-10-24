@@ -3292,7 +3292,7 @@
                 if (signIconElem) signIconElem.textContent = "🤖";
                 if (signCategoryElem) signCategoryElem.textContent = "Gemini Live";
                 if (signTextElem) signTextElem.textContent = text || "🤖 Gemini gapirmoqda...";
-                setSpeakingState(true);
+                setSpeakingState(true, text);
             } else {
                 resetMicButtonUI();
                 if (signIconElem) signIconElem.textContent = "✋";
@@ -3348,10 +3348,11 @@
                 sentenceWords.push(`🤖 ${reply}`);
                 updateSentenceDisplay(sentenceWords.length - 1);
 
-                // Faqat ovozsiz rejimda (ovoz o'chirilgan bo'lsa) darhol vizual tarjimani boshlash;
-                // Agar ovoz yoqilgan bo'lsa, audio yangrashi bilan avtomatik boshlanadi!
-                if (!isVoiceEnabled && typeof startGeminiVoiceSignTranslation === 'function') {
+                // Gemini javobini 3D avatar orqali ovozga mos imo-ishoraga darhol jonli tarjima qilish!
+                if (typeof startGeminiVoiceSignTranslation === 'function') {
                     startGeminiVoiceSignTranslation(reply);
+                } else if (typeof triggerAvatarGesture === 'function') {
+                    triggerAvatarGesture(reply, "🤖", reply);
                 }
 
                 // AI Javobini TTS orqali o'qish: ekran burchaklarida to'lqinli ko'k nur yonadi!
@@ -3734,7 +3735,7 @@
             if (liveDot) liveDot.classList.add('translating');
 
             if (isRealHumanMode) {
-                triggerAvatarGesture(speechText, "🤟", speechText);
+                triggerAvatarGesture(replyText, "🤟", replyText);
             }
 
             const queue = [];
@@ -3848,6 +3849,15 @@
 
         // Sichqoncha g'ildiragi (wheel) orqali avatarni yaqinlashtirish / uzoqlashtirish (Zoom)
         if (avatarCanvas) {
+            avatarCanvas.addEventListener('click', (e) => {
+                const welcomeSigns = ['salom', 'yaxshimisiz', 'rahmat', 'open_hands'];
+                tapGestureIdx = (tapGestureIdx + 1) % welcomeSigns.length;
+                const chosen = welcomeSigns[tapGestureIdx];
+                if (typeof triggerAvatarGesture === 'function') {
+                    triggerAvatarGesture(chosen, "👋", "Assalomu alaykum!");
+                }
+            });
+
             avatarCanvas.addEventListener('wheel', (e) => {
                 e.preventDefault();
                 if (!avatarCamera) return;
@@ -4780,6 +4790,7 @@
                     case 'salom':
                     case 'assalomu_alaykum':
                     case 'keling':
+                    case 'wave':
                         lerpRotation(rArm, 0.65, 0.45, -1.35);
                         lerpRotation(rForeArm, 0.10, 0.15 + Math.sin(time * 5) * 0.08, -2.10);
                         lerpRotation(rHand, -0.30, 0.10, 0.0);
@@ -4802,6 +4813,8 @@
                     case 'mumkin':
                     case 'oson':
                     case 'toza':
+                    case 'thumbs_up':
+                    case 'tasdiq':
                         {
                             const osc = Math.sin(time * 4) * 0.04;
                             lerpRotation(rArm, 1.22 + osc, 0.12, -0.80);
@@ -4881,6 +4894,9 @@
                     case 'mumkin_emas':
                     case 'qiyin':
                     case 'yomon':
+                    case 'stop':
+                    case 'toxtang':
+                    case 'kuting':
                         lerpRotation(rArm, 1.10, 0.15, -0.75);
                         lerpRotation(rForeArm, 0.20, 0.25 + Math.sin(time * 7) * 0.22, -1.55);
                         lerpRotation(rHand, -0.25, -0.20 + Math.sin(time * 7) * 0.25, 0.0);
@@ -5663,6 +5679,9 @@
                     sentenceWords.push(g.name);
                     updateSentenceDisplay();
                     highlightRibbonPill(g.slug);
+                    if (typeof triggerAvatarGesture === 'function') {
+                        triggerAvatarGesture(g.slug, g.icon, g.text);
+                    }
                 });
 
                 ribbonContainer.appendChild(pill);
@@ -6319,6 +6338,11 @@
 
                     // 1. Ishora kartasini ko'rsatish (pastki subtitr dockida va qo'l ustidagi AR pufakda)
                     showSignAlert(spokenText, gestureIcon, gestureCategory, consensusGesture.slug);
+
+                    // 3D Avatar ham kamerada aniqlangan imo-ishorani bajarsin
+                    if (typeof triggerAvatarGesture === 'function') {
+                        triggerAvatarGesture(consensusGesture.slug, gestureIcon, spokenText);
+                    }
 
                     // Sof neyron ovozli o'qish: Jonli Ovozli Muloqot faol bo'lsa, kamera imo-ishoralari gapirmaydi!
                     if (!isLiveDialogueActive) {
