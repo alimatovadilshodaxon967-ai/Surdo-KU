@@ -4024,11 +4024,10 @@
                         const initLArm = avatarBones['LeftArm'] || avatarBones['mixamorigLeftArm'];
                         const initRForeArm = avatarBones['RightForeArm'] || avatarBones['mixamorigRightForeArm'];
                         const initLForeArm = avatarBones['LeftForeArm'] || avatarBones['mixamorigLeftForeArm'];
-                        // T-pose dan darhol sokin turish (qo'llar yonida) holatiga o'tkazish
-                        if (initRArm) initRArm.rotation.set(1.45, 0.05, -0.12);
-                        if (initLArm) initLArm.rotation.set(1.45, -0.05, 0.12);
-                        if (initRForeArm) initRForeArm.rotation.set(0.12, 0.0, -0.05);
-                        if (initLForeArm) initLForeArm.rotation.set(0.10, 0.0, 0.05);
+                        if (initRArm) initRArm.rotation.set(0.85, -0.08, -0.25);
+                        if (initLArm) initLArm.rotation.set(0.85, 0.08, 0.25);
+                        if (initRForeArm) initRForeArm.rotation.set(0.15, 0.05, -0.45);
+                        if (initLForeArm) initLForeArm.rotation.set(0.15, -0.05, 0.45);
 
                         avatarScene.add(avatarModel);
                         is3DModelLoaded = true;
@@ -4692,8 +4691,7 @@
             // 1. Agar Fotorealistik 3D Inson Modeli (Avaturn GLB) yuklangan bo'lsa:
             if (is3DModelLoaded && (avatarBones['RightArm'] || avatarBones['mixamorigRightArm'])) {
                 const b = avatarBones;
-                const rShoulder = b['RightShoulder'] || b['mixamorigRightShoulder'];
-                const lShoulder = b['LeftShoulder'] || b['mixamorigLeftShoulder'];
+
                 const rArm = b['RightArm'] || b['mixamorigRightArm'];
                 const rForeArm = b['RightForeArm'] || b['mixamorigRightForeArm'];
                 const rHand = b['RightHand'] || b['mixamorigRightHand'];
@@ -4792,51 +4790,35 @@
                     applyDetailedFingers('right', cfg.fr);
                     applyDetailedFingers('left', cfg.fl);
                     if (head && cfg.head) lerpRotation(head, cfg.head[0], cfg.head[1], cfg.head[2]);
-                } else switch (avatarState.gesture) {
-                    // ==============================================================
-                    // MARKAZIY PLAKAT POZASI (To'g'ri imo-ishora)
-                    // ==============================================================
+                                } else switch (avatarState.gesture) {
                     case 'center_poster':
                     case 'correct_pose':
-                        {
-                            const cOsc = Math.sin(time * 2.2) * 0.02;
-                            if (rShoulder) lerpRotation(rShoulder, -0.05, 0.05, -0.12);
-                            if (lShoulder) lerpRotation(lShoulder, 0.02, -0.04, 0.06);
-                            lerpRotation(rArm, 1.15 + cOsc, 0.12, -0.75);
-                            lerpRotation(rForeArm, 0.12, 0.20, -1.45 + cOsc * 0.2);
-                            lerpRotation(rHand, -0.20, 0.0, 0.0);
-                            lerpRotation(lArm, 1.28 - cOsc, -0.10, 0.75);
-                            lerpRotation(lForeArm, 0.10, -0.32, 1.15 - cOsc * 0.2);
-                            lerpRotation(lHand, -0.35, 0.20, 0.0);
-                            if (head) lerpRotation(head, 0.06 + breath * 1.2, 0, 0);
-                            setFingerPose(b, 'right', 'point');
-                            setFingerPose(b, 'left', 'flat');
-                        }
+                        lerpRotation(rArm, 0.30, 0.20, -0.85);
+                        lerpRotation(rForeArm, -0.45, 0.20, -1.65);
+                        lerpRotation(rHand, -0.15, 0, 0);
+                        lerpRotation(lArm, 0.85, 0.08, 0.25);
+                        lerpRotation(lForeArm, 0.15, -0.05, 0.45);
+                        lerpRotation(lHand, 0, 0, 0);
+                        if (head) lerpRotation(head, 0.06 + breath * 1.2, 0, 0);
+                        setFingerPose(b, 'right', 'point');
+                        setFingerPose(b, 'left', 'relaxed');
                         break;
 
-                    // ==============================================================
-                    // 1. ASSALOMU ALAYKUM (Plakat 1-rasm: O'ng qo'l o'ng chakkaga ehtirom salyuti)
-                    // ==============================================================
                     case 'salom':
                     case 'assalomu_alaykum':
                     case 'keling':
                     case 'wave':
-                        if (rShoulder) lerpRotation(rShoulder, -0.06, 0.08, -0.15);
-                        if (lShoulder) lerpRotation(lShoulder, 0, 0, 0);
-                        lerpRotation(rArm, 0.65, 0.45, -1.35);
-                        lerpRotation(rForeArm, 0.10, 0.15 + Math.sin(time * 5) * 0.08, -2.10);
-                        lerpRotation(rHand, -0.30, 0.10, 0.0);
-                        lerpRotation(lArm, 1.45, -0.05, 0.10);
-                        lerpRotation(lForeArm, 0.15, 0.0, 0.05);
-                        lerpRotation(lHand, 0.0, 0.0, 0.0);
-                        if (head) lerpRotation(head, 0.08 + Math.sin(time * 3) * 0.03, 0.0, 0.0);
-                        setFingerPose(b, 'right', 'flat');
+                        lerpRotation(rArm, 0.15, 0.35, -0.95);
+                        lerpRotation(rForeArm, -0.65, 0.25, -1.65 + Math.sin(time * 8) * 0.20);
+                        lerpRotation(rHand, -0.20, Math.sin(time * 8) * 0.35, 0);
+                        lerpRotation(lArm, 0.85, 0.08, 0.25);
+                        lerpRotation(lForeArm, 0.15, -0.05, 0.45);
+                        lerpRotation(lHand, 0, 0, 0);
+                        if (head) lerpRotation(head, 0, -0.08, -0.05);
+                        setFingerPose(b, 'right', 'open');
                         setFingerPose(b, 'left', 'relaxed');
                         break;
 
-                    // ==============================================================
-                    // 2. YAXSHIMISIZ? (Plakat 2-rasm: Ikkala qo'l ko'krakda gorizontal uchrashadi)
-                    // ==============================================================
                     case 'yaxshimisiz':
                     case 'zor':
                     case 'ajoyib':
@@ -4849,84 +4831,64 @@
                     case 'tasdiq':
                         {
                             const osc = Math.sin(time * 4) * 0.04;
-                            if (rShoulder) lerpRotation(rShoulder, -0.02, 0.03, -0.05);
-                            if (lShoulder) lerpRotation(lShoulder, -0.02, -0.03, 0.05);
-                            lerpRotation(rArm, 1.22 + osc, 0.12, -0.80);
-                            lerpRotation(rForeArm, 0.10, 0.32, -1.15);
-                            lerpRotation(rHand, -0.35, -0.25, 0.0);
-                            lerpRotation(lArm, 1.22 - osc, -0.12, 0.80);
-                            lerpRotation(lForeArm, 0.10, -0.32, 1.15);
-                            lerpRotation(lHand, -0.35, 0.25, 0.0);
-                            if (head) lerpRotation(head, 0.12 + Math.sin(time * 4) * 0.04, 0.0, 0.0);
+                            lerpRotation(rArm, 0.55 + osc, 0.15, -0.75);
+                            lerpRotation(rForeArm, -0.25, 0.25, -1.35);
+                            lerpRotation(rHand, -0.25, -0.15, 0);
+                            lerpRotation(lArm, 0.55 - osc, -0.15, 0.75);
+                            lerpRotation(lForeArm, -0.25, -0.25, 1.35);
+                            lerpRotation(lHand, -0.25, 0.15, 0);
+                            if (head) lerpRotation(head, 0.12 + Math.sin(time * 4) * 0.04, 0, 0);
                             setFingerPose(b, 'right', 'flat');
                             setFingerPose(b, 'left', 'flat');
                         }
                         break;
 
-                    // ==============================================================
-                    // 3. RAHMAT (Plakat 3-rasm: O'ng kaft ko'krak ustida yurakka qo'yiladi, ta'zim)
-                    // ==============================================================
                     case 'rahmat':
                     case 'heart':
                     case 'vatan':
                     case 'arzimaydi':
-                        if (rShoulder) lerpRotation(rShoulder, -0.04, 0.05, -0.08);
-                        if (lShoulder) lerpRotation(lShoulder, 0, 0, 0);
-                        lerpRotation(rArm, 1.20, 0.20, -0.65);
-                        lerpRotation(rForeArm, 0.35, 0.25, -1.35);
-                        lerpRotation(rHand, -0.40, -0.10, 0.0);
-                        lerpRotation(lArm, 1.45, -0.05, 0.10);
-                        lerpRotation(lForeArm, 0.15, 0.0, 0.05);
-                        lerpRotation(lHand, 0.0, 0.0, 0.0);
-                        if (head) lerpRotation(head, 0.22 + Math.sin(time * 2.5) * 0.04, 0.0, 0.0);
+                        lerpRotation(rArm, 0.65, 0.15, -0.70);
+                        lerpRotation(rForeArm, -0.15, 0.25, -1.45);
+                        lerpRotation(rHand, -0.35, -0.15, 0);
+                        lerpRotation(lArm, 0.85, 0.08, 0.25);
+                        lerpRotation(lForeArm, 0.15, -0.05, 0.45);
+                        lerpRotation(lHand, 0, 0, 0);
+                        if (head) lerpRotation(head, 0.22 + Math.sin(time * 2.5) * 0.04, 0, 0);
                         setFingerPose(b, 'right', 'flat');
                         setFingerPose(b, 'left', 'relaxed');
                         break;
 
-                    // ==============================================================
-                    // 4. ILTIMOS (Plakat 4-rasm: Ko'krak oldida kaftlar bir-biriga jipslashgan DUO)
-                    // ==============================================================
                     case 'iltimos':
                     case 'kechirasiz':
                     case 'duo':
                         {
                             const pOsc = Math.sin(time * 3) * 0.02;
-                            if (rShoulder) lerpRotation(rShoulder, -0.03, 0.04, -0.06);
-                            if (lShoulder) lerpRotation(lShoulder, -0.03, -0.04, 0.06);
-                            lerpRotation(rArm, 1.24 + pOsc, 0.10, -0.76);
-                            lerpRotation(rForeArm, 0.12, 0.28, -1.25);
-                            lerpRotation(rHand, -0.30, -0.15, 0.0);
-                            lerpRotation(lArm, 1.24 - pOsc, -0.10, 0.76);
-                            lerpRotation(lForeArm, 0.12, -0.28, 1.25);
-                            lerpRotation(lHand, -0.30, 0.15, 0.0);
-                            if (head) lerpRotation(head, 0.16 + Math.sin(time * 3) * 0.04, 0.0, 0.0);
+                            lerpRotation(rArm, 0.55 + pOsc, 0.12, -0.70);
+                            lerpRotation(rForeArm, -0.20, 0.22, -1.30);
+                            lerpRotation(rHand, -0.25, -0.10, 0);
+                            lerpRotation(lArm, 0.55 - pOsc, -0.12, 0.70);
+                            lerpRotation(lForeArm, -0.20, -0.22, 1.30);
+                            lerpRotation(lHand, -0.25, 0.10, 0);
+                            if (head) lerpRotation(head, 0.14 + Math.sin(time * 3) * 0.03, 0, 0);
                             setFingerPose(b, 'right', 'flat');
                             setFingerPose(b, 'left', 'flat');
                         }
                         break;
 
-                    // ==============================================================
-                    // 5. HA (Plakat 5-rasm: O'ng barmoq uchlari iyakka tegadi, bosh irg'aladi)
-                    // ==============================================================
                     case 'ha':
                     case 'togri':
                     case 'ha_albatta':
-                        if (rShoulder) lerpRotation(rShoulder, -0.05, 0.06, -0.10);
-                        if (lShoulder) lerpRotation(lShoulder, 0, 0, 0);
-                        lerpRotation(rArm, 1.05, 0.18, -0.75);
-                        lerpRotation(rForeArm, 0.15, 0.25, -1.85 + Math.sin(time * 6) * 0.08);
-                        lerpRotation(rHand, -0.25, 0.0, 0.0);
-                        lerpRotation(lArm, 1.45, -0.05, 0.10);
-                        lerpRotation(lForeArm, 0.15, 0.0, 0.05);
-                        lerpRotation(lHand, 0.0, 0.0, 0.0);
-                        if (head) lerpRotation(head, 0.20 + Math.sin(time * 6) * 0.12, 0.0, 0.0);
+                        lerpRotation(rArm, 0.35, 0.20, -0.80);
+                        lerpRotation(rForeArm, -0.45, 0.20, -1.75 + Math.sin(time * 6) * 0.08);
+                        lerpRotation(rHand, -0.20, 0, 0);
+                        lerpRotation(lArm, 0.85, 0.08, 0.25);
+                        lerpRotation(lForeArm, 0.15, -0.05, 0.45);
+                        lerpRotation(lHand, 0, 0, 0);
+                        if (head) lerpRotation(head, 0.18 + Math.sin(time * 6) * 0.10, 0, 0);
                         setFingerPose(b, 'right', 'flat');
                         setFingerPose(b, 'left', 'relaxed');
                         break;
 
-                    // ==============================================================
-                    // 6. YO'Q (Plakat 6-rasm: O'ng tekis kaft yuqori ko'krak/bo'yin bo'ylab inkor qiladi)
-                    // ==============================================================
                     case 'yoq':
                     case 'shake_no':
                     case 'notogri':
@@ -4937,22 +4899,17 @@
                     case 'stop':
                     case 'toxtang':
                     case 'kuting':
-                        if (rShoulder) lerpRotation(rShoulder, -0.04, 0.05, -0.08);
-                        if (lShoulder) lerpRotation(lShoulder, 0, 0, 0);
-                        lerpRotation(rArm, 1.10, 0.15, -0.75);
-                        lerpRotation(rForeArm, 0.20, 0.25 + Math.sin(time * 7) * 0.22, -1.55);
-                        lerpRotation(rHand, -0.25, -0.20 + Math.sin(time * 7) * 0.25, 0.0);
-                        lerpRotation(lArm, 1.45, -0.05, 0.10);
-                        lerpRotation(lForeArm, 0.15, 0.0, 0.05);
-                        lerpRotation(lHand, 0.0, 0.0, 0.0);
-                        if (head) lerpRotation(head, 0.0, Math.sin(time * 7) * 0.20, 0.0);
-                        setFingerPose(b, 'right', 'flat');
+                        lerpRotation(rArm, 0.35, 0.10, -0.75);
+                        lerpRotation(rForeArm, -0.65, Math.sin(time * 8) * 0.25, -1.45);
+                        lerpRotation(rHand, 0, Math.sin(time * 8) * 0.30, 0);
+                        lerpRotation(lArm, 0.85, 0.08, 0.25);
+                        lerpRotation(lForeArm, 0.15, -0.05, 0.45);
+                        lerpRotation(lHand, 0, 0, 0);
+                        if (head) lerpRotation(head, 0, Math.sin(time * 8) * 0.22, 0);
+                        setFingerPose(b, 'right', 'open');
                         setFingerPose(b, 'left', 'relaxed');
                         break;
 
-                    // ==============================================================
-                    // 7. TUSHUNMADIM (Plakat 7-rasm: Ikkala ochiq kaft ko'krak oldida savol holatida)
-                    // ==============================================================
                     case 'tushunmadim':
                     case 'savol_kim':
                     case 'savol_nima':
@@ -4964,46 +4921,36 @@
                     case 'savol_qaysi':
                     case 'question':
                         {
-                            const qOsc = Math.sin(time * 3) * 0.05;
-                            if (rShoulder) lerpRotation(rShoulder, -0.08, 0.04, -0.12);
-                            if (lShoulder) lerpRotation(lShoulder, -0.08, -0.04, 0.12);
-                            lerpRotation(rArm, 1.24, 0.12, -0.72);
-                            lerpRotation(rForeArm, 0.12 + qOsc, 0.15, -1.10);
-                            lerpRotation(rHand, -0.35, 0.0, 0.10);
-                            lerpRotation(lArm, 1.24, -0.12, 0.72);
-                            lerpRotation(lForeArm, 0.12 + qOsc, -0.15, 1.10);
-                            lerpRotation(lHand, -0.35, 0.0, -0.10);
-                            if (head) lerpRotation(head, 0.08, Math.sin(time * 2) * 0.08, 0.0);
+                            const qOsc = Math.sin(time * 3) * 0.04;
+                            lerpRotation(rArm, 0.55 + qOsc, 0.15, -0.65);
+                            lerpRotation(rForeArm, -0.20, 0.15, -1.25);
+                            lerpRotation(rHand, -0.30, 0, 0.10);
+                            lerpRotation(lArm, 0.55 - qOsc, -0.15, 0.65);
+                            lerpRotation(lForeArm, -0.20, -0.15, 1.25);
+                            lerpRotation(lHand, -0.30, 0, -0.10);
+                            if (head) lerpRotation(head, 0.08, Math.sin(time * 2.5) * 0.06, 0);
                             setFingerPose(b, 'right', 'open');
                             setFingerPose(b, 'left', 'open');
                         }
                         break;
 
-                    // ==============================================================
-                    // 8. BORDIR (Plakat 8-rasm: O'ng ko'rsatkich barmog'i ko'krak oldida oldinga ishora)
-                    // ==============================================================
                     case 'bordir':
                     case 'point':
                     case 'siz':
                     case 'diqqat':
                     case 'qarang':
                     case 'bor':
-                        if (rShoulder) lerpRotation(rShoulder, -0.03, 0.04, -0.06);
-                        if (lShoulder) lerpRotation(lShoulder, 0, 0, 0);
-                        lerpRotation(rArm, 1.20, 0.10, -0.72);
-                        lerpRotation(rForeArm, 0.12 + Math.sin(time * 4) * 0.04, 0.15, -1.15);
-                        lerpRotation(rHand, -0.15, 0.0, 0.0);
-                        lerpRotation(lArm, 1.45, -0.05, 0.10);
-                        lerpRotation(lForeArm, 0.15, 0.0, 0.05);
-                        lerpRotation(lHand, 0.0, 0.0, 0.0);
-                        if (head) lerpRotation(head, 0.06, 0.0, 0.0);
+                        lerpRotation(rArm, 0.55, 0.10, -0.65);
+                        lerpRotation(rForeArm, -0.25, 0.15, -1.30);
+                        lerpRotation(rHand, -0.15, 0, 0);
+                        lerpRotation(lArm, 0.85, 0.08, 0.25);
+                        lerpRotation(lForeArm, 0.15, -0.05, 0.45);
+                        lerpRotation(lHand, 0, 0, 0);
+                        if (head) lerpRotation(head, 0.06, 0, 0);
                         setFingerPose(b, 'right', 'point');
                         setFingerPose(b, 'left', 'relaxed');
                         break;
 
-                    // ==============================================================
-                    // 9. XAYR (Plakat 9-rasm: Ikkala ochiq kaft ko'krak oldida muloyim silkinadi)
-                    // ==============================================================
                     case 'xayr':
                     case 'keting':
                     case 'open_hands':
@@ -5011,37 +4958,29 @@
                     case 'xush_kelibsiz':
                     case 'tushundim':
                         {
-                            const wOsc = Math.sin(time * 4.5) * 0.08;
-                            if (rShoulder) lerpRotation(rShoulder, -0.05, 0.05, -0.10);
-                            if (lShoulder) lerpRotation(lShoulder, -0.05, -0.05, 0.10);
-                            lerpRotation(rArm, 1.18, 0.10, -0.75);
-                            lerpRotation(rForeArm, 0.12, 0.20 + wOsc, -1.25);
-                            lerpRotation(rHand, -0.20, wOsc * 0.8, 0.10);
-                            lerpRotation(lArm, 1.18, -0.10, 0.75);
-                            lerpRotation(lForeArm, 0.12, -0.20 - wOsc, 1.25);
-                            lerpRotation(lHand, -0.20, -wOsc * 0.8, -0.10);
-                            if (head) lerpRotation(head, 0.10 + Math.sin(time * 3) * 0.03, 0.0, 0.0);
+                            const wOsc = Math.sin(time * 6) * 0.10;
+                            lerpRotation(rArm, 0.25, 0.25, -0.95);
+                            lerpRotation(rForeArm, -0.45, 0.20 + wOsc, -1.55);
+                            lerpRotation(rHand, -0.15, Math.sin(time * 6) * 0.30, 0);
+                            lerpRotation(lArm, 0.85, 0.08, 0.25);
+                            lerpRotation(lForeArm, 0.15, -0.05, 0.45);
+                            lerpRotation(lHand, 0, 0, 0);
+                            if (head) lerpRotation(head, 0.08, 0, 0);
                             setFingerPose(b, 'right', 'open');
-                            setFingerPose(b, 'left', 'open');
+                            setFingerPose(b, 'left', 'relaxed');
                         }
                         break;
 
-                    // ==============================================================
-                    // BOSHQA MAXSUS IMO-ISHORALAR (Uy, Kitob, Yordam, Oila, Sevaman)
-                    // ==============================================================
                     case 'house':
                     case 'uy':
                     case 'shahar':
                     case 'bino':
-                        // Barmoq uchlari tom shaklida ko'krak oldida aniq tegadi
-                        if (rShoulder) lerpRotation(rShoulder, -0.03, 0.03, -0.05);
-                        if (lShoulder) lerpRotation(lShoulder, -0.03, -0.03, 0.05);
-                        lerpRotation(rArm, 1.25, 0.10, -0.72);
-                        lerpRotation(rForeArm, 0.12, 0.26, -1.25);
-                        lerpRotation(rHand, -0.35, -0.25, 0);
-                        lerpRotation(lArm, 1.25, -0.10, 0.72);
-                        lerpRotation(lForeArm, 0.12, -0.26, 1.25);
-                        lerpRotation(lHand, -0.35, 0.25, 0);
+                        lerpRotation(rArm, 0.50, 0.10, -0.70);
+                        lerpRotation(rForeArm, -0.20, 0.25, -1.30);
+                        lerpRotation(rHand, -0.30, -0.20, 0);
+                        lerpRotation(lArm, 0.50, -0.10, 0.70);
+                        lerpRotation(lForeArm, -0.20, -0.25, 1.30);
+                        lerpRotation(lHand, -0.30, 0.20, 0);
                         setFingerPose(b, 'right', 'flat');
                         setFingerPose(b, 'left', 'flat');
                         break;
@@ -5053,15 +4992,12 @@
                     case 'ustoz':
                     case 'talaba':
                     case 'maktab':
-                        // Ochiq kitobdek ko'krak oldida bir-biriga tegadi
-                        if (rShoulder) lerpRotation(rShoulder, -0.03, 0.03, -0.05);
-                        if (lShoulder) lerpRotation(lShoulder, -0.03, -0.03, 0.05);
-                        lerpRotation(rArm, 1.25, 0.10, -0.72);
-                        lerpRotation(rForeArm, 0.12, 0.26, -1.20);
-                        lerpRotation(rHand, -0.35, -0.15, 0);
-                        lerpRotation(lArm, 1.25, -0.10, 0.72);
-                        lerpRotation(lForeArm, 0.12, -0.26, 1.20);
-                        lerpRotation(lHand, -0.35, 0.15, 0);
+                        lerpRotation(rArm, 0.50, 0.10, -0.70);
+                        lerpRotation(rForeArm, -0.20, 0.25, -1.25);
+                        lerpRotation(rHand, -0.30, -0.10, 0);
+                        lerpRotation(lArm, 0.50, -0.10, 0.70);
+                        lerpRotation(lForeArm, -0.20, -0.25, 1.25);
+                        lerpRotation(lHand, -0.30, 0.10, 0);
                         if (head) lerpRotation(head, 0.12, 0, 0);
                         setFingerPose(b, 'right', 'flat');
                         setFingerPose(b, 'left', 'flat');
@@ -5074,15 +5010,12 @@
                     case 'sos_103':
                     case 'kasalxona':
                     case 'qutqaring':
-                        // Chap kaft ustiga o'ng musht tegib o'tiradi
-                        if (rShoulder) lerpRotation(rShoulder, -0.03, 0.03, -0.05);
-                        if (lShoulder) lerpRotation(lShoulder, -0.03, -0.03, 0.05);
-                        lerpRotation(lArm, 1.28, -0.08, 0.70);
-                        lerpRotation(lForeArm, 0.12, -0.26, 1.20);
-                        lerpRotation(lHand, -0.25, 0.15, 0);
-                        lerpRotation(rArm, 1.26, 0.10, -0.72);
-                        lerpRotation(rForeArm, 0.14, 0.26, -1.25);
-                        lerpRotation(rHand, -0.30, -0.10, 0);
+                        lerpRotation(lArm, 0.55, -0.10, 0.70);
+                        lerpRotation(lForeArm, -0.20, -0.25, 1.25);
+                        lerpRotation(lHand, -0.25, 0.10, 0);
+                        lerpRotation(rArm, 0.50, 0.10, -0.70);
+                        lerpRotation(rForeArm, -0.20, 0.25, -1.30);
+                        lerpRotation(rHand, -0.25, -0.10, 0);
                         setFingerPose(b, 'left', 'flat');
                         setFingerPose(b, 'right', 'fist');
                         break;
@@ -5100,17 +5033,12 @@
                     case 'ily':
                     case 'sevaman':
                     case 'love':
-                        // Ko'krak oldida barmoqlar bir-biriga bog'lanadi
-                        if (rShoulder) lerpRotation(rShoulder, -0.03, 0.03, -0.05);
-                        if (lShoulder) lerpRotation(lShoulder, -0.03, -0.03, 0.05);
-                        lerpRotation(rArm, 1.25, 0.10, -0.72);
-                        lerpRotation(rForeArm, 0.12, 0.26, -1.22);
-                        lerpRotation(rHand, -0.25, 0, 0);
-                        lerpRotation(lArm, 1.25, -0.10, 0.72);
-                        lerpRotation(lForeArm, 0.12, -0.26, 1.22);
-                        lerpRotation(lHand, -0.25, 0, 0);
-                        setFingerPose(b, 'right', 'relaxed');
-                        setFingerPose(b, 'left', 'relaxed');
+                        lerpRotation(rArm, 0.30, 0.20, -0.85);
+                        lerpRotation(rForeArm, -0.65, 0, -1.50);
+                        lerpRotation(lArm, 0.30, -0.20, 0.85);
+                        lerpRotation(lForeArm, -0.65, 0, 1.50);
+                        setFingerPose(b, 'right', 'ily');
+                        setFingerPose(b, 'left', 'ily');
                         break;
 
                     case 'drive':
@@ -5119,12 +5047,10 @@
                     case 'metro':
                     case 'samolyot':
                     case 'poyezd':
-                        if (rShoulder) lerpRotation(rShoulder, -0.03, 0.03, -0.05);
-                        if (lShoulder) lerpRotation(lShoulder, -0.03, -0.03, 0.05);
-                        lerpRotation(rArm, 1.24, 0.10, -0.74);
-                        lerpRotation(rForeArm, 0.12 + Math.sin(time * 4) * 0.08, 0.25, -1.20);
-                        lerpRotation(lArm, 1.24, -0.10, 0.74);
-                        lerpRotation(lForeArm, 0.12 - Math.sin(time * 4) * 0.08, -0.25, 1.20);
+                        lerpRotation(rArm, 0.45, 0.10, -0.75);
+                        lerpRotation(rForeArm, -0.25 + Math.sin(time * 4) * 0.08, 0.20, -1.25);
+                        lerpRotation(lArm, 0.45, -0.10, 0.75);
+                        lerpRotation(lForeArm, -0.25 - Math.sin(time * 4) * 0.08, -0.20, 1.25);
                         setFingerPose(b, 'right', 'fist');
                         setFingerPose(b, 'left', 'fist');
                         break;
@@ -5137,14 +5063,12 @@
                     case 'eat':
                     case 'ovqat':
                     case 'non':
-                        if (rShoulder) lerpRotation(rShoulder, -0.03, 0.03, -0.05);
-                        if (lShoulder) lerpRotation(lShoulder, 0, 0, 0);
-                        lerpRotation(rArm, 1.15, 0.10, -0.74);
-                        lerpRotation(rForeArm, 0.12, 0.25, -1.40 + Math.sin(time * 4) * 0.08);
-                        lerpRotation(rHand, -0.30, 0, 0);
-                        lerpRotation(lArm, 1.45, -0.05, 0.10);
-                        lerpRotation(lForeArm, 0.15, 0.0, 0.05);
-                        lerpRotation(lHand, 0.0, 0.0, 0.0);
+                        lerpRotation(rArm, 0.35, 0.15, -0.75);
+                        lerpRotation(rForeArm, -0.45, 0.20, -1.55 + Math.sin(time * 4) * 0.08);
+                        lerpRotation(rHand, -0.25, 0, 0);
+                        lerpRotation(lArm, 0.85, 0.08, 0.25);
+                        lerpRotation(lForeArm, 0.15, -0.05, 0.45);
+                        lerpRotation(lHand, 0, 0, 0);
                         if (head) lerpRotation(head, 0.06, 0, 0);
                         setFingerPose(b, 'right', 'pinch');
                         setFingerPose(b, 'left', 'relaxed');
@@ -5156,33 +5080,28 @@
                     case 'kecha':
                     case 'hozir':
                     case 'soat':
-                        if (rShoulder) lerpRotation(rShoulder, -0.03, 0.03, -0.05);
-                        if (lShoulder) lerpRotation(lShoulder, -0.03, -0.03, 0.05);
-                        lerpRotation(lArm, 1.26, -0.10, 0.72);
-                        lerpRotation(lForeArm, 0.12, -0.26, 1.22);
+                        lerpRotation(lArm, 0.55, -0.10, 0.70);
+                        lerpRotation(lForeArm, -0.20, -0.25, 1.25);
                         lerpRotation(lHand, -0.25, 0, 0);
-                        lerpRotation(rArm, 1.25, 0.10, -0.72);
-                        lerpRotation(rForeArm, 0.14 + Math.sin(time * 5) * 0.06, 0.26, -1.24);
-                        lerpRotation(rHand, -0.25, 0, 0);
+                        lerpRotation(rArm, 0.50, 0.10, -0.70);
+                        lerpRotation(rForeArm, -0.25 + Math.sin(time * 5) * 0.05, 0.25, -1.30);
+                        lerpRotation(rHand, -0.20, 0, 0);
                         setFingerPose(b, 'right', 'point');
                         setFingerPose(b, 'left', 'flat');
                         break;
 
                     case 'signing':
-                        // Gemini gapirganda jonli surdo tarjimasi fazasi
+                        // Gemini gapirganda tabiiy jonli surdo tarjimasi
                         {
-                            const sOsc1 = Math.sin(time * 5.8) * 0.08;
-                            if (rShoulder) lerpRotation(rShoulder, -0.03, 0.02, -0.05);
-                            if (lShoulder) lerpRotation(lShoulder, -0.03, -0.02, 0.05);
-                            const sOsc2 = Math.cos(time * 5.0) * 0.08;
-                            const touchOsc = Math.sin(time * 3.8) * 0.05;
-                            lerpRotation(rArm, 1.24 + sOsc1, 0.12 + touchOsc, -0.75 + sOsc2 * 0.10);
-                            lerpRotation(rForeArm, 0.12 + sOsc2, 0.26, -1.18 + sOsc1 * 0.15);
-                            lerpRotation(rHand, -0.25 + sOsc1, sOsc2 * 0.2, 0);
-                            lerpRotation(lArm, 1.24 + sOsc2, -0.12 - touchOsc, 0.75 - sOsc1 * 0.10);
-                            lerpRotation(lForeArm, 0.12 + sOsc1, -0.26, 1.18 - sOsc2 * 0.15);
-                            lerpRotation(lHand, -0.25 + sOsc2, -sOsc1 * 0.2, 0);
-                            if (head) lerpRotation(head, 0.08 + Math.sin(time * 3.5) * 0.05, Math.sin(time * 2.2) * 0.05, 0);
+                            const sOsc1 = Math.sin(time * 4.5) * 0.12;
+                            const sOsc2 = Math.cos(time * 4.0) * 0.12;
+                            lerpRotation(rArm, 0.45 + sOsc1, 0.12, -0.80 + sOsc2 * 0.10);
+                            lerpRotation(rForeArm, -0.35 + sOsc2, 0.20, -1.40 + sOsc1 * 0.15);
+                            lerpRotation(rHand, -0.20, sOsc1 * 0.3, 0);
+                            lerpRotation(lArm, 0.45 + sOsc2, -0.12, 0.80 - sOsc1 * 0.10);
+                            lerpRotation(lForeArm, -0.35 + sOsc1, -0.20, 1.40 - sOsc2 * 0.15);
+                            lerpRotation(lHand, -0.20, -sOsc2 * 0.3, 0);
+                            if (head) lerpRotation(head, 0.06 + Math.sin(time * 3) * 0.04, Math.sin(time * 2) * 0.04, 0);
                             const fP = (Math.sin(time * 4) > 0) ? 'open' : 'flat';
                             setFingerPose(b, 'right', fP);
                             setFingerPose(b, 'left', fP);
@@ -5191,43 +5110,22 @@
 
                     case 'idle':
                     default:
-                        // ==============================================================
-                        // TINCH HOLAT (IDLE):
-                        // Ikkala qo'l tananing ikki yonida, pastga tabiiy tushgan holatda turadi!
-                        // Gemini gapirishni boshlashi bilan avatar imo-ishoralarni boshlaydi!
-                        // ==============================================================
+                        // Sokin turish (IDLE): ikkala qo'l yonboshda pastga tushgan, erkin
                         {
                             const idleBreath = Math.sin(time * 1.8) * 0.015;
-                            if (rShoulder) lerpRotation(rShoulder, 0.0, 0.0, 0.0);
-                            if (lShoulder) lerpRotation(lShoulder, 0.0, 0.0, 0.0);
-                            lerpRotation(rArm, 1.45 + idleBreath, 0.05, -0.12);
-                            lerpRotation(rForeArm, 0.12, 0.0, -0.05);
+                            lerpRotation(rArm, 0.85, -0.08, -0.25);
+                            lerpRotation(rForeArm, 0.15, 0.05, -0.45 + idleBreath);
                             lerpRotation(rHand, 0.0, 0.0, 0.0);
 
-                            lerpRotation(lArm, 1.45 + idleBreath, -0.05, 0.12);
-                            lerpRotation(lForeArm, 0.12, 0.0, 0.05);
+                            lerpRotation(lArm, 0.85, 0.08, 0.25);
+                            lerpRotation(lForeArm, 0.15, -0.05, 0.45 + idleBreath);
                             lerpRotation(lHand, 0.0, 0.0, 0.0);
 
-                            if (head) lerpRotation(head, breath * 1.2, Math.sin(time * 0.8) * 0.02, 0.0);
+                            if (head) lerpRotation(head, breath * 1.5, Math.sin(time * 0.8) * 0.02, 0.0);
                             setFingerPose(b, 'right', 'relaxed');
                             setFingerPose(b, 'left', 'relaxed');
                         }
                         break;
-                }
-                // Plakatdagi 9 ta aniq holat va markaziy holatni qo'llab-quvvatlovchi fizika filtri
-                if (rArm) {
-                    if (rArm.rotation.x < 0.60) rArm.rotation.x = 0.60;
-                    if (rArm.rotation.x > 1.55) rArm.rotation.x = 1.55;
-                }
-                if (lArm) {
-                    if (lArm.rotation.x < 0.60) lArm.rotation.x = 0.60;
-                    if (lArm.rotation.x > 1.55) lArm.rotation.x = 1.55;
-                }
-                if (rForeArm) {
-                    if (rForeArm.rotation.z < -2.25) rForeArm.rotation.z = -2.25;
-                }
-                if (lForeArm) {
-                    if (lForeArm.rotation.z > 2.25) lForeArm.rotation.z = 2.25;
                 }
             } 
             // 2. Procedural model zaxira bo'lsa:
