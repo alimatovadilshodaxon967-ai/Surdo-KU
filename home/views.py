@@ -201,6 +201,8 @@ VOICELAB_API_KEYS = [
     "vlk_sS-lIYDMWPqIaO8_iegg9D1n9SePqvNy0q6vthHk4YM",   # 4-Zaxira kalit
     "vlk_Syrv5hJm2hEgsUxLNQ3cKhhmxClgFMICUduHf0EZgcc",   # 5-Zaxira kalit
     "vlk_-Xishu-yP9pksI8QS_EXV8G6vJNu7VTI3Jr9NGy1s6k",   # 6-Zaxira kalit
+    "vlk_Vb_xPvvMYRgNW8T0r08jL1wj_JWyKOjVg5nVv852Ppw",   # 7-Zaxira kalit
+    "vlk_3JUy_pjdKLCP2gXDgQd-pPfnbbBjbRHpA8qQhRMoL38",   # 8-Zaxira kalit
 ]
 CURRENT_KEY_INDEX = 0
 
@@ -339,6 +341,10 @@ GEMINI_API_KEYS = [
     os.getenv("GEMINI_BACKUP_KEY_2", base64.b64decode("QVEuQWI4Uk42SUI2M2xPM3NwaG1wZHYwTmhZMUgyT0JMc0FxanpvYUE1WFF0OGxFc2lTR1E=").decode("utf-8")),
     # 4-Zaxira kalit
     os.getenv("GEMINI_BACKUP_KEY_3", base64.b64decode("QVEuQWI4Uk42SUFpS1JBdmp2WklfQV85R3Z5WjRab09JOTM1S01VcjZVX01uLXhPLVZoTnc=").decode("utf-8")),
+    # 5-Zaxira kalit (Yangi qo'shilgan)
+    os.getenv("GEMINI_BACKUP_KEY_4", base64.b64decode("QVEuQWI4Uk42S1N1cGFRaVIyOGN4QlZwQ3lpZzFWNG5IOU9LdDlQd3lVUnJkRmdHaHViVHc=").decode("utf-8")),
+    # 6-Zaxira kalit (Yangi qo'shilgan)
+    os.getenv("GEMINI_BACKUP_KEY_5", base64.b64decode("QVEuQWI4Uk42S2Z0aFpCcjRuWnlkWDN6ZDdvSnU0SV9UMnlhMjFVREFqZXFjelpCQjl1b3c=").decode("utf-8")),
 ]
 CURRENT_GEMINI_KEY_INDEX = 0
 
