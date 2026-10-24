@@ -1374,6 +1374,16 @@
             align-items: center;
         }
 
+        .catalog-num-badge {
+            background: linear-gradient(135deg, var(--primary), #0077b6);
+            color: #04121e;
+            font-size: 10px;
+            font-weight: 900;
+            padding: 2px 6px;
+            border-radius: 6px;
+            margin-right: 4px;
+            display: inline-block;
+        }
         .catalog-hand-box {
             display: flex;
             align-items: center;
@@ -2536,8 +2546,11 @@
                 <span id="avatar-caption-icon">✋</span>
                 <span id="avatar-caption-text">Sardor • MetaPerson AI Avatar [1/8]</span>
             </div>
-            <!-- Plakatdagi 9 ta Rasmiy Imo-Ishoralar Paneli -->
+            <!-- Plakatdagi 200 ta Imo-Ishoralar Paneli -->
             <div class="poster-signs-strip" id="poster-signs-strip">
+                <button class="poster-sign-btn poster-200-main-btn" id="open-200-btn" title="200 ta imo-ishorani to'liq jadvalda ko'rish" style="background: linear-gradient(135deg, #00f2fe, #4facfe); color: #04121e; font-weight: 800; border: none; box-shadow: 0 0 10px rgba(0, 242, 254, 0.4);">
+                    <i class="fa-solid fa-hand-sparkles"></i> 200 ta Imo-Ishora
+                </button>
                 <button class="poster-sign-btn" data-sign="salom" title="1. Assalomu alaykum"><span>1</span> Salom</button>
                 <button class="poster-sign-btn" data-sign="yaxshimisiz" title="2. Yaxshimisiz?"><span>2</span> Yaxshimisiz</button>
                 <button class="poster-sign-btn" data-sign="rahmat" title="3. Rahmat"><span>3</span> Rahmat</button>
@@ -2584,7 +2597,7 @@
     <div id="catalog-modal" class="modal-overlay">
         <div class="catalog-card">
             <div class="catalog-header">
-                <h2><i class="fa-solid fa-book-bookmark" style="color: var(--accent);"></i> Imo-Ishoralar Bazasi (<span id="catalog-count-badge">79</span> ta so'z)</h2>
+                <h2><i class="fa-solid fa-hands-asl-interpreting" style="color: var(--primary);"></i> 👆 200 ta Imo-Ishora (3D MetaPerson Avatar Baza) — <span id="catalog-count-badge">212</span> ta</h2>
                 <button id="catalog-close-btn" class="btn-ctrl" style="padding: 6px 14px;"><i class="fa-solid fa-xmark"></i></button>
             </div>
 
@@ -3573,8 +3586,17 @@
             });
         }
 
-                // Plakatdagi 9 ta tezkor imo-ishora tugmalari
-        document.querySelectorAll('.poster-sign-btn').forEach(btn => {
+                // 200 ta imo-ishora jadvali tugmasi
+        const open200Btn = document.getElementById('open-200-btn');
+        if (open200Btn) {
+            open200Btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (typeof openCatalog === 'function') openCatalog();
+            });
+        }
+
+        // Plakatdagi tezkor imo-ishora tugmalari
+        document.querySelectorAll('.poster-sign-btn:not(.poster-200-main-btn)').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 e.stopPropagation();
                 const sign = btn.dataset.sign;
@@ -5548,11 +5570,12 @@
             filtered.forEach(item => {
                 const el = document.createElement('div');
                 el.className = 'catalog-item';
+                const itemNum = index + 1;
                 el.innerHTML = `
                     <div class="catalog-item-header">
                         <div class="catalog-hand-box">
+                            <span class="catalog-num-badge">#${itemNum}</span>
                             <span class="catalog-hand-icon">${item.icon}</span>
-                            <span class="catalog-hand-type">${item.hand || "1 Qo'l"}</span>
                         </div>
                         <span class="catalog-item-badge">${item.category}</span>
                     </div>
@@ -5562,34 +5585,46 @@
                     </div>
                     <div class="catalog-item-desc">${item.desc}</div>
                     <div class="catalog-item-actions">
+                        <button class="catalog-btn avatar-sign-btn" style="background: rgba(0, 242, 254, 0.18); border-color: rgba(0, 242, 254, 0.4); color: var(--primary);" title="3D Avatar orqali ko'rsatish">
+                            <i class="fa-solid fa-person" style="color: var(--primary);"></i>
+                            <span>3D Avatar</span>
+                        </button>
                         <button class="catalog-btn play-voice-btn" title="Ovozini tinglash">
                             <i class="fa-solid fa-volume-high" style="color: var(--accent);"></i>
                             <span>Ovoz</span>
                         </button>
-                        <button class="catalog-btn add-word-btn" title="Matnga qo'shish">
-                            <i class="fa-solid fa-plus"></i>
-                            <span>Qo'shish</span>
-                        </button>
                     </div>
                 `;
 
-                // Play sound handler
-                el.querySelector('.play-voice-btn').addEventListener('click', (e) => {
-                    e.stopPropagation();
+                // 3D Avatar orqali imo-ishorani ijro etish
+                const triggerItemOnAvatar = () => {
+                    if (typeof triggerAvatarGesture === 'function') {
+                        const countPrefix = `[#${itemNum}/200] `;
+                        triggerAvatarGesture(item.name, item.icon, countPrefix + item.name, item.audioKey || 'signing');
+                    }
                     speakUzbek(item.text, item.audioKey);
-                });
+                };
 
-                // Add to sentence handler
-                el.querySelector('.add-word-btn').addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    sentenceWords.push(item.name);
-                    updateSentenceDisplay();
-                    catalogModal.classList.remove('open');
-                });
+                const avatarSignBtn = el.querySelector('.avatar-sign-btn');
+                if (avatarSignBtn) {
+                    avatarSignBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        triggerItemOnAvatar();
+                    });
+                }
 
-                // Clicking whole card triggers voice too
+                // Ovoz tinglash
+                const voiceBtn = el.querySelector('.play-voice-btn');
+                if (voiceBtn) {
+                    voiceBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        speakUzbek(item.text, item.audioKey);
+                    });
+                }
+
+                // Butun kartani bosganda 3D Avatar imo-ishorani ko'rsatadi va gapiradi
                 el.addEventListener('click', () => {
-                    speakUzbek(item.text, item.audioKey);
+                    triggerItemOnAvatar();
                 });
 
                 catalogGrid.appendChild(el);
