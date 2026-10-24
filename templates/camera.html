@@ -2459,6 +2459,9 @@
                 <span class="avatar-title" id="avatar-pod-title">AI Surdotarjimon (Sardor)</span>
             </div>
             <div class="avatar-controls">
+                <button id="avatar-model-switch-btn" class="avatar-btn" title="Keyingi 3D Avatar (Sardor, Jasur, Madina, Nilufar, X-Bot, Harbiy)">
+                    <i class="fa-solid fa-user-group"></i>
+                </button>
                 <button id="avatar-mode-btn" class="avatar-btn" title="AI Video Avatar (Madina) rejimiga o'tish">
                     <i class="fa-solid fa-video"></i>
                 </button>
@@ -3448,6 +3451,7 @@
         const avatarMinBtn = document.getElementById('avatar-min-btn');
         const avatarSizeBtn = document.getElementById('avatar-size-btn');
         const avatarModeBtn = document.getElementById('avatar-mode-btn');
+        const avatarModelSwitchBtn = document.getElementById('avatar-model-switch-btn');
         const avatarPodTitle = document.getElementById('avatar-pod-title') || document.querySelector('.avatar-title');
         const aiAvatarNationalImg = document.getElementById('ai-avatar-national-img');
         const aiAvatarVideo = document.getElementById('ai-avatar-video');
@@ -3500,6 +3504,18 @@
                 setAvatarMode(!isRealHumanMode);
             });
         }
+
+        if (avatarModelSwitchBtn) {
+            avatarModelSwitchBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                currentModelIdx = (currentModelIdx + 1) % AVATAR_MODELS.length;
+                const m = AVATAR_MODELS[currentModelIdx];
+                if (avatarPodTitle) avatarPodTitle.textContent = `AI Surdotarjimon (${m.name})`;
+                if (avatarCaptionText) avatarCaptionText.textContent = `${m.name} (${currentModelIdx + 1}/${AVATAR_MODELS.length})`;
+                if (avatarCaptionIcon) avatarCaptionIcon.textContent = "🤖";
+                loadCurrentAvatarModel();
+            });
+        }
         let avatarSigningTimer = null;
 
         // Three.js Core Components
@@ -3514,9 +3530,14 @@
         let nextBlinkTime = performance.now() + 2000;
         let blinkPhase = 0;
 
-        // Yagona 3D Surdotarjimon Avatar (Sardor)
+        // 6 ta To'liq Tayyor 3D Surdotarjimon Avatarlar (GitHub & Three.js)
         const AVATAR_MODELS = [
-            { id: 'avatarsdk', name: 'Sardor', url: '/static/models/avatarsdk_male.glb', role: 'AI Surdotarjimon (Sardor)', type: '3d' }
+            { id: 'avatarsdk', name: 'Sardor', url: '/static/models/avatarsdk_male.glb', role: 'Sardor • MetaPerson AI (Asosiy)', type: '3d' },
+            { id: 'avatar1', name: 'Jasur', url: '/static/models/avatar1.glb', role: 'Jasur • 3D Surdochi (GitHub aido)', type: '3d' },
+            { id: 'avatar2', name: 'Madina', url: '/static/models/avatar2.glb', role: 'Madina • 3D Surdochi (GitHub aido)', type: '3d' },
+            { id: 'demo-avatar', name: 'Nilufar', url: '/static/models/demo-avatar.glb', role: 'Nilufar • HD 3D Surdo (GitHub stage)', type: '3d' },
+            { id: 'xbot', name: 'X-Bot', url: '/static/models/xbot.glb', role: 'X-Bot • Robot Surdo Avatar (Three.js)', type: '3d' },
+            { id: 'soldier', name: 'Harbiy', url: '/static/models/soldier.glb', role: 'Harbiy • Formali Surdo (Three.js)', type: '3d' }
         ];
         let currentModelIdx = 0;
 
@@ -3654,7 +3675,7 @@
 
         if (avatarPod) {
             avatarPod.addEventListener('click', (e) => {
-                if (e.target.closest('#avatar-min-btn') || e.target.closest('#avatar-size-btn') || e.target.closest('#avatar-mode-btn')) return;
+                if (e.target.closest('#avatar-min-btn') || e.target.closest('#avatar-size-btn') || e.target.closest('#avatar-mode-btn') || e.target.closest('#avatar-model-switch-btn')) return;
                 if (avatarPod.classList.contains('minimized')) {
                     avatarPod.classList.remove('minimized');
                     if (avatarMinBtn) avatarMinBtn.innerHTML = '<i class="fa-solid fa-compress"></i>';
@@ -4910,17 +4931,39 @@
                         break;
 
                     default:
-                        // Tabiiy tinch holat (Qo'llar pastda gavda yonida erkin tushgan, nafas harakati)
-                        lerpRotation(rArm, 1.25, 0.05, 0.10);
-                        lerpRotation(rForeArm, 0.25, 0.0, -0.05 + breath * 1.2);
-                        lerpRotation(rHand, 0, 0, 0);
-                        lerpRotation(lArm, 1.25, -0.05, -0.10);
-                        lerpRotation(lForeArm, 0.25, 0.0, 0.05 + breath * 1.2);
-                        lerpRotation(lHand, 0, 0, 0);
-                        if (head) lerpRotation(head, breath * 1.2, Math.sin(time * 0.8) * 0.03, 0);
-                        setFingerPose(b, 'right', 'relaxed');
-                        setFingerPose(b, 'left', 'relaxed');
+                        // Tinch holatda ham qo'llar OLDIGA KO'TARILGAN, ko'krak oldida imo-ishoraga tayyor turadi!
+                        // Qo'llarning yonga tushishi yoki ketishi QAT'IYAN TAQIQLANADI!
+                        {
+                            const idleOsc = Math.sin(time * 2.5) * 0.04;
+                            lerpRotation(rArm, 0.72 + idleOsc, -0.20, -0.72);
+                            lerpRotation(rForeArm, 0.15, 0.05, -1.48 + idleOsc * 0.5);
+                            lerpRotation(rHand, -0.25 + idleOsc * 0.3, 0, 0);
+                            lerpRotation(lArm, 0.72 - idleOsc, 0.20, 0.72);
+                            lerpRotation(lForeArm, 0.15, -0.05, 1.48 - idleOsc * 0.5);
+                            lerpRotation(lHand, -0.25 - idleOsc * 0.3, 0, 0);
+                            if (head) lerpRotation(head, breath * 1.2, Math.sin(time * 0.8) * 0.03, 0);
+                            setFingerPose(b, 'right', 'open');
+                            setFingerPose(b, 'left', 'open');
+                        }
                         break;
+                }
+                // ==============================================================
+                // 🔒 QO'LLARNING YONGA CHETGA KETISHINI QAT'IY TAQIQLOVCHI FILTER
+                // Qo'llar har doim ko'krak oldida ko'tarilgan bo'ladi!
+                // ==============================================================
+                if (rArm) {
+                    if (rArm.rotation.x < 0.62) rArm.rotation.x = 0.62;
+                    if (rArm.rotation.z > -0.55) rArm.rotation.z = -0.55;
+                }
+                if (lArm) {
+                    if (lArm.rotation.x < 0.62) lArm.rotation.x = 0.62;
+                    if (lArm.rotation.z < 0.55) lArm.rotation.z = 0.55;
+                }
+                if (rForeArm) {
+                    if (rForeArm.rotation.z > -1.25) rForeArm.rotation.z = -1.25;
+                }
+                if (lForeArm) {
+                    if (lForeArm.rotation.z < 1.25) lForeArm.rotation.z = 1.25;
                 }
             } 
             // 2. Procedural model zaxira bo'lsa:
