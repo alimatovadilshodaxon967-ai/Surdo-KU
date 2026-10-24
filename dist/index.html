@@ -3275,7 +3275,7 @@
                 if (signIconElem) signIconElem.textContent = "🎙️";
                 if (signCategoryElem) signCategoryElem.textContent = "Gemini Live";
                 if (signTextElem) signTextElem.textContent = text || "🎙️ Gemini tinglamoqda... Bemalol gapiring";
-                setSpeakingState(true);
+                setSpeakingState(false);
             } else if (state === 'thinking') {
                 if (micActionBtn) {
                     micActionBtn.innerHTML = '<i class="fa-solid fa-brain fa-spin" style="color: #ffb703;"></i> <span id="mic-action-text">Gemini O\'ylamoqda...</span>';
@@ -3347,11 +3347,10 @@
                 sentenceWords.push(`🤖 ${reply}`);
                 updateSentenceDisplay(sentenceWords.length - 1);
 
-                // Gemini javobini 3D avatar orqali ovozga mos imo-ishoraga jonli tarjima qilish:
-                if (typeof startGeminiVoiceSignTranslation === 'function') {
+                // Faqat ovozsiz rejimda (ovoz o'chirilgan bo'lsa) darhol vizual tarjimani boshlash;
+                // Agar ovoz yoqilgan bo'lsa, audio yangrashi bilan avtomatik boshlanadi!
+                if (!isVoiceEnabled && typeof startGeminiVoiceSignTranslation === 'function') {
                     startGeminiVoiceSignTranslation(reply);
-                } else if (typeof triggerAvatarGesture === 'function') {
-                    triggerAvatarGesture(reply, "🤖", reply);
                 }
 
                 // AI Javobini TTS orqali o'qish: ekran burchaklarida to'lqinli ko'k nur yonadi!
@@ -5109,23 +5108,26 @@
                         }
                         break;
 
+                    case 'idle':
                     default:
                         // ==============================================================
-                        // TINCH HOLAT (IDLE - Plakat markazidagi katta rasm:
-                        // O'ng qo'l ko'rsatkich barmog'i yuqoriga ishora,
-                        // Chap bilak va kaft qorin/ko'krak bo'ylab tekis gorizontal turadi!)
+                        // TINCH HOLAT (IDLE):
+                        // Ikkala qo'l tananing ikki yonida, pastga tabiiy tushgan holatda turadi!
+                        // Gemini gapirishni boshlashi bilan avatar imo-ishoralarni boshlaydi!
                         // ==============================================================
                         {
-                            const idleOsc = Math.sin(time * 2.2) * 0.02;
-                            lerpRotation(rArm, 1.15 + idleOsc, 0.12, -0.75);
-                            lerpRotation(rForeArm, 0.12, 0.20, -1.45 + idleOsc * 0.2);
-                            lerpRotation(rHand, -0.20, 0.0, 0.0);
-                            lerpRotation(lArm, 1.28 - idleOsc, -0.10, 0.75);
-                            lerpRotation(lForeArm, 0.10, -0.32, 1.15 - idleOsc * 0.2);
-                            lerpRotation(lHand, -0.35, 0.20, 0.0);
+                            const idleBreath = Math.sin(time * 1.8) * 0.015;
+                            lerpRotation(rArm, 1.45 + idleBreath, 0.05, -0.12);
+                            lerpRotation(rForeArm, 0.12, 0.0, -0.05);
+                            lerpRotation(rHand, 0.0, 0.0, 0.0);
+
+                            lerpRotation(lArm, 1.45 + idleBreath, -0.05, 0.12);
+                            lerpRotation(lForeArm, 0.12, 0.0, 0.05);
+                            lerpRotation(lHand, 0.0, 0.0, 0.0);
+
                             if (head) lerpRotation(head, breath * 1.2, Math.sin(time * 0.8) * 0.02, 0.0);
-                            setFingerPose(b, 'right', 'point');
-                            setFingerPose(b, 'left', 'flat');
+                            setFingerPose(b, 'right', 'relaxed');
+                            setFingerPose(b, 'left', 'relaxed');
                         }
                         break;
                 }
@@ -5254,14 +5256,15 @@
                         lerpRotation(ph, Math.sin(time * 3) * 0.08, Math.cos(time * 2.5) * 0.06, 0);
                         break;
 
-                    default: // Idle (Tinch tayyor turish holati)
-                        lerpRotation(pr.shoulder, 0.25, -0.1, -0.25);
-                        lerpRotation(pr.elbow, -1.25 + breath * 2.5, 0.2, 0);
+                    case 'idle':
+                    default: // Idle (Tinch tayyor turish holati - ikkala qo'l ikki yonida pastda)
+                        lerpRotation(pr.shoulder, 0.25, -0.05, -0.12);
+                        lerpRotation(pr.elbow, -0.15 + breath * 0.5, 0.0, 0);
                         lerpRotation(pr.hand, 0, 0, 0);
-                        lerpRotation(pl.shoulder, 0.25, 0.1, 0.25);
-                        lerpRotation(pl.elbow, -1.25 + breath * 2.5, -0.2, 0);
+                        lerpRotation(pl.shoulder, 0.25, 0.05, 0.12);
+                        lerpRotation(pl.elbow, -0.15 + breath * 0.5, 0.0, 0);
                         lerpRotation(pl.hand, 0, 0, 0);
-                        lerpRotation(ph, breath * 1.5, 0, 0);
+                        lerpRotation(ph, breath * 1.2, 0, 0);
                         setProceduralFingers(pr.fingers, 'relaxed');
                         setProceduralFingers(pl.fingers, 'relaxed');
                         break;
