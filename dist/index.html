@@ -2887,8 +2887,9 @@
             drawSiriWave();
         }
 
-        function setSpeakingState(speaking) {
+        function setSpeakingState(speaking, spokenText = "") {
             isSpeaking = speaking;
+            const siriCanvas = document.getElementById('siri-liquid-canvas');
             if (siriCanvas) {
                 if (speaking) siriCanvas.classList.add('active-speech');
                 else siriCanvas.classList.remove('active-speech');
@@ -2903,8 +2904,15 @@
                 if (speaking) arWaves.classList.add('active-waves');
                 else arWaves.classList.remove('active-waves');
             }
-            if (!speaking && typeof stopGeminiVoiceSignTranslation === 'function') {
-                stopGeminiVoiceSignTranslation();
+            // Faqat Gemini/AI nutqi yangrayotganda 3D avatar imo-ishora qiladi
+            if (speaking) {
+                if (spokenText && typeof startGeminiVoiceSignTranslation === 'function') {
+                    startGeminiVoiceSignTranslation(spokenText);
+                }
+            } else {
+                if (typeof stopGeminiVoiceSignTranslation === 'function') {
+                    stopGeminiVoiceSignTranslation();
+                }
             }
         }
 
@@ -2982,10 +2990,10 @@
             const audioUrl = `/api/tts/?text=${encodeURIComponent(text)}&voice=${encodeURIComponent(chosenVoice)}&lang=${lang}`;
             const audio = new Audio(audioUrl);
             activeAudio = audio;
-            setSpeakingState(true);
+            setSpeakingState(true, text);
 
             audio.onplay = () => {
-                setSpeakingState(true);
+                setSpeakingState(true, text);
             };
 
             audio.onended = () => {
@@ -3759,16 +3767,11 @@
 
         if (avatarPod) {
             avatarPod.addEventListener('click', (e) => {
-                if (e.target.closest('#avatar-min-btn') || e.target.closest('#avatar-size-btn') || e.target.closest('#avatar-mode-btn') || e.target.closest('#avatar-model-switch-btn')) return;
+                if (e.target.closest('#avatar-min-btn') || e.target.closest('#avatar-size-btn') || e.target.closest('#avatar-mode-btn') || e.target.closest('#avatar-model-switch-btn') || e.target.closest('#open-200-catalog-btn')) return;
                 if (avatarPod.classList.contains('minimized')) {
                     avatarPod.classList.remove('minimized');
                     if (avatarMinBtn) avatarMinBtn.innerHTML = '<i class="fa-solid fa-compress"></i>';
                 }
-                const idx = tapGestureIdx % ALL_UZ_GESTURES.length;
-                const g = ALL_UZ_GESTURES[idx];
-                tapGestureIdx++;
-                const countPrefix = `[${idx + 1}/${ALL_UZ_GESTURES.length}] `;
-                triggerAvatarGesture(g.slug, g.icon, countPrefix + g.text, g.pose);
             });
         }
 
@@ -6287,9 +6290,7 @@
                 signText.textContent = activeText;
                 signText.classList.add('glow-text');
             }
-            if (typeof triggerAvatarGesture === 'function') {
-                triggerAvatarGesture(activeText, icon || '✋');
-            }
+            // Avatar faqat Gemini ovoz gapirganda imo-ishora qiladi (kamera harakatini takrorlamaydi)
             if (signIcon) signIcon.textContent = icon || '✋';
             if (signCategory && category) {
                 signCategory.textContent = category;
