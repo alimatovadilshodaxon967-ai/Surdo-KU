@@ -2525,12 +2525,6 @@
                 <span class="avatar-title" id="avatar-pod-title">AI Surdotarjimon (Sardor)</span>
             </div>
             <div class="avatar-controls">
-                <button id="avatar-model-switch-btn" class="avatar-btn" title="Keyingi 3D Avatar (Sardor, Jasur, Madina, Nilufar, X-Bot, Harbiy)">
-                    <i class="fa-solid fa-user-group"></i>
-                </button>
-                <button id="avatar-mode-btn" class="avatar-btn" title="AI Video Avatar (Madina) rejimiga o'tish">
-                    <i class="fa-solid fa-video"></i>
-                </button>
                 <button id="avatar-size-btn" class="avatar-btn" title="O'lchamni almashtirish (Katta / Standart)">
                     <i class="fa-solid fa-up-right-and-down-left-from-center"></i>
                 </button>
@@ -2541,25 +2535,9 @@
         </div>
         <div class="avatar-viewport">
             <canvas id="avatar-canvas"></canvas>
-            <video id="ai-avatar-video" playsinline muted loop style="display:none;" poster="/static/avatars/uzbek_national_avatar.jpg" src="/static/avatars/uzbek_avatar_idle.mp4"></video>
             <div id="avatar-caption-badge" class="avatar-caption-badge">
                 <span id="avatar-caption-icon">✋</span>
-                <span id="avatar-caption-text">Sardor • MetaPerson AI Avatar [1/8]</span>
-            </div>
-            <!-- Plakatdagi 200 ta Imo-Ishoralar Paneli -->
-            <div class="poster-signs-strip" id="poster-signs-strip">
-                <button class="poster-sign-btn poster-200-main-btn" id="open-200-btn" title="200 ta imo-ishorani to'liq jadvalda ko'rish" style="background: linear-gradient(135deg, #00f2fe, #4facfe); color: #04121e; font-weight: 800; border: none; box-shadow: 0 0 10px rgba(0, 242, 254, 0.4);">
-                    <i class="fa-solid fa-hand-sparkles"></i> 200 ta Imo-Ishora
-                </button>
-                <button class="poster-sign-btn" data-sign="salom" title="1. Assalomu alaykum"><span>1</span> Salom</button>
-                <button class="poster-sign-btn" data-sign="yaxshimisiz" title="2. Yaxshimisiz?"><span>2</span> Yaxshimisiz</button>
-                <button class="poster-sign-btn" data-sign="rahmat" title="3. Rahmat"><span>3</span> Rahmat</button>
-                <button class="poster-sign-btn" data-sign="iltimos" title="4. Iltimos"><span>4</span> Iltimos</button>
-                <button class="poster-sign-btn" data-sign="ha" title="5. Ha"><span>5</span> Ha</button>
-                <button class="poster-sign-btn" data-sign="yoq" title="6. Yo'q"><span>6</span> Yo'q</button>
-                <button class="poster-sign-btn" data-sign="tushunmadim" title="7. Tushunmadim"><span>7</span> Tushunmadim</button>
-                <button class="poster-sign-btn" data-sign="bordir" title="8. Bordir"><span>8</span> Bordir</button>
-                <button class="poster-sign-btn" data-sign="xayr" title="9. Xayr"><span>9</span> Xayr</button>
+                <span id="avatar-caption-text">Sardor • MetaPerson AI 3D Surdotarjimon</span>
             </div>
         </div>
     </div>
@@ -3543,107 +3521,8 @@
         const avatarModelLabel = document.getElementById('avatar-model-label');
         const avatarStatusDesc = document.getElementById('avatar-status-desc');
 
-        let isRealHumanMode = false; // 3D Sardor kinamatik avatari birlamchi faol
-
-        function setAvatarMode(isVideo) {
-            isRealHumanMode = isVideo;
-            if (isRealHumanMode) {
-                if (avatarPod) avatarPod.classList.add('video-mode');
-                if (avatarPodTitle) avatarPodTitle.textContent = "AI Surdotarjimon (Madina)";
-                if (avatarCaptionText) avatarCaptionText.textContent = "AI Surdotarjimon (Madina)";
-                if (avatarCaptionIcon) avatarCaptionIcon.textContent = "✨";
-                if (avatarModeBtn) {
-                    avatarModeBtn.title = "3D Sardor rejimiga o'tish";
-                    avatarModeBtn.innerHTML = '<i class="fa-solid fa-cube"></i>';
-                }
-                if (aiAvatarVideo) {
-                    if (!aiAvatarVideo.src || !aiAvatarVideo.src.includes('uzbek_avatar_idle')) {
-                        aiAvatarVideo.src = '/static/avatars/uzbek_avatar_idle.mp4';
-                    }
-                    aiAvatarVideo.loop = true;
-                    aiAvatarVideo.play().catch(() => {});
-                }
-            } else {
-                if (avatarPod) avatarPod.classList.remove('video-mode');
-                if (avatarPodTitle) avatarPodTitle.textContent = "AI Surdotarjimon (Sardor)";
-                if (avatarCaptionText) avatarCaptionText.textContent = "3D Sardor Avatari";
-                if (avatarCaptionIcon) avatarCaptionIcon.textContent = "🤖";
-                if (avatarModeBtn) {
-                    avatarModeBtn.title = "AI Video Avatar (Madina) rejimiga o'tish";
-                    avatarModeBtn.innerHTML = '<i class="fa-solid fa-video"></i>';
-                }
-                if (aiAvatarVideo) {
-                    aiAvatarVideo.pause();
-                }
-                setTimeout(onAvatarResize, 50);
-            }
-        }
-
-        if (avatarModeBtn) {
-            avatarModeBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                setAvatarMode(!isRealHumanMode);
-            });
-        }
-
-                // 200 ta imo-ishora jadvali tugmasi
-        const open200Btn = document.getElementById('open-200-btn');
-        if (open200Btn) {
-            open200Btn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                if (typeof openCatalog === 'function') openCatalog();
-            });
-        }
-
-        // Plakatdagi tezkor imo-ishora tugmalari
-        document.querySelectorAll('.poster-sign-btn:not(.poster-200-main-btn)').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const sign = btn.dataset.sign;
-                if (!sign) return;
-                const signTitles = {
-                    "salom": "Assalomu alaykum!",
-                    "yaxshimisiz": "Yaxshimisiz?",
-                    "rahmat": "Katta rahmat!",
-                    "iltimos": "Iltimos!",
-                    "ha": "Ha, to'g'ri!",
-                    "yoq": "Yo'q, noto'g'ri!",
-                    "tushunmadim": "Tushunmadim?",
-                    "bordir": "Bordir / Mana shu",
-                    "xayr": "Xayr, salomat bo'ling!"
-                };
-                const signIcons = {
-                    'salom': '👋', 'yaxshimisiz': '🤝', 'rahmat': '🙏',
-                    'iltimos': '🤲', 'ha': '👍', 'yoq': '🙅',
-                    'tushunmadim': '❓', 'bordir': '👉', 'xayr': '✨'
-                };
-                avatarState.gesture = sign;
-                avatarState.text = signTitles[sign] || sign;
-                avatarState.icon = signIcons[sign] || '✋';
-                avatarState.timer = performance.now() + 3800;
-                if (avatarCaptionIcon) avatarCaptionIcon.textContent = avatarState.icon;
-                if (avatarCaptionText) avatarCaptionText.textContent = avatarState.text;
-                if (isSoundEnabled && window.speechSynthesis) {
-                    try {
-                        const ut = new SpeechSynthesisUtterance(avatarState.text);
-                        ut.lang = 'uz-UZ';
-                        window.speechSynthesis.speak(ut);
-                    } catch(err) {}
-                }
-            });
-        });
-
-        if (avatarModelSwitchBtn) {
-            avatarModelSwitchBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                currentModelIdx = (currentModelIdx + 1) % AVATAR_MODELS.length;
-                const m = AVATAR_MODELS[currentModelIdx];
-                if (avatarPodTitle) avatarPodTitle.textContent = `AI Surdotarjimon (${m.name})`;
-                if (avatarCaptionText) avatarCaptionText.textContent = `${m.name} (${currentModelIdx + 1}/${AVATAR_MODELS.length})`;
-                if (avatarCaptionIcon) avatarCaptionIcon.textContent = "🤖";
-                loadCurrentAvatarModel();
-            });
-        }
+        // Faqat yagona MetaPerson Sardor 3D avatari faol (video va boshqa modellar olib tashlandi)
+        const isRealHumanMode = false;
         let avatarSigningTimer = null;
 
         // Three.js Core Components
@@ -3659,15 +3538,9 @@
         let blinkPhase = 0;
 
         // 8 ta To'liq Tayyor 3D Surdotarjimon Avatarlar (GitHub met4citizen/TalkingHead, aido & Three.js)
+        // Yagona Rasmiy 3D Surdotarjimon Avatari (Sardor — MetaPerson AI)
         const AVATAR_MODELS = [
-            { id: 'avatarsdk', name: 'Sardor', url: '/static/models/avatarsdk_male.glb', role: 'Sardor • MetaPerson AI (Plakatdagi Asosiy Avatar)', type: '3d' },
-            { id: 'brunette', name: 'Laylo', url: '/static/models/brunette.glb', role: 'Laylo • 3D Ayol Surdochi (GitHub)', type: '3d' },
-            { id: 'avaturn', name: 'Aziz', url: '/static/models/avaturn.glb', role: 'Aziz • Kurtkali 3D Avatar (GitHub)', type: '3d' },
-            { id: 'avatar1', name: 'Jasur', url: '/static/models/avatar1.glb', role: 'Jasur • 3D Surdochi (GitHub aido)', type: '3d' },
-            { id: 'avatar2', name: 'Madina', url: '/static/models/avatar2.glb', role: 'Madina • 3D Surdochi (GitHub aido)', type: '3d' },
-            { id: 'demo-avatar', name: 'Nilufar', url: '/static/models/demo-avatar.glb', role: 'Nilufar • HD 3D Surdo (GitHub stage)', type: '3d' },
-            { id: 'xbot', name: 'X-Bot', url: '/static/models/xbot.glb', role: 'X-Bot • Robot Surdo Avatar (Three.js)', type: '3d' },
-            { id: 'soldier', name: 'Harbiy', url: '/static/models/soldier.glb', role: 'Harbiy • Formali Surdo (Three.js)', type: '3d' }
+            { id: 'avatarsdk', name: 'Sardor', url: '/static/models/avatarsdk_male.glb', role: 'Sardor — MetaPerson AI 3D Surdotarjimon', type: '3d' }
         ];
         let currentModelIdx = 0;
 
