@@ -406,8 +406,10 @@ class TTSView(View):
         loop = asyncio.get_event_loop()
 
         # 1. Google Gemini AI Ovoz sintezi (Haqiqiy Google Gemini TTS)
+        requested_gemini_cache_key = None
         if 'gemini' in voice or 'google' in voice:
             cache_key = hashlib.md5(f"gemini_{voice}_{text}".encode('utf-8')).hexdigest()
+            requested_gemini_cache_key = cache_key
             cache_dir = os.path.join(settings.BASE_DIR, 'static', 'audio_cache')
             os.makedirs(cache_dir, exist_ok=True)
             disk_file = os.path.join(cache_dir, f"{cache_key}.wav")
@@ -443,7 +445,8 @@ class TTSView(View):
                 data_bytes = json.dumps(payload).encode('utf-8')
                 last_err = None
 
-                for attempt in range(len(GEMINI_API_KEYS)):
+                # Maksimal 1 ta tezkor urinish (3.0s timeout) - agar kechiksa darhol VoiceLab zaxiraga o'tadi
+                for attempt in range(1):
                     key = get_current_gemini_key()
                     url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key={key}"
                     req = urllib.request.Request(
@@ -452,7 +455,7 @@ class TTSView(View):
                         headers={'Content-Type': 'application/json'}
                     )
                     try:
-                        with urllib.request.urlopen(req, timeout=9) as resp:
+                        with urllib.request.urlopen(req, timeout=3.0) as resp:
                             res = json.loads(resp.read().decode('utf-8'))
                             part = res['candidates'][0]['content']['parts'][0]
                             pcm_bytes = base64.b64decode(part['inlineData']['data'])
@@ -466,15 +469,10 @@ class TTSView(View):
                     except urllib.error.HTTPError as http_err:
                         last_err = http_err
                         if is_gemini_quota_exhausted(http_err):
-                            print(f"[Gemini TTS API] Kalit kvotasi tugadi (HTTP {http_err.code}). Zaxira kalitga o'tilmoqda...")
                             switch_to_next_gemini_key()
-                            continue
-                        else:
-                            print(f"[Gemini TTS API] HTTP {http_err.code} xatosi: {http_err}")
-                            break
+                        break
                     except Exception as e:
                         last_err = e
-                        print(f"[Gemini TTS API] Tarmoq xatoligi yoki kutish vaqti: {e}")
                         break
 
                 if last_err:
@@ -492,7 +490,7 @@ class TTSView(View):
                         pass
                     return HttpResponse(audio_stream, content_type="audio/wav")
             except Exception as gemini_err:
-                print(f"[Gemini TTS] Vaqtincha xatolik: {gemini_err}. Zaxira ovoz tizimlariga o'tilmoqda...")
+                print(f"[Gemini TTS] Tezkor uzilish ({gemini_err}). O'ta tezkor VoiceLab milliy ovoziga o'tildi!")
 
         # 2. VoiceLab.uz dagi ovoz ID sini aniqlash
         if voice.startswith("voice_"):
@@ -574,6 +572,14 @@ class TTSView(View):
             audio_stream = await loop.run_in_executor(None, try_voicelab)
             if audio_stream:
                 VOICE_AUDIO_CACHE[cache_key] = audio_stream
+                if requested_gemini_cache_key:
+                    VOICE_AUDIO_CACHE[requested_gemini_cache_key] = audio_stream
+                    gemini_disk_file = os.path.join(cache_dir, f"{requested_gemini_cache_key}.wav")
+                    try:
+                        with open(gemini_disk_file, 'wb') as gdf:
+                            gdf.write(audio_stream)
+                    except Exception:
+                        pass
                 try:
                     with open(disk_file, 'wb') as df:
                         df.write(audio_stream)
@@ -826,11 +832,10 @@ class SpeechChatView(View):
 
         lang_name = "O'zbek tili" if lang == 'uz' else ("English" if lang == 'en' else "Русский язык")
         system_instruction = (
-            "Siz Surdo AI aqlli jonli ovozli suhbatdoshisiz (Live Speech-to-Speech Assistant). "
-            "Foydalanuvchi siz bilan mikrofondan jonli muloqot qilmoqda. "
-            f"Foydalanuvchiga {lang_name}da samimiy, dono, do'stona va jonli suhbatdosh sifatida qisqa va lo'nda javob bering (ko'pi bilan 1-2 ta ravon jumla). "
-            "MUHIM TALAB: Javobingiz darhol ovoz orqali (TTS) o'qib beriladi! "
-            "Shuning uchun hech qanday yulduzcha (*), panjara (#), emojilar, qisqartmalar, ro'yxatlar ishlatmang! Faqat toza, tinglashga yoqimli adabiy nutq so'zlarini bering!"
+            "Siz Surdo AI aqlli jonli ovozli yordamchisiz. "
+            "Foydalanuvchi mikrofondan siz bilan jonli gaplashmoqda. "
+            f"Foydalanuvchiga {lang_name}da o'ta tez, samimiy, aniq va lo'nda qilib FAQAT 1 TA (ko'pi bilan 2 ta) qisqa gap bilan javob bering! "
+            "Javobingiz darhol ovozli o'qiladi. Hech qanday yulduzcha (*), panjara (#), emoji yoki ortiqcha belgi ishlatmang!"
         )
 
         contents = []
@@ -846,8 +851,8 @@ class SpeechChatView(View):
             "system_instruction": {"parts": [{"text": system_instruction}]},
             "contents": contents,
             "generationConfig": {
-                "temperature": 0.65,
-                "maxOutputTokens": 600,
+                "temperature": 0.5,
+                "maxOutputTokens": 80,
                 "thinkingConfig": {"thinkingBudget": 0}
             }
         }
@@ -867,13 +872,16 @@ class SpeechChatView(View):
                     headers={'Content-Type': 'application/json'}
                 )
                 try:
-                    with urllib.request.urlopen(req, timeout=7.0) as resp:
+                    with urllib.request.urlopen(req, timeout=5.0) as resp:
                         data = json.loads(resp.read().decode('utf-8'))
-                        reply_text = data['candidates'][0]['content']['parts'][0]['text'].strip()
+                        cand = data.get('candidates', [{}])[0]
+                        parts = cand.get('content', {}).get('parts', [])
+                        reply_text = parts[0]['text'].strip() if (parts and 'text' in parts[0]) else ''
                         reply_text = reply_text.replace('*', '').replace('#', '').strip()
                         if (reply_text.startswith('"') and reply_text.endswith('"')) or (reply_text.startswith("'") and reply_text.endswith("'")):
                             reply_text = reply_text[1:-1].strip()
-                        return reply_text
+                        if reply_text:
+                            return reply_text
                 except urllib.error.HTTPError as http_err:
                     last_err = http_err
                     if is_gemini_quota_exhausted(http_err):

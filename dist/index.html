@@ -3470,15 +3470,16 @@
                     if (signCategoryElem) signCategoryElem.textContent = "Gemini Live";
                     if (signTextElem) signTextElem.textContent = `🗣️ Siz: "${speechHeard}"...`;
 
-                    // Gap tugagach 0.7 soniya jimlik bo'lsa -> Avtomatik ravishda AI ga tezkor yuborish!
+                    // Gap tugagach tezkor yuborish: agar yakuniy natija bo'lsa 380ms, davomiy bo'lsa 650ms
                     clearTimeout(speechSilenceTimer);
+                    const silenceWaitMs = finalTranscript ? 380 : 650;
                     speechSilenceTimer = setTimeout(() => {
                         if (isMicListening && currentCapturedText.trim() && !isAIProcessing) {
                             const textToSend = currentCapturedText.trim();
                             stopRecognitionOnly();
                             sendToGeminiChat(textToSend);
                         }
-                    }, 700);
+                    }, silenceWaitMs);
                 }
             };
 
