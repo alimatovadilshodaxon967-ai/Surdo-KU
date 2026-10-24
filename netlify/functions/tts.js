@@ -2,7 +2,11 @@ const https = require('https');
 
 const GEMINI_API_KEYS = [
     process.env.GEMINI_API_KEY || Buffer.from("QVEuQWI4Uk42S0xvOGQ0Qmw3MlpRZl9TNkFya3VDTHdMaUc4RVZEVkxwVnVXdUU1MEh3bGc=", "base64").toString("utf-8"),
-    process.env.GEMINI_BACKUP_KEY || Buffer.from("QVEuQWI4Uk42TEhER05tQU9BdzNBck16cjJhcGFxcHV4Y0Nqc1JYUXRuUmxPc2FwdjJld3c=", "base64").toString("utf-8")
+    process.env.GEMINI_BACKUP_KEY || Buffer.from("QVEuQWI4Uk42TEhER05tQU9BdzNBck16cjJhcGFxcHV4Y0Nqc1JYUXRuUmxPc2FwdjJld3c=", "base64").toString("utf-8"),
+    process.env.GEMINI_BACKUP_KEY_2 || Buffer.from("QVEuQWI4Uk42SUI2M2xPM3NwaG1wZHYwTmhZMUgyT0JMc0FxanpvYUE1WFF0OGxFc2lTR1E=", "base64").toString("utf-8"),
+    process.env.GEMINI_BACKUP_KEY_3 || Buffer.from("QVEuQWI4Uk42SUFpS1JBdmp2WklfQV85R3Z5WjRab09JOTM1S01VcjZVX01uLXhPLVZoTnc=", "base64").toString("utf-8"),
+    process.env.GEMINI_BACKUP_KEY_4 || Buffer.from("QVEuQWI4Uk42S1N1cGFRaVIyOGN4QlZwQ3lpZzFWNG5IOU9LdDlQd3lVUnJkRmdHaHViVHc=", "base64").toString("utf-8"),
+    process.env.GEMINI_BACKUP_KEY_5 || Buffer.from("QVEuQWI4Uk42S2Z0aFpCcjRuWnlkWDN6ZDdvSnU0SV9UMnlhMjFVREFqZXFjelpCQjl1b3c=", "base64").toString("utf-8")
 ];
 let currentGeminiKeyIndex = 0;
 
@@ -35,7 +39,9 @@ const VOICELAB_API_KEYS = [
     "vlk_WkCzoxnsKdJ3ffT3Gt-abjO9YNeyLtGY1TZlCS1VhYg",
     "vlk_sS-lIYDMWPqIaO8_iegg9D1n9SePqvNy0q6vthHk4YM",
     "vlk_Syrv5hJm2hEgsUxLNQ3cKhhmxClgFMICUduHf0EZgcc",
-    "vlk_-Xishu-yP9pksI8QS_EXV8G6vJNu7VTI3Jr9NGy1s6k"
+    "vlk_-Xishu-yP9pksI8QS_EXV8G6vJNu7VTI3Jr9NGy1s6k",
+    "vlk_Vb_xPvvMYRgNW8T0r08jL1wj_JWyKOjVg5nVv852Ppw",
+    "vlk_3JUy_pjdKLCP2gXDgQd-pPfnbbBjbRHpA8qQhRMoL38"
 ];
 let currentKeyIndex = 0;
 const VOICELAB_VOICES = {
@@ -66,9 +72,9 @@ exports.handler = async function(event, context) {
 
     // 1. Google Gemini AI Ovoz sintezi
     if (voice.includes('gemini') || voice.includes('google')) {
-        const vname = (voice.includes('puck') || voice.includes('erkak')) ? 'Puck' : 'Kore';
+        const vname = (voice.includes('puck') || voice.includes('erkak')) ? 'Puck' : 'Aoede';
         const geminiPayload = JSON.stringify({
-            contents: [{ parts: [{ text: `Read the following text aloud clearly: ${text}` }] }],
+            contents: [{ parts: [{ text: `Read aloud: ${text}` }] }],
             generationConfig: {
                 responseModalities: ["AUDIO"],
                 speechConfig: {
@@ -81,7 +87,8 @@ exports.handler = async function(event, context) {
             }
         });
 
-        for (let attempt = 0; attempt < GEMINI_API_KEYS.length; attempt++) {
+        // 1 ta tezkor urinish (3.5s timeout)
+        for (let attempt = 0; attempt < 1; attempt++) {
             const apiKey = GEMINI_API_KEYS[currentGeminiKeyIndex];
             try {
                 const geminiBuffer = await new Promise((resolve, reject) => {
@@ -92,7 +99,8 @@ exports.handler = async function(event, context) {
                         headers: {
                             'Content-Type': 'application/json',
                             'Content-Length': Buffer.byteLength(geminiPayload)
-                        }
+                        },
+                        timeout: 3800
                     }, (res) => {
                         const chunks = [];
                         res.on('data', chunk => chunks.push(chunk));
@@ -115,6 +123,7 @@ exports.handler = async function(event, context) {
                             }
                         });
                     });
+                    req.on('timeout', () => { req.destroy(); reject(new Error('Gemini TTS timeout')); });
                     req.on('error', reject);
                     req.write(geminiPayload);
                     req.end();
@@ -130,22 +139,24 @@ exports.handler = async function(event, context) {
                     isBase64Encoded: true
                 };
             } catch (geminiErr) {
-                console.warn(`[Gemini TTS Key #${currentGeminiKeyIndex + 1} failover]: ${geminiErr.message}. Zaxira kalitga o'tilmoqda...`);
+                console.warn(`[Gemini TTS failover]: ${geminiErr.message}. VoiceLab milliy ovoziga o'tildi.`);
                 currentGeminiKeyIndex = (currentGeminiKeyIndex + 1) % GEMINI_API_KEYS.length;
+                break;
             }
         }
     }
 
-    const voiceId = VOICELAB_VOICES[voice] || VOICELAB_VOICES["madina"];
+    const voiceId = VOICELAB_VOICES[voice] || VOICELAB_VOICES["abdulhay"];
     const payload = JSON.stringify({
         text: text,
         voice_id: voiceId,
         language: "uz"
     });
 
+    const totalKeys = VOICELAB_API_KEYS.length;
     let lastError = null;
 
-    for (let attempt = 0; attempt < VOICELAB_API_KEYS.length; attempt++) {
+    for (let attempt = 0; attempt < totalKeys; attempt++) {
         const apiKey = VOICELAB_API_KEYS[currentKeyIndex];
         try {
             const audioBuffer = await new Promise((resolve, reject) => {
@@ -157,18 +168,23 @@ exports.handler = async function(event, context) {
                         'Authorization': `Bearer ${apiKey}`,
                         'Content-Type': 'application/json',
                         'Content-Length': Buffer.byteLength(payload)
-                    }
+                    },
+                    timeout: 4000
                 }, (res) => {
                     const chunks = [];
                     res.on('data', chunk => chunks.push(chunk));
                     res.on('end', () => {
-                        if (res.statusCode >= 200 && res.statusCode < 300) {
+                        if (res.statusCode === 200) {
                             resolve(Buffer.concat(chunks));
                         } else {
-                            reject(new Error(`VoiceLab status ${res.statusCode}: ${Buffer.concat(chunks).toString()}`));
+                            const errBody = Buffer.concat(chunks).toString();
+                            const err = new Error(`VoiceLab API status ${res.statusCode}: ${errBody}`);
+                            err.statusCode = res.statusCode;
+                            reject(err);
                         }
                     });
                 });
+                req.on('timeout', () => { req.destroy(); reject(new Error('VoiceLab timeout')); });
                 req.on('error', reject);
                 req.write(payload);
                 req.end();
@@ -185,14 +201,16 @@ exports.handler = async function(event, context) {
             };
         } catch (err) {
             lastError = err;
-            console.warn(`[VoiceLab Key #${currentKeyIndex + 1} failover]: ${err.message}. Keyingi kalitga o'tilmoqda...`);
-            currentKeyIndex = (currentKeyIndex + 1) % VOICELAB_API_KEYS.length;
+            if (err.statusCode === 429) {
+                currentKeyIndex = (currentKeyIndex + 1) % totalKeys;
+                continue;
+            }
+            break;
         }
     }
 
-    console.error('All VoiceLab API keys failed:', lastError);
     return {
         statusCode: 502,
-        body: JSON.stringify({ error: lastError ? lastError.message : 'All API keys exhausted' })
+        body: JSON.stringify({ error: 'TTS service failed', details: lastError ? lastError.message : 'Unknown' })
     };
 };
