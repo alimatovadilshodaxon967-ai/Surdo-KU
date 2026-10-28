@@ -1,14 +1,8 @@
-const https = require('https');
+import https from 'https';
 
-const GEMINI_API_KEYS = [
-    process.env.GEMINI_API_KEY || Buffer.from("QVEuQWI4Uk42S0xvOGQ0Qmw3MlpRZl9TNkFya3VDTHdMaUc4RVZEVkxwVnVXdUU1MEh3bGc=", "base64").toString("utf-8"),
-    process.env.GEMINI_BACKUP_KEY || Buffer.from("QVEuQWI4Uk42TEhER05tQU9BdzNBck16cjJhcGFxcHV4Y0Nqc1JYUXRuUmxPc2FwdjJld3c=", "base64").toString("utf-8"),
-    process.env.GEMINI_BACKUP_KEY_2 || Buffer.from("QVEuQWI4Uk42SUI2M2xPM3NwaG1wZHYwTmhZMUgyT0JMc0FxanpvYUE1WFF0OGxFc2lTR1E=", "base64").toString("utf-8"),
-    process.env.GEMINI_BACKUP_KEY_3 || Buffer.from("QVEuQWI4Uk42SUFpS1JBdmp2WklfQV85R3Z5WjRab09JOTM1S01VcjZVX01uLXhPLVZoTnc=", "base64").toString("utf-8"),
-    process.env.GEMINI_BACKUP_KEY_4 || Buffer.from("QVEuQWI4Uk42S1N1cGFRaVIyOGN4QlZwQ3lpZzFWNG5IOU9LdDlQd3lVUnJkRmdHaHViVHc=", "base64").toString("utf-8"),
-    process.env.GEMINI_BACKUP_KEY_5 || Buffer.from("QVEuQWI4Uk42S2Z0aFpCcjRuWnlkWDN6ZDdvSnU0SV9UMnlhMjFVREFqZXFjelpCQjl1b3c=", "base64").toString("utf-8")
-];
+const GEMINI_API_KEYS = [process.env.GEMINI_API_KEY];
 let currentGeminiKeyIndex = 0;
+const GEMINI_BASE_URL = new URL(process.env.GOOGLE_GEMINI_BASE_URL || 'https://generativelanguage.googleapis.com');
 
 function pcmToWav(pcmBuffer, sampleRate = 24000, numChannels = 1, bitsPerSample = 16) {
     const header = Buffer.alloc(44);
@@ -61,7 +55,7 @@ const VOICELAB_VOICES = {
     "rustam": "voice_be56058a-8f15-48bb-904b-4fe92531d5b1"
 };
 
-exports.handler = async function(event, context) {
+async function handleEvent(event) {
     const params = event.queryStringParameters || {};
     const text = (params.text || '').trim();
     const voice = (params.voice || 'madina').toLowerCase();
@@ -93,10 +87,11 @@ exports.handler = async function(event, context) {
             try {
                 const geminiBuffer = await new Promise((resolve, reject) => {
                     const req = https.request({
-                        hostname: 'generativelanguage.googleapis.com',
-                        path: `/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${apiKey}`,
+                        hostname: GEMINI_BASE_URL.hostname,
+                        path: `${GEMINI_BASE_URL.pathname.replace(/\/$/, '')}/v1beta/models/gemini-2.5-flash-preview-tts:generateContent`,
                         method: 'POST',
                         headers: {
+                            'x-goog-api-key': apiKey,
                             'Content-Type': 'application/json',
                             'Content-Length': Buffer.byteLength(geminiPayload)
                         },
@@ -213,4 +208,16 @@ exports.handler = async function(event, context) {
         statusCode: 502,
         body: JSON.stringify({ error: 'TTS service failed', details: lastError ? lastError.message : 'Unknown' })
     };
+}
+
+export default async (req) => {
+    const url = new URL(req.url);
+    const event = {
+        httpMethod: req.method,
+        queryStringParameters: Object.fromEntries(url.searchParams),
+        body: req.method === 'GET' || req.method === 'HEAD' ? null : await req.text()
+    };
+    const result = await handleEvent(event);
+    const body = result.isBase64Encoded ? Buffer.from(result.body, 'base64') : result.body;
+    return new Response(body, { status: result.statusCode, headers: result.headers || {} });
 };
